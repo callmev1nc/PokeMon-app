@@ -117,7 +117,7 @@ export default function ProductCard({ product }: { product: Product }) {
             disabled
             className="w-full py-2 px-3 rounded-xl text-sm font-semibold bg-slate-50 text-slate-300 cursor-not-allowed"
           >
-            Háº¿t hÃ ng
+            Hết hàng
           </button>
         )}
         {noPrice && !isOutOfStock && (
@@ -125,7 +125,7 @@ export default function ProductCard({ product }: { product: Product }) {
             disabled
             className="w-full py-2 px-3 rounded-xl text-sm font-semibold bg-slate-50 text-slate-300 cursor-not-allowed"
           >
-            LiÃªn há» Äá» mua
+            Liên hệ để mua
           </button>
         )}
       </div>

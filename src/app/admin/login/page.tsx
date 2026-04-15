@@ -46,7 +46,7 @@ export default function AdminLoginPage() {
               className="h-16 w-auto mx-auto mb-3 rounded-xl"
             />
             <h1 className="text-xl font-bold text-slate-800">
-              Quáº£n lÃ½
+              Quản lý
             </h1>
             <p className="text-sm text-slate-400 mt-1">
               Đăng nhập để truy cập trang quản lý
@@ -59,7 +59,7 @@ export default function AdminLoginPage() {
                 htmlFor="username"
                 className="block text-sm font-medium text-slate-600 mb-1.5"
               >
-                TÃªn ÄÄng nháº­p
+                Tên đăng nhập
               </label>
               <input
                 id="username"
@@ -77,7 +77,7 @@ export default function AdminLoginPage() {
                 htmlFor="password"
                 className="block text-sm font-medium text-slate-600 mb-1.5"
               >
-                Máº­t kháº©u
+                Mật khẩu
               </label>
               <input
                 id="password"

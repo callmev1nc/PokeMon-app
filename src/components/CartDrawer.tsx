@@ -35,7 +35,7 @@ export default function CartDrawer({
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
           <div>
             <h2 className="text-lg font-bold text-slate-800">
-              Giá» hÃ ng
+              Giỏ hàng
             </h2>
             <p className="text-xs text-slate-400">
               {count} sản phẩm
@@ -104,13 +104,13 @@ export default function CartDrawer({
               href="/customer-info"
               className="btn-press block w-full py-3 bg-brand text-white text-center rounded-xl font-semibold shadow-md shadow-red-200 hover:bg-brand-dark transition-colors"
             >
-              Thanh toÃ¡n
+              Thanh toán
             </a>
             <button
               onClick={clearCart}
               className="w-full py-2 text-xs text-slate-400 hover:text-red-500 transition-colors"
             >
-              XÃ³a táº¥t cáº£
+              Xóa tất cả
             </button>
           </div>
         )}

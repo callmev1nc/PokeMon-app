@@ -56,7 +56,7 @@ export default function CustomerInfoPage() {
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-slate-800">
-            Thong tin giao hang
+            Thông tin giao hàng
           </h1>
           <p className="text-sm text-slate-400 mt-1">
             Vui lòng điền thông tin trước khi thanh toán
@@ -66,7 +66,7 @@ export default function CustomerInfoPage() {
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
           <div>
             <label htmlFor="name" className="block text-sm font-semibold text-slate-700 mb-1.5">
-              TÃªn <span className="text-brand">*</span>
+              Tên <span className="text-brand">*</span>
             </label>
             <input
               id="name"
@@ -81,7 +81,7 @@ export default function CustomerInfoPage() {
 
           <div>
             <label htmlFor="phone" className="block text-sm font-semibold text-slate-700 mb-1.5">
-              Sá» Äiá»n Thoáº¡i <span className="text-brand">*</span>
+              Số Điện Thoại <span className="text-brand">*</span>
             </label>
             <input
               id="phone"
@@ -96,7 +96,7 @@ export default function CustomerInfoPage() {
 
           <div>
             <label htmlFor="newAddress" className="block text-sm font-semibold text-slate-700 mb-1.5">
-              Äá»a Chá» Má»i
+              Địa Chỉ Mới
             </label>
             <input
               id="newAddress"
@@ -110,7 +110,7 @@ export default function CustomerInfoPage() {
 
           <div>
             <label htmlFor="oldAddress" className="block text-sm font-semibold text-slate-700 mb-1.5">
-              Äá»a chá» cÅ©
+              Địa chỉ cũ
             </label>
             <input
               id="oldAddress"
@@ -142,7 +142,7 @@ export default function CustomerInfoPage() {
             href="/"
             className="text-sm text-slate-400 hover:text-slate-600 transition-colors"
           >
-            &larr; Tiáº¿p tá»¥c mua sáº¯m
+            &larr; Tiếp tục mua sắm
           </a>
         </div>
       </main>

@@ -19,7 +19,7 @@ export default function CheckoutSummary() {
           href="/"
           className="inline-block mt-4 text-brand hover:underline text-sm font-medium"
         >
-          Quay láº¡i cá»­a hÃ ng
+          Quay lại cửa hàng
         </a>
       </div>
     );
@@ -29,7 +29,7 @@ export default function CheckoutSummary() {
     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
       <div className="px-5 py-4 bg-slate-50/50 border-b border-slate-100">
         <h3 className="font-bold text-slate-800">
-          Chi tiet don hang <span className="text-slate-400 font-normal">({items.length} sản phẩm)</span>
+          Chi tiết đơn hàng <span className="text-slate-400 font-normal">({items.length} sản phẩm)</span>
         </h3>
       </div>
       <div className="divide-y divide-slate-50">
