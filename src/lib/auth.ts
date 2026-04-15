@@ -1,11 +1,13 @@
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
-const ADMIN_USERNAME = "chausieudethuong";
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "chausieudethuong";
 const ADMIN_PASSWORD_HASH =
+  process.env.ADMIN_PASSWORD_HASH ||
   "$2b$10$E27O4Ky4MYisIMSDAYzYW.e1otEitIBk4X7HGWH7jXlc8bc4kkzH.";
 
-const SESSION_SECRET = process.env.SESSION_SECRET || "pokemon-admin-secret-key-2026";
+const SESSION_SECRET =
+  process.env.SESSION_SECRET || "pokemon-admin-secret-key-2026";
 const COOKIE_NAME = "admin-session";
 const SESSION_MAX_AGE = 60 * 60 * 24; // 24 hours
 

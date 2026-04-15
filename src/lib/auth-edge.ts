@@ -1,8 +1,9 @@
 // Edge Runtime compatible session verification (for middleware)
 // Uses Web Crypto API instead of Node.js crypto
 
-const ADMIN_USERNAME = "chausieudethuong";
-const SESSION_SECRET = "pokemon-admin-secret-key-2026";
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "chausieudethuong";
+const SESSION_SECRET =
+  process.env.SESSION_SECRET || "pokemon-admin-secret-key-2026";
 export const COOKIE_NAME = "admin-session";
 const SESSION_MAX_AGE = 60 * 60 * 24; // 24 hours
 
