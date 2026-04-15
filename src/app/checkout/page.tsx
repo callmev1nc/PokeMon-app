@@ -26,9 +26,9 @@ export default function CheckoutPage() {
         ? JSON.parse(customerStr)
         : { name: "", phone: "", newAddress: "", oldAddress: "" };
 
-      // Build product description
+      // Build product description: 1x Joltik - PC-PO-015A
       const productDesc = items
-        .map((item) => `${item.product.name} x${item.quantity}`)
+        .map((item) => `${item.quantity}x ${item.product.name} - ${item.product.code}`)
         .join(", ");
 
       const order = {
