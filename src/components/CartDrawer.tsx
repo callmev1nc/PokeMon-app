@@ -95,7 +95,7 @@ export default function CartDrawer({
               </span>
             </div>
             <a
-              href="/checkout"
+              href="/customer-info"
               className="block w-full py-2.5 bg-blue-600 text-white text-center rounded-xl font-medium hover:bg-blue-700 transition-colors"
             >
               Thanh toán

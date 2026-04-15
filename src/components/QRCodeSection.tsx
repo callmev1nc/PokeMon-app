@@ -1,16 +1,8 @@
 "use client";
 
-import { useCartStore } from "@/store/cartStore";
 import { FACEBOOK_URL } from "@/lib/constants";
 
-export default function QRCodeSection() {
-  const clearCart = useCartStore((s) => s.clearCart);
-
-  const handleDone = () => {
-    clearCart();
-    window.location.href = "/";
-  };
-
+export default function QRCodeSection({ onDone }: { onDone: () => void }) {
   return (
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
       <div className="px-4 py-3 bg-slate-50 border-b border-slate-200">
@@ -47,7 +39,7 @@ export default function QRCodeSection() {
         </div>
 
         <button
-          onClick={handleDone}
+          onClick={onDone}
           className="mt-2 w-full max-w-sm py-2.5 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors"
         >
           Đã thanh toán - Quay lại

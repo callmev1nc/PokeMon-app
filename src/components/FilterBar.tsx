@@ -1,11 +1,19 @@
 "use client";
 
-import type { DisplayType, SortOption } from "@/lib/types";
-import { DISPLAY_TYPES, TYPE_COLORS } from "@/lib/constants";
+import type { DisplayType, SortOption, GroupCategory } from "@/lib/types";
+import {
+  DISPLAY_TYPES,
+  TYPE_COLORS,
+  GROUP_CATEGORIES,
+  GROUP_LABELS,
+  GROUP_COLORS,
+} from "@/lib/constants";
 
 interface FilterBarProps {
   selectedTypes: DisplayType[];
   onToggleType: (type: DisplayType) => void;
+  selectedGroups: GroupCategory[];
+  onToggleGroup: (group: GroupCategory) => void;
   search: string;
   onSearchChange: (value: string) => void;
   sort: SortOption;
@@ -17,6 +25,8 @@ interface FilterBarProps {
 export default function FilterBar({
   selectedTypes,
   onToggleType,
+  selectedGroups,
+  onToggleGroup,
   search,
   onSearchChange,
   sort,
@@ -51,10 +61,9 @@ export default function FilterBar({
         />
       </div>
 
-      {/* Filters row */}
+      {/* Display Type filter chips */}
       <div className="flex flex-wrap items-center gap-3">
-        {/* Type filter chips */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           {DISPLAY_TYPES.map((type) => {
             const isActive = selectedTypes.includes(type);
             return (
@@ -68,6 +77,29 @@ export default function FilterBar({
                 }`}
               >
                 {type}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Group category filter chips */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex gap-2 flex-wrap">
+          {GROUP_CATEGORIES.map((group) => {
+            const isActive = selectedGroups.includes(group);
+            return (
+              <button
+                key={group}
+                onClick={() => onToggleGroup(group)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  isActive
+                    ? GROUP_COLORS[group] +
+                      " ring-2 ring-offset-1 ring-blue-400"
+                    : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                }`}
+              >
+                {GROUP_LABELS[group] || group}
               </button>
             );
           })}

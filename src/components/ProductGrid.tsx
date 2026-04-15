@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Product, DisplayType, SortOption } from "@/lib/types";
+import type { Product, DisplayType, SortOption, GroupCategory } from "@/lib/types";
 import ProductCard from "./ProductCard";
 import FilterBar from "./FilterBar";
 
@@ -11,6 +11,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
     "Holo",
     "Prize Card",
   ]);
+  const [selectedGroups, setSelectedGroups] = useState<GroupCategory[]>([]);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortOption>("name-asc");
 
@@ -20,12 +21,23 @@ export default function ProductGrid({ products }: { products: Product[] }) {
     );
   };
 
+  const toggleGroup = (group: GroupCategory) => {
+    setSelectedGroups((prev) =>
+      prev.includes(group) ? prev.filter((g) => g !== group) : [...prev, group]
+    );
+  };
+
   const filtered = useMemo(() => {
     let result = products;
 
-    // Filter by type
+    // Filter by display type
     if (selectedTypes.length < 3) {
       result = result.filter((p) => selectedTypes.includes(p.displayType));
+    }
+
+    // Filter by group category
+    if (selectedGroups.length > 0) {
+      result = result.filter((p) => selectedGroups.includes(p.group as GroupCategory));
     }
 
     // Filter by search
@@ -55,7 +67,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
     });
 
     return result;
-  }, [products, selectedTypes, search, sort]);
+  }, [products, selectedTypes, selectedGroups, search, sort]);
 
   const totalStock = filtered.reduce((sum, p) => sum + p.stock, 0);
 
@@ -64,6 +76,8 @@ export default function ProductGrid({ products }: { products: Product[] }) {
       <FilterBar
         selectedTypes={selectedTypes}
         onToggleType={toggleType}
+        selectedGroups={selectedGroups}
+        onToggleGroup={toggleGroup}
         search={search}
         onSearchChange={setSearch}
         sort={sort}
