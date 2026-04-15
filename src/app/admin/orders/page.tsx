@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { Order } from "@/lib/types";
+import AdminNav from "@/components/AdminNav";
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -91,38 +92,20 @@ export default function AdminOrdersPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-800">
-          Quản lý đơn hàng
-        </h1>
-        <div className="flex gap-2">
-          <a
-            href="/admin"
-            className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition-colors"
-          >
-            Sản phẩm
-          </a>
-          <a
-            href="/admin/customers"
-            className="px-4 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-medium hover:bg-green-200 transition-colors"
-          >
-            Khách hàng
-          </a>
-        </div>
-      </div>
+      <AdminNav active="orders" />
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-sm text-slate-500">Tổng đơn hàng</p>
-          <p className="text-2xl font-bold text-slate-800">{orders.length}</p>
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+          <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">Tong don hang</p>
+          <p className="text-2xl font-bold text-slate-800 mt-1">{orders.length}</p>
         </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-sm text-slate-500">Chờ thanh toán</p>
-          <p className="text-2xl font-bold text-orange-600">{pendingCount}</p>
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+          <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">Cho thanh toan</p>
+          <p className="text-2xl font-bold text-orange-500 mt-1">{pendingCount}</p>
         </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-sm text-slate-500">Doanh thu</p>
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+          <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">Doanh thu</p>
           <p className="text-2xl font-bold text-green-600">
             {new Intl.NumberFormat("vi-VN").format(totalRevenue * 1000)} đ
           </p>
@@ -165,7 +148,7 @@ export default function AdminOrdersPage() {
           {filtered.map((order, idx) => (
             <div
               key={idx}
-              className="bg-white rounded-xl border border-slate-200 p-4"
+              className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 animate-fade-in"
             >
               <div className="flex items-start justify-between mb-3">
                 <div>
@@ -178,17 +161,17 @@ export default function AdminOrdersPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span
-                    className={`text-xs px-2 py-1 rounded-full font-medium ${
+                    className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
                       order.paymentStatus === "Đã thanh toán"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-orange-100 text-orange-700"
+                        ? "bg-green-50 text-green-700 border border-green-100"
+                        : "bg-orange-50 text-orange-700 border border-orange-100"
                     }`}
                   >
                     {order.paymentStatus}
                   </span>
                   <button
                     onClick={() => togglePayment(idx, order)}
-                    className="text-xs px-3 py-1 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition-colors"
+                    className="text-xs px-3 py-1.5 bg-slate-50 text-slate-500 rounded-lg hover:bg-slate-100 font-semibold transition-colors"
                   >
                     {order.paymentStatus === "Đã thanh toán"
                       ? "Hủy"

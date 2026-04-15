@@ -70,10 +70,10 @@ export default function FilterBar({
               <button
                 key={type}
                 onClick={() => onToggleType(type)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`btn-press px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${
                   isActive
-                    ? TYPE_COLORS[type] + " ring-2 ring-offset-1 ring-blue-400"
-                    : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                    ? TYPE_COLORS[type] + " shadow-sm"
+                    : "bg-slate-50 text-slate-400 hover:bg-slate-100"
                 }`}
               >
                 {type}
@@ -92,11 +92,10 @@ export default function FilterBar({
               <button
                 key={group}
                 onClick={() => onToggleGroup(group)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`btn-press px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${
                   isActive
-                    ? GROUP_COLORS[group] +
-                      " ring-2 ring-offset-1 ring-blue-400"
-                    : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                    ? GROUP_COLORS[group] + " shadow-sm"
+                    : "bg-slate-50 text-slate-400 hover:bg-slate-100"
                 }`}
               >
                 {GROUP_LABELS[group] || group}

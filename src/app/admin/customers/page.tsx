@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { Customer } from "@/lib/types";
+import AdminNav from "@/components/AdminNav";
 
 export default function AdminCustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -67,25 +68,7 @@ export default function AdminCustomersPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-800">
-          Khách hàng
-        </h1>
-        <div className="flex gap-2">
-          <a
-            href="/admin"
-            className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition-colors"
-          >
-            Sản phẩm
-          </a>
-          <a
-            href="/admin/orders"
-            className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors"
-          >
-            Đơn hàng
-          </a>
-        </div>
-      </div>
+      <AdminNav active="customers" />
 
       {message && (
         <p className="text-sm text-green-600 bg-green-50 px-3 py-2 rounded-lg mb-4">
@@ -102,25 +85,25 @@ export default function AdminCustomersPage() {
           <p>Chưa có khách hàng</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200">
-                  <th className="text-left px-4 py-2 font-medium text-slate-600">
-                    Tên
+                <tr className="bg-slate-50/80 border-b border-slate-100">
+                  <th className="text-left px-4 py-3 font-semibold text-slate-500 text-xs uppercase tracking-wide">
+                    Ten
                   </th>
-                  <th className="text-left px-4 py-2 font-medium text-slate-600">
-                    Số Điện Thoại
+                  <th className="text-left px-4 py-3 font-semibold text-slate-500 text-xs uppercase tracking-wide">
+                    So Dien Thoai
                   </th>
-                  <th className="text-left px-4 py-2 font-medium text-slate-600">
-                    Địa Chỉ mới
+                  <th className="text-left px-4 py-3 font-semibold text-slate-500 text-xs uppercase tracking-wide">
+                    Dia Chi moi
                   </th>
-                  <th className="text-left px-4 py-2 font-medium text-slate-600">
-                    Địa chỉ cũ
+                  <th className="text-left px-4 py-3 font-semibold text-slate-500 text-xs uppercase tracking-wide">
+                    Dia chi cu
                   </th>
-                  <th className="text-center px-4 py-2 font-medium text-slate-600">
-                    Sửa
+                  <th className="text-center px-4 py-3 font-semibold text-slate-500 text-xs uppercase tracking-wide">
+                    Sua
                   </th>
                 </tr>
               </thead>
@@ -221,9 +204,9 @@ export default function AdminCustomersPage() {
                         <td className="px-4 py-2 text-center">
                           <button
                             onClick={() => startEdit(idx, customer)}
-                            className="text-xs px-3 py-1 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200"
+                            className="text-xs px-3 py-1.5 bg-slate-50 text-slate-500 rounded-lg hover:bg-slate-100 font-semibold transition-colors"
                           >
-                            Sửa
+                            Sua
                           </button>
                         </td>
                       </>

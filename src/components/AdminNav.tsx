@@ -1,0 +1,37 @@
+export default function AdminNav({ active }: { active: "products" | "orders" | "customers" }) {
+  const links = [
+    { href: "/admin", label: "San pham", key: "products" as const },
+    { href: "/admin/orders", label: "Don hang", key: "orders" as const },
+    { href: "/admin/customers", label: "Khach hang", key: "customers" as const },
+  ];
+
+  return (
+    <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center gap-3">
+        <a href="/admin" className="flex items-center gap-2">
+          <img src="/logo.png" alt="" className="h-8 w-auto rounded-lg" />
+        </a>
+        <h1 className="text-xl font-bold text-slate-800">
+          {active === "products" && "Quan ly san pham"}
+          {active === "orders" && "Quan ly don hang"}
+          {active === "customers" && "Khach hang"}
+        </h1>
+      </div>
+      <nav className="flex gap-1.5">
+        {links.map((link) => (
+          <a
+            key={link.key}
+            href={link.href}
+            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+              active === link.key
+                ? "bg-slate-800 text-white shadow-sm"
+                : "bg-slate-50 text-slate-500 hover:bg-slate-100"
+            }`}
+          >
+            {link.label}
+          </a>
+        ))}
+      </nav>
+    </div>
+  );
+}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { Product } from "@/lib/types";
+import AdminNav from "@/components/AdminNav";
 
 function formatPrice(price: number | null): string {
   if (price === null) return "—";
@@ -130,45 +131,27 @@ export default function AdminPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-800">
-          Quản lý sản phẩm
-        </h1>
-        <div className="flex gap-2">
-          <a
-            href="/admin/orders"
-            className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors"
-          >
-            Đơn hàng
-          </a>
-          <a
-            href="/admin/customers"
-            className="px-4 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-medium hover:bg-green-200 transition-colors"
-          >
-            Khách hàng
-          </a>
-        </div>
-      </div>
+      <AdminNav active="products" />
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-sm text-slate-500">Tổng sản phẩm</p>
-          <p className="text-2xl font-bold text-slate-800">{totalProducts}</p>
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+          <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">Tong san pham</p>
+          <p className="text-2xl font-bold text-slate-800 mt-1">{totalProducts}</p>
         </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-sm text-slate-500">Tổng tồn kho</p>
-          <p className="text-2xl font-bold text-slate-800">{totalStock}</p>
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+          <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">Tong ton kho</p>
+          <p className="text-2xl font-bold text-slate-800 mt-1">{totalStock}</p>
         </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-sm text-slate-500">Có giá</p>
-          <p className="text-2xl font-bold text-slate-800">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+          <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">Co gia</p>
+          <p className="text-2xl font-bold text-slate-800 mt-1">
             {withPrice}/{totalProducts}
           </p>
         </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-sm text-slate-500">Tổng giá trị kho</p>
-          <p className="text-2xl font-bold text-blue-600">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+          <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">Tong gia tri kho</p>
+          <p className="text-2xl font-bold text-brand mt-1">
             {new Intl.NumberFormat("vi-VN").format(totalValue * 1000)} đ
           </p>
         </div>
@@ -181,13 +164,13 @@ export default function AdminPage() {
           placeholder="Tìm kiếm sản phẩm..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
         />
         {editedProducts.size > 0 && (
           <button
             onClick={handleFinishUpdate}
             disabled={saving}
-            className="px-6 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
+            className="btn-press px-6 py-2.5 bg-green-600 text-white rounded-xl text-sm font-semibold hover:bg-green-700 disabled:opacity-50 transition-colors shadow-md shadow-green-200"
           >
             {saving ? "Đang lưu..." : `Finish Update (${editedProducts.size})`}
           </button>
@@ -212,28 +195,28 @@ export default function AdminPage() {
           <p className="text-slate-500">Đang tải sản phẩm...</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200">
-                  <th className="text-left px-3 py-2 font-medium text-slate-600">
-                    Mã
+                <tr className="bg-slate-50/80 border-b border-slate-100">
+                  <th className="text-left px-4 py-3 font-semibold text-slate-500 text-xs uppercase tracking-wide">
+                    Ma
                   </th>
-                  <th className="text-left px-3 py-2 font-medium text-slate-600">
-                    Tên
+                  <th className="text-left px-4 py-3 font-semibold text-slate-500 text-xs uppercase tracking-wide">
+                    Ten
                   </th>
-                  <th className="text-left px-3 py-2 font-medium text-slate-600">
-                    Nhóm
+                  <th className="text-left px-4 py-3 font-semibold text-slate-500 text-xs uppercase tracking-wide">
+                    Nhom
                   </th>
-                  <th className="text-left px-3 py-2 font-medium text-slate-600">
-                    Loại
+                  <th className="text-left px-4 py-3 font-semibold text-slate-500 text-xs uppercase tracking-wide">
+                    Loai
                   </th>
-                  <th className="text-right px-3 py-2 font-medium text-slate-600">
-                    Giá bán
+                  <th className="text-right px-4 py-3 font-semibold text-slate-500 text-xs uppercase tracking-wide">
+                    Gia ban
                   </th>
-                  <th className="text-right px-3 py-2 font-medium text-slate-600">
-                    Tồn kho
+                  <th className="text-right px-4 py-3 font-semibold text-slate-500 text-xs uppercase tracking-wide">
+                    Ton kho
                   </th>
                 </tr>
               </thead>
@@ -245,11 +228,11 @@ export default function AdminPage() {
                       key={p.id}
                       className="border-b border-slate-50 hover:bg-slate-50"
                     >
-                      <td className="px-3 py-2 text-slate-500">{p.code}</td>
-                      <td className="px-3 py-2 text-slate-800 font-medium max-w-[200px] truncate">
+                      <td className="px-4 py-3 text-slate-400 text-xs font-mono">{p.code}</td>
+                      <td className="px-4 py-3 text-slate-800 font-medium max-w-[200px] truncate">
                         {p.name}
                       </td>
-                      <td className="px-3 py-2 text-slate-600 capitalize text-xs">
+                      <td className="px-4 py-3 text-slate-500 capitalize text-xs font-medium">
                         {p.group}
                       </td>
                       <td className="px-3 py-2">
@@ -265,21 +248,21 @@ export default function AdminPage() {
                           {p.displayType}
                         </span>
                       </td>
-                      <td className="px-3 py-2">
+                      <td className="px-4 py-3">
                         <input
                           type="number"
                           defaultValue={edited?.price ?? p.price ?? ""}
                           placeholder="—"
                           onChange={(e) => handlePriceChange(p.id, e.target.value)}
-                          className="w-24 px-2 py-1 border border-slate-200 rounded text-right text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-24 px-2 py-1.5 border border-slate-200 rounded-lg text-right text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
                         />
                       </td>
-                      <td className="px-3 py-2">
+                      <td className="px-4 py-3">
                         <input
                           type="number"
                           defaultValue={edited?.stock ?? p.stock}
                           onChange={(e) => handleStockChange(p.id, e.target.value)}
-                          className="w-20 px-2 py-1 border border-slate-200 rounded text-right text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-20 px-2 py-1.5 border border-slate-200 rounded-lg text-right text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
                         />
                       </td>
                     </tr>

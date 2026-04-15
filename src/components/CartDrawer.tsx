@@ -20,7 +20,7 @@ export default function CartDrawer({
       {/* Backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/30 z-40 transition-opacity"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 transition-opacity"
           onClick={onClose}
         />
       )}
@@ -32,20 +32,25 @@ export default function CartDrawer({
         }`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
-          <h2 className="text-lg font-semibold text-slate-800">
-            Giỏ hàng ({count} sản phẩm)
-          </h2>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+          <div>
+            <h2 className="text-lg font-bold text-slate-800">
+              Gio hang
+            </h2>
+            <p className="text-xs text-slate-400">
+              {count} san pham
+            </p>
+          </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500"
-            aria-label="Đóng"
+            className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+            aria-label="Dong"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
-              strokeWidth={1.5}
+              strokeWidth={2}
               stroke="currentColor"
               className="w-5 h-5"
             >
@@ -59,16 +64,16 @@ export default function CartDrawer({
         </div>
 
         {/* Items */}
-        <div className="flex-1 overflow-y-auto px-4">
+        <div className="flex-1 overflow-y-auto px-5">
           {items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-slate-400">
+            <div className="flex flex-col items-center justify-center h-full text-slate-300">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
                 strokeWidth={1.5}
                 stroke="currentColor"
-                className="w-12 h-12 mb-2"
+                className="w-16 h-16 mb-3"
               >
                 <path
                   strokeLinecap="round"
@@ -76,7 +81,8 @@ export default function CartDrawer({
                   d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
                 />
               </svg>
-              <p className="text-sm">Giỏ hàng trống</p>
+              <p className="text-sm font-medium">Gio hang trong</p>
+              <p className="text-xs mt-1">Them san pham de bat dau mua sắm</p>
             </div>
           ) : (
             items.map((item) => (
@@ -87,24 +93,24 @@ export default function CartDrawer({
 
         {/* Footer */}
         {items.length > 0 && (
-          <div className="border-t border-slate-200 p-4 space-y-3">
+          <div className="border-t border-slate-100 p-5 space-y-3 bg-slate-50/50">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-600">Tổng cộng:</span>
-              <span className="text-xl font-bold text-slate-900">
-                {new Intl.NumberFormat("vi-VN").format(total * 1000)} đ
+              <span className="text-sm text-slate-500">Tong cong:</span>
+              <span className="text-2xl font-bold text-slate-900">
+                {new Intl.NumberFormat("vi-VN").format(total * 1000)} d
               </span>
             </div>
             <a
               href="/customer-info"
-              className="block w-full py-2.5 bg-blue-600 text-white text-center rounded-xl font-medium hover:bg-blue-700 transition-colors"
+              className="btn-press block w-full py-3 bg-brand text-white text-center rounded-xl font-semibold shadow-md shadow-red-200 hover:bg-brand-dark transition-colors"
             >
-              Thanh toán
+              Thanh toan
             </a>
             <button
               onClick={clearCart}
-              className="w-full py-2 text-sm text-red-500 hover:text-red-700 transition-colors"
+              className="w-full py-2 text-xs text-slate-400 hover:text-red-500 transition-colors"
             >
-              Xóa tất cả
+              Xoa tat ca
             </button>
           </div>
         )}

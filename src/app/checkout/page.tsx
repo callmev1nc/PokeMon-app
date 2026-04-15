@@ -20,13 +20,11 @@ export default function CheckoutPage() {
     setError("");
 
     try {
-      // Get customer info from sessionStorage
       const customerStr = sessionStorage.getItem("customerInfo");
       const customer = customerStr
         ? JSON.parse(customerStr)
         : { name: "", phone: "", newAddress: "", oldAddress: "" };
 
-      // Build product description: 1x Joltik - PC-PO-015A
       const productDesc = items
         .map((item) => `${item.quantity}x ${item.product.name} - ${item.product.code}`)
         .join(", ");
@@ -44,7 +42,7 @@ export default function CheckoutPage() {
         buyPrice: 0,
         shippingCost: 0,
         profit: 0,
-        paymentStatus: "Chưa thanh toán" as const,
+        paymentStatus: "Chua thanh toan" as const,
       };
 
       const res = await fetch("/api/sheets", {
@@ -55,13 +53,13 @@ export default function CheckoutPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Lỗi gửi đơn hàng");
+        setError(data.error || "Loi gui don hang");
         return;
       }
 
       setSubmitted(true);
     } catch {
-      setError("Lỗi kết nối");
+      setError("Loi ket noi");
     } finally {
       setSubmitting(false);
     }
@@ -70,14 +68,14 @@ export default function CheckoutPage() {
   return (
     <>
       <Header onCartClick={() => {}} />
-      <main className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-3xl mx-auto px-4 py-8 space-y-6 animate-fade-in">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-slate-800">Thanh toán</h2>
+          <h2 className="text-2xl font-bold text-slate-800">Thanh toan</h2>
           <a
             href="/"
-            className="text-sm text-blue-600 hover:underline"
+            className="text-sm text-slate-400 hover:text-slate-600 transition-colors"
           >
-            ← Tiếp tục mua sắm
+            &larr; Tiep tuc mua sam
           </a>
         </div>
 
@@ -87,23 +85,28 @@ export default function CheckoutPage() {
           <button
             onClick={handleSubmitOrder}
             disabled={submitting || items.length === 0}
-            className="w-full py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="btn-press w-full py-3.5 bg-brand text-white rounded-xl font-semibold hover:bg-brand-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md shadow-red-200"
           >
-            {submitting ? "Đang gửi đơn hàng..." : "Xác nhận đặt hàng"}
+            {submitting ? "Dang gui don hang..." : "Xac nhan dat hang"}
           </button>
         ) : (
-          <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
-            <p className="text-green-800 font-medium">
-              Đơn hàng đã được gửi thành công!
+          <div className="bg-green-50 border border-green-100 rounded-2xl p-5 text-center">
+            <div className="inline-flex items-center justify-center w-10 h-10 bg-green-100 rounded-full mb-2">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-green-600">
+                <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+              </svg>
+            </div>
+            <p className="text-green-800 font-semibold">
+              Don hang da duoc gui thanh cong!
             </p>
             <p className="text-sm text-green-600 mt-1">
-              Vui lòng thanh toán qua QR code bên dưới
+              Vui long thanh toan qua QR code ben duoi
             </p>
           </div>
         )}
 
         {error && (
-          <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">
+          <p className="text-sm text-red-600 bg-red-50 px-4 py-2.5 rounded-xl border border-red-100">
             {error}
           </p>
         )}

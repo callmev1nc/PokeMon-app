@@ -1,8 +1,19 @@
 @import "tailwindcss";
 
+@theme {
+  --color-brand: #e53e3e;
+  --color-brand-dark: #c53030;
+  --color-brand-light: #fed7d7;
+  --color-accent: #2b6cb0;
+  --color-accent-dark: #2c5282;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f7fafc;
+  --color-surface-hover: #edf2f7;
+}
+
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #f7fafc;
+  --foreground: #1a202c;
 }
 
 body {
@@ -15,39 +26,52 @@ body {
 ::-webkit-scrollbar {
   width: 6px;
 }
-
 ::-webkit-scrollbar-track {
   background: #f1f5f9;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: #94a3b8;
+  background: #cbd5e0;
   border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
 }
 
 /* Cart drawer animation */
 .cart-drawer {
-  transition: transform 0.3s ease-in-out;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Type badge shimmer for Holo */
+/* Holo shimmer */
 @keyframes shimmer {
   0% { background-position: -200% center; }
   100% { background-position: 200% center; }
 }
-
 .badge-holo {
   background: linear-gradient(90deg, #dbeafe 0%, #eff6ff 25%, #93c5fd 50%, #eff6ff 75%, #dbeafe 100%);
   background-size: 200% 100%;
   animation: shimmer 3s ease-in-out infinite;
 }
 
-/* Smooth transitions */
+/* Product card */
 .product-card {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-
 .product-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.12);
+}
+
+/* Fade in animation */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+/* Button press effect */
+.btn-press:active {
+  transform: scale(0.97);
 }

@@ -28,11 +28,10 @@ export default function CustomerInfoPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Lỗi lưu thông tin");
+        setError(data.error || "Loi luu thong tin");
         return;
       }
 
-      // Store customer info in sessionStorage for checkout
       sessionStorage.setItem(
         "customerInfo",
         JSON.stringify({ name, phone, newAddress, oldAddress })
@@ -40,7 +39,7 @@ export default function CustomerInfoPage() {
 
       window.location.href = "/checkout";
     } catch {
-      setError("Lỗi kết nối");
+      setError("Loi ket noi");
     } finally {
       setLoading(false);
     }
@@ -49,21 +48,25 @@ export default function CustomerInfoPage() {
   return (
     <>
       <Header onCartClick={() => {}} />
-      <main className="max-w-lg mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-slate-800 mb-2">
-          Thông tin giao hàng
-        </h1>
-        <p className="text-sm text-slate-500 mb-6">
-          Vui lòng điền thông tin trước khi thanh toán
-        </p>
+      <main className="max-w-lg mx-auto px-4 py-10 animate-fade-in">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-12 h-12 bg-brand/10 rounded-2xl mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-brand">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Zm6-10.125a1.875 1.875 0 1 1-3.75 0 1.875 1.875 0 0 1 3.75 0Zm1.294 6.336a6.721 6.721 0 0 1-3.17.789 6.721 6.721 0 0 1-3.168-.789 3.376 3.376 0 0 1 6.338 0Z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-slate-800">
+            Thong tin giao hang
+          </h1>
+          <p className="text-sm text-slate-400 mt-1">
+            Vui long dien thong tin truoc khi thanh toan
+          </p>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
           <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-slate-700 mb-1"
-            >
-              Tên <span className="text-red-500">*</span>
+            <label htmlFor="name" className="block text-sm font-semibold text-slate-700 mb-1.5">
+              Ten <span className="text-brand">*</span>
             </label>
             <input
               id="name"
@@ -71,17 +74,14 @@ export default function CustomerInfoPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Họ và tên"
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
+              placeholder="Ho va ten"
             />
           </div>
 
           <div>
-            <label
-              htmlFor="phone"
-              className="block text-sm font-medium text-slate-700 mb-1"
-            >
-              Số Điện Thoại <span className="text-red-500">*</span>
+            <label htmlFor="phone" className="block text-sm font-semibold text-slate-700 mb-1.5">
+              So Dien Thoai <span className="text-brand">*</span>
             </label>
             <input
               id="phone"
@@ -89,47 +89,41 @@ export default function CustomerInfoPage() {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
               placeholder="0xxx xxx xxx"
             />
           </div>
 
           <div>
-            <label
-              htmlFor="newAddress"
-              className="block text-sm font-medium text-slate-700 mb-1"
-            >
-              Địa Chỉ mới
+            <label htmlFor="newAddress" className="block text-sm font-semibold text-slate-700 mb-1.5">
+              Dia Chi moi
             </label>
             <input
               id="newAddress"
               type="text"
               value={newAddress}
               onChange={(e) => setNewAddress(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Địa chỉ nhận hàng"
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
+              placeholder="Dia chi nhan hang"
             />
           </div>
 
           <div>
-            <label
-              htmlFor="oldAddress"
-              className="block text-sm font-medium text-slate-700 mb-1"
-            >
-              Địa chỉ cũ
+            <label htmlFor="oldAddress" className="block text-sm font-semibold text-slate-700 mb-1.5">
+              Dia chi cu
             </label>
             <input
               id="oldAddress"
               type="text"
               value={oldAddress}
               onChange={(e) => setOldAddress(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Địa chỉ cũ (nếu có)"
+              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
+              placeholder="Dia chi cu (neu co)"
             />
           </div>
 
           {error && (
-            <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">
+            <p className="text-sm text-red-600 bg-red-50 px-4 py-2.5 rounded-xl border border-red-100">
               {error}
             </p>
           )}
@@ -137,18 +131,18 @@ export default function CustomerInfoPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 px-4 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="btn-press w-full py-3 bg-brand text-white rounded-xl text-sm font-semibold hover:bg-brand-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md shadow-red-200"
           >
-            {loading ? "Đang lưu..." : "Tiếp tục thanh toán"}
+            {loading ? "Dang luu..." : "Tiep tuc thanh toan"}
           </button>
         </form>
 
-        <div className="mt-4">
+        <div className="text-center mt-4">
           <a
             href="/"
-            className="text-sm text-slate-500 hover:text-slate-700 transition-colors"
+            className="text-sm text-slate-400 hover:text-slate-600 transition-colors"
           >
-            ← Tiếp tục mua sắm
+            &larr; Tiep tuc mua sam
           </a>
         </div>
       </main>
