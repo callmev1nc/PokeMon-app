@@ -62,7 +62,7 @@ export default function CheckoutSummary() {
         <div className="flex items-center justify-between">
           <span className="font-semibold text-slate-600">Tổng cộng:</span>
           <span className="text-2xl font-bold text-brand">
-            {new Intl.NumberFormat("vi-VN").format(total * 1000)} d
+            {new Intl.NumberFormat("vi-VN").format(total * 1000)} đ
           </span>
         </div>
       </div>

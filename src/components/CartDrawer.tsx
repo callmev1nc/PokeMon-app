@@ -97,7 +97,7 @@ export default function CartDrawer({
             <div className="flex items-center justify-between">
               <span className="text-sm text-slate-500">Tổng cộng:</span>
               <span className="text-2xl font-bold text-slate-900">
-                {new Intl.NumberFormat("vi-VN").format(total * 1000)} d
+                {new Intl.NumberFormat("vi-VN").format(total * 1000)} đ
               </span>
             </div>
             <a
