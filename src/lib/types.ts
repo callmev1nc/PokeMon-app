@@ -4,7 +4,7 @@ export interface Product {
   name: string;
   series: string;
   type: string;
-  displayType: "Normal" | "Holo" | "Prize Card";
+  displayType: "Normal" | "Holo" | "Prize Card" | "EX";
   group: string;
   price: number | null;
   stock: number;
@@ -16,7 +16,7 @@ export interface CartItem {
   quantity: number;
 }
 
-export type DisplayType = "Normal" | "Holo" | "Prize Card";
+export type DisplayType = "Normal" | "Holo" | "Prize Card" | "EX";
 
 export type SortOption = "price-asc" | "price-desc" | "stock-asc" | "name-asc";
 

@@ -1,21 +1,24 @@
 export const LOW_STOCK_THRESHOLD = 3;
 
-export const DISPLAY_TYPES: Array<"Normal" | "Holo" | "Prize Card"> = [
+export const DISPLAY_TYPES: Array<"Normal" | "Holo" | "Prize Card" | "EX"> = [
   "Normal",
   "Holo",
   "Prize Card",
+  "EX",
 ];
 
 export const TYPE_LABELS: Record<string, string> = {
   Normal: "Normal",
   Holo: "Holo",
   "Prize Card": "Prize Card",
+  EX: "EX",
 };
 
 export const TYPE_COLORS: Record<string, string> = {
   Normal: "bg-gray-200 text-gray-800",
   Holo: "bg-blue-100 text-blue-800 border border-blue-300",
   "Prize Card": "bg-yellow-100 text-yellow-800 border border-yellow-400",
+  EX: "bg-red-100 text-red-800 border border-red-300",
 };
 
 export const FACEBOOK_URL =

@@ -28,7 +28,7 @@ export default function CustomerInfoPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Loi luu thong tin");
+        setError(data.error || "Lỗi lưu thông tin");
         return;
       }
 
@@ -39,7 +39,7 @@ export default function CustomerInfoPage() {
 
       window.location.href = "/checkout";
     } catch {
-      setError("Loi ket noi");
+      setError("Lỗi kết nối");
     } finally {
       setLoading(false);
     }
@@ -59,14 +59,14 @@ export default function CustomerInfoPage() {
             Thong tin giao hang
           </h1>
           <p className="text-sm text-slate-400 mt-1">
-            Vui long dien thong tin truoc khi thanh toan
+            Vui lòng điền thông tin trước khi thanh toán
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
           <div>
             <label htmlFor="name" className="block text-sm font-semibold text-slate-700 mb-1.5">
-              Ten <span className="text-brand">*</span>
+              TÃªn <span className="text-brand">*</span>
             </label>
             <input
               id="name"
@@ -75,13 +75,13 @@ export default function CustomerInfoPage() {
               onChange={(e) => setName(e.target.value)}
               required
               className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
-              placeholder="Ho va ten"
+              placeholder="Họ và tên"
             />
           </div>
 
           <div>
             <label htmlFor="phone" className="block text-sm font-semibold text-slate-700 mb-1.5">
-              So Dien Thoai <span className="text-brand">*</span>
+              Sá» Äiá»n Thoáº¡i <span className="text-brand">*</span>
             </label>
             <input
               id="phone"
@@ -96,7 +96,7 @@ export default function CustomerInfoPage() {
 
           <div>
             <label htmlFor="newAddress" className="block text-sm font-semibold text-slate-700 mb-1.5">
-              Dia Chi moi
+              Äá»a Chá» Má»i
             </label>
             <input
               id="newAddress"
@@ -104,13 +104,13 @@ export default function CustomerInfoPage() {
               value={newAddress}
               onChange={(e) => setNewAddress(e.target.value)}
               className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
-              placeholder="Dia chi nhan hang"
+              placeholder="Địa chỉ nhận hàng"
             />
           </div>
 
           <div>
             <label htmlFor="oldAddress" className="block text-sm font-semibold text-slate-700 mb-1.5">
-              Dia chi cu
+              Äá»a chá» cÅ©
             </label>
             <input
               id="oldAddress"
@@ -118,7 +118,7 @@ export default function CustomerInfoPage() {
               value={oldAddress}
               onChange={(e) => setOldAddress(e.target.value)}
               className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
-              placeholder="Dia chi cu (neu co)"
+              placeholder="Địa chỉ cũ (nếu có)"
             />
           </div>
 
@@ -133,7 +133,7 @@ export default function CustomerInfoPage() {
             disabled={loading}
             className="btn-press w-full py-3 bg-brand text-white rounded-xl text-sm font-semibold hover:bg-brand-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md shadow-red-200"
           >
-            {loading ? "Dang luu..." : "Tiep tuc thanh toan"}
+            {loading ? "Đang lưu..." : "Tiếp tục thanh toán"}
           </button>
         </form>
 
@@ -142,7 +142,7 @@ export default function CustomerInfoPage() {
             href="/"
             className="text-sm text-slate-400 hover:text-slate-600 transition-colors"
           >
-            &larr; Tiep tuc mua sam
+            &larr; Tiáº¿p tá»¥c mua sáº¯m
           </a>
         </div>
       </main>

@@ -91,19 +91,19 @@ export default function AdminCustomersPage() {
               <thead>
                 <tr className="bg-slate-50/80 border-b border-slate-100">
                   <th className="text-left px-4 py-3 font-semibold text-slate-500 text-xs uppercase tracking-wide">
-                    Ten
+                    TÃªn
                   </th>
                   <th className="text-left px-4 py-3 font-semibold text-slate-500 text-xs uppercase tracking-wide">
-                    So Dien Thoai
+                    Sá» Äiá»n Thoáº¡i
                   </th>
                   <th className="text-left px-4 py-3 font-semibold text-slate-500 text-xs uppercase tracking-wide">
-                    Dia Chi moi
+                    Äá»a Chá» Má»i
                   </th>
                   <th className="text-left px-4 py-3 font-semibold text-slate-500 text-xs uppercase tracking-wide">
-                    Dia chi cu
+                    Äá»a chá» cÅ©
                   </th>
                   <th className="text-center px-4 py-3 font-semibold text-slate-500 text-xs uppercase tracking-wide">
-                    Sua
+                    Sá»­a
                   </th>
                 </tr>
               </thead>
@@ -206,7 +206,7 @@ export default function AdminCustomersPage() {
                             onClick={() => startEdit(idx, customer)}
                             className="text-xs px-3 py-1.5 bg-slate-50 text-slate-500 rounded-lg hover:bg-slate-100 font-semibold transition-colors"
                           >
-                            Sua
+                            Sá»­a
                           </button>
                         </td>
                       </>

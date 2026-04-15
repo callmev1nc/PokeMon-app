@@ -130,7 +130,8 @@ function updateProducts(products) {
 function mapDisplayType(rawType) {
   const t = rawType.toLowerCase().trim();
   if (t === "holo") return "Holo";
-  if (t.includes("prize") || t.includes("ex")) return "Prize Card";
+  if (t.includes("ex")) return "EX";
+  if (t.includes("prize")) return "Prize Card";
   return "Normal";
 }
 
@@ -219,7 +220,7 @@ function updateOrder(row, data) {
   return { success: true };
 }
 
-// ============================================================
+// ===========================================  =================
 // CUSTOMERS (Customer Information sheet)
 // ============================================================
 

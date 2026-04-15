@@ -6,21 +6,21 @@ export default function QRCodeSection({ onDone }: { onDone: () => void }) {
   return (
     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
       <div className="px-5 py-4 bg-slate-50/50 border-b border-slate-100">
-        <h3 className="font-bold text-slate-800">Thanh toan</h3>
+        <h3 className="font-bold text-slate-800">Thanh toán</h3>
       </div>
       <div className="p-6 flex flex-col items-center gap-5">
         <img
           src="/qr-code.jpg"
-          alt="Ma QR thanh toan"
+          alt="Mã QR thanh toán"
           className="w-56 h-auto rounded-xl border border-slate-100 shadow-sm"
         />
 
         <div className="text-center space-y-2 max-w-sm">
           <p className="text-sm font-semibold text-slate-700">
-            Vui long quet ma QR de thanh toan
+            Vui lòng quét mã QR để thanh toán
           </p>
           <p className="text-sm text-slate-500">
-            Sau khi chuyen khoan, vui long chup anh man hinh va gui qua Facebook de xac nhan don hang:
+            Sau khi chuyển khoản, vui lòng chụp ảnh màn hình và gửi qua Facebook để xác nhận đơn hàng:
           </p>
           <a
             href={FACEBOOK_URL}

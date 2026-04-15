@@ -7,8 +7,8 @@ import { useCartStore } from "@/store/cartStore";
 import LowStockBadge from "./LowStockBadge";
 
 function formatPrice(price: number | null): string {
-  if (price === null) return "Lien he";
-  return new Intl.NumberFormat("vi-VN").format(price * 1000) + " d";
+  if (price === null) return "Liên hệ";
+  return new Intl.NumberFormat("vi-VN").format(price * 1000) + " đ";
 }
 
 export default function ProductCard({ product }: { product: Product }) {
@@ -67,10 +67,10 @@ export default function ProductCard({ product }: { product: Product }) {
             {formatPrice(product.price)}
           </p>
           <p className="text-xs text-slate-400 mt-0.5">
-            Con lai: <span className="font-semibold text-slate-600">{product.stock}</span>
+            Còn lại: <span className="font-semibold text-slate-600">{product.stock}</span>
             {inCart > 0 && (
               <span className="text-brand ml-1 font-medium">
-                (Trong gio: {inCart})
+                (Trong giỏ: {inCart})
               </span>
             )}
           </p>
@@ -108,7 +108,7 @@ export default function ProductCard({ product }: { product: Product }) {
                   : "bg-brand text-white hover:bg-brand-dark shadow-red-200 shadow-md hover:shadow-lg"
               }`}
             >
-              {added ? "Da them" : "Them vao gio"}
+              {added ? "Đã thêm" : "Thêm vào giỏ"}
             </button>
           </>
         )}
@@ -117,7 +117,7 @@ export default function ProductCard({ product }: { product: Product }) {
             disabled
             className="w-full py-2 px-3 rounded-xl text-sm font-semibold bg-slate-50 text-slate-300 cursor-not-allowed"
           >
-            Het hang
+            Háº¿t hÃ ng
           </button>
         )}
         {noPrice && !isOutOfStock && (
@@ -125,7 +125,7 @@ export default function ProductCard({ product }: { product: Product }) {
             disabled
             className="w-full py-2 px-3 rounded-xl text-sm font-semibold bg-slate-50 text-slate-300 cursor-not-allowed"
           >
-            Lien he de mua
+            LiÃªn há» Äá» mua
           </button>
         )}
       </div>

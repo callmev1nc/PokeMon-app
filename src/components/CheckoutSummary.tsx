@@ -3,8 +3,8 @@
 import { useCartStore, getCartTotal } from "@/store/cartStore";
 
 function formatPrice(price: number | null): string {
-  if (price === null) return "Lien he";
-  return new Intl.NumberFormat("vi-VN").format(price * 1000) + " d";
+  if (price === null) return "Liên hệ";
+  return new Intl.NumberFormat("vi-VN").format(price * 1000) + " đ";
 }
 
 export default function CheckoutSummary() {
@@ -14,12 +14,12 @@ export default function CheckoutSummary() {
   if (items.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-slate-400">Gio hang trong</p>
+        <p className="text-slate-400">Giỏ hàng trống</p>
         <a
           href="/"
           className="inline-block mt-4 text-brand hover:underline text-sm font-medium"
         >
-          Quay lai cua hang
+          Quay láº¡i cá»­a hÃ ng
         </a>
       </div>
     );
@@ -29,7 +29,7 @@ export default function CheckoutSummary() {
     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
       <div className="px-5 py-4 bg-slate-50/50 border-b border-slate-100">
         <h3 className="font-bold text-slate-800">
-          Chi tiet don hang <span className="text-slate-400 font-normal">({items.length} san pham)</span>
+          Chi tiet don hang <span className="text-slate-400 font-normal">({items.length} sản phẩm)</span>
         </h3>
       </div>
       <div className="divide-y divide-slate-50">
@@ -51,7 +51,7 @@ export default function CheckoutSummary() {
                 {item.product.price !== null
                   ? new Intl.NumberFormat("vi-VN").format(
                       item.product.price * item.quantity * 1000
-                    ) + " d"
+                    ) + " đ"
                   : "—"}
               </p>
             </div>
@@ -60,7 +60,7 @@ export default function CheckoutSummary() {
       </div>
       <div className="px-5 py-4 bg-slate-50/50 border-t border-slate-100">
         <div className="flex items-center justify-between">
-          <span className="font-semibold text-slate-600">Tong cong:</span>
+          <span className="font-semibold text-slate-600">Tổng cộng:</span>
           <span className="text-2xl font-bold text-brand">
             {new Intl.NumberFormat("vi-VN").format(total * 1000)} d
           </span>

@@ -34,21 +34,21 @@ export default function HomePage() {
                 Pokemon Card Store
               </h2>
               <p className="text-red-100 text-sm md:text-base max-w-lg">
-                The bai Pokemon chat luong cao - Normal, Holo, Prize Card.
-                Hang luon cap nhat moi ngay!
+                Thẻ bài Pokémon chất lượng cao - Normal, Holo, Prize Card, EX.
+                Hàng luôn cập nhật mỗi ngày!
               </p>
               <div className="flex gap-3 mt-4">
                 <span className="inline-flex items-center gap-1.5 text-xs bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full">
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                   </svg>
-                  Hang chinh hang
+                  Hàng chính hãng
                 </span>
                 <span className="inline-flex items-center gap-1.5 text-xs bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full">
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0H6.375c-.621 0-1.125-.504-1.125-1.125V14.25m17.25 4.5V6.375c0-.621-.504-1.125-1.125-1.125H4.125c-.621 0-1.125.504-1.125 1.125v8.25" />
                   </svg>
-                  Giao hang toan quoc
+                  Giao hàng toàn quốc
                 </span>
               </div>
             </div>
@@ -66,7 +66,7 @@ export default function HomePage() {
           <div className="flex items-center justify-center py-20 animate-fade-in">
             <div className="flex flex-col items-center gap-3">
               <div className="w-8 h-8 border-3 border-brand border-t-transparent rounded-full animate-spin" />
-              <p className="text-sm text-slate-400">Dang tai san pham...</p>
+              <p className="text-sm text-slate-400">Đang tải sản phẩm...</p>
             </div>
           </div>
         ) : (
@@ -83,7 +83,7 @@ export default function HomePage() {
             <img src="/logo.png" alt="" className="h-6 w-auto" />
             <span>Pokemon Card Store</span>
           </div>
-          <p>The bai Pokemon chat luong, gia tot</p>
+          <p>Thẻ bài Pokémon chất lượng, giá tốt</p>
         </div>
       </footer>
 

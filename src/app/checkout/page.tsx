@@ -42,7 +42,7 @@ export default function CheckoutPage() {
         buyPrice: 0,
         shippingCost: 0,
         profit: 0,
-        paymentStatus: "Chua thanh toan" as const,
+        paymentStatus: "Chưa thanh toán" as const,
       };
 
       const res = await fetch("/api/sheets", {
@@ -53,13 +53,13 @@ export default function CheckoutPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Loi gui don hang");
+        setError(data.error || "Lỗi gửi đơn hàng");
         return;
       }
 
       setSubmitted(true);
     } catch {
-      setError("Loi ket noi");
+      setError("Lỗi kết nối");
     } finally {
       setSubmitting(false);
     }
@@ -70,12 +70,12 @@ export default function CheckoutPage() {
       <Header onCartClick={() => {}} />
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-6 animate-fade-in">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-slate-800">Thanh toan</h2>
+          <h2 className="text-2xl font-bold text-slate-800">Thanh toán</h2>
           <a
             href="/"
             className="text-sm text-slate-400 hover:text-slate-600 transition-colors"
           >
-            &larr; Tiep tuc mua sam
+            &larr; Tiếp tục mua sắm
           </a>
         </div>
 
@@ -87,7 +87,7 @@ export default function CheckoutPage() {
             disabled={submitting || items.length === 0}
             className="btn-press w-full py-3.5 bg-brand text-white rounded-xl font-semibold hover:bg-brand-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md shadow-red-200"
           >
-            {submitting ? "Dang gui don hang..." : "Xac nhan dat hang"}
+            {submitting ? "Đang gửi đơn hàng..." : "Xác nhận đặt hàng"}
           </button>
         ) : (
           <div className="bg-green-50 border border-green-100 rounded-2xl p-5 text-center">
@@ -97,10 +97,10 @@ export default function CheckoutPage() {
               </svg>
             </div>
             <p className="text-green-800 font-semibold">
-              Don hang da duoc gui thanh cong!
+              Đơn hàng đã được gửi thành công!
             </p>
             <p className="text-sm text-green-600 mt-1">
-              Vui long thanh toan qua QR code ben duoi
+              Vui lòng thanh toán qua QR code bên dưới
             </p>
           </div>
         )}

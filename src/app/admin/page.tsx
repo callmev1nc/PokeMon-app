@@ -136,21 +136,21 @@ export default function AdminPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
-          <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">Tong san pham</p>
+          <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">Tổng sản phẩm</p>
           <p className="text-2xl font-bold text-slate-800 mt-1">{totalProducts}</p>
         </div>
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
-          <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">Tong ton kho</p>
+          <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">Tổng tồn kho</p>
           <p className="text-2xl font-bold text-slate-800 mt-1">{totalStock}</p>
         </div>
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
-          <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">Co gia</p>
+          <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">Có giá</p>
           <p className="text-2xl font-bold text-slate-800 mt-1">
             {withPrice}/{totalProducts}
           </p>
         </div>
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
-          <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">Tong gia tri kho</p>
+          <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">Tổng giá trị kho</p>
           <p className="text-2xl font-bold text-brand mt-1">
             {new Intl.NumberFormat("vi-VN").format(totalValue * 1000)} đ
           </p>
@@ -242,6 +242,8 @@ export default function AdminPage() {
                               ? "bg-blue-100 text-blue-800"
                               : p.displayType === "Prize Card"
                               ? "bg-yellow-100 text-yellow-800"
+                              : p.displayType === "EX"
+                              ? "bg-red-100 text-red-800"
                               : "bg-gray-100 text-gray-800"
                           }`}
                         >

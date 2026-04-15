@@ -214,7 +214,7 @@
     "name": "ARBOLIVIA",
     "series": "DRI 023/182",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 40,
     "stock": 1
@@ -786,7 +786,7 @@
     "name": "BLOODMOON URSALUNA",
     "series": "TWM 141/167",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 70,
     "stock": 2
@@ -1358,7 +1358,7 @@
     "name": "CHARIZARD",
     "series": "OBF 125/197",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 100,
     "stock": 2
@@ -2392,7 +2392,7 @@
     "name": "DRAGAPULT",
     "series": "TWM 130/167",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 70,
     "stock": 2
@@ -2612,7 +2612,7 @@
     "name": "Dudunsparce",
     "series": "ASC 164/217",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 25,
     "stock": 1
@@ -3338,7 +3338,7 @@
     "name": "ESPATHRA",
     "series": "PAF 006/091",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 30,
     "stock": 1
@@ -3415,7 +3415,7 @@
     "name": "ETHAN'S HO-OH",
     "series": "DRI 039/182",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 30,
     "stock": 2
@@ -3602,7 +3602,7 @@
     "name": "FARIGIRAF",
     "series": "TEF 108/162",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 30,
     "stock": 1
@@ -3723,7 +3723,7 @@
     "name": "FEZANDIPITI",
     "series": "SFA 038/064",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": null,
     "stock": 1
@@ -4075,7 +4075,7 @@
     "name": "Galvantula",
     "series": "SCR 051/142",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 25,
     "stock": 1
@@ -4152,7 +4152,7 @@
     "name": "GENESECT",
     "series": "BLK 067/086",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 40,
     "stock": 2
@@ -4163,7 +4163,7 @@
     "name": "GENESECT",
     "series": "BLK 161/086",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 65,
     "stock": 1
@@ -4185,7 +4185,7 @@
     "name": "GHOLDENGO EX",
     "series": "PAR EN 139/182",
     "type": "ex prize card",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 80,
     "stock": 1
@@ -4196,7 +4196,7 @@
     "name": "GHOLDENGO EX",
     "series": "PAR EN 139/182",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 80,
     "stock": 1
@@ -4394,7 +4394,7 @@
     "name": "GOLEM",
     "series": "MEW 076/165",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 35,
     "stock": 2
@@ -4944,7 +4944,7 @@
     "name": "HOP'S ZACIAN",
     "series": "SVP 193",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 35,
     "stock": 1
@@ -4977,7 +4977,7 @@
     "name": "INCINEROAR",
     "series": "TEF 034/162",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 25,
     "stock": 1
@@ -5131,7 +5131,7 @@
     "name": "IRON HANDS",
     "series": "PAR 070/182",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 35,
     "stock": 2
@@ -5142,7 +5142,7 @@
     "name": "IRON HANDS",
     "series": "PAR EN 070/182",
     "type": "ex prize card",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 80,
     "stock": 2
@@ -5153,7 +5153,7 @@
     "name": "IRON LEAVES",
     "series": "TEF 025/162",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 35,
     "stock": 1
@@ -5714,7 +5714,7 @@
     "name": "LATIAS",
     "series": "SSP 076/191",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 65,
     "stock": 1
@@ -5824,7 +5824,7 @@
     "name": "LILLIE'S CLEFAIRY",
     "series": "JTG 056/159",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 60,
     "stock": 5
@@ -6308,7 +6308,7 @@
     "name": "MEGA CAMERUPT",
     "series": "MEG 022/132",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 35,
     "stock": 1
@@ -6319,7 +6319,7 @@
     "name": "MEGA GARDEVOIR",
     "series": "MEG 060/132",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 40,
     "stock": 1
@@ -6330,7 +6330,7 @@
     "name": "MEGA HERACROSS",
     "series": "PFL 004/094",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 60,
     "stock": 1
@@ -6341,7 +6341,7 @@
     "name": "MEGA LATIAS",
     "series": "MEG 100/132",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 40,
     "stock": 1
@@ -6352,7 +6352,7 @@
     "name": "MEGA LUCARIO",
     "series": "MEG 077/132",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 40,
     "stock": 1
@@ -6363,7 +6363,7 @@
     "name": "MEGA MANECTRIC",
     "series": "MEG 050/132",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 60,
     "stock": 3
@@ -6374,7 +6374,7 @@
     "name": "MEGA MAWILE",
     "series": "MEG 094/132",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 60,
     "stock": 1
@@ -6385,7 +6385,7 @@
     "name": "MEGA SHARPEDO",
     "series": "PFL 061/094",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 60,
     "stock": 1
@@ -6473,7 +6473,7 @@
     "name": "MEW",
     "series": "MEW 151/165",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 150,
     "stock": 3
@@ -6484,7 +6484,7 @@
     "name": "MILOTIC",
     "series": "SSP 042/191",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 30,
     "stock": 1
@@ -6495,7 +6495,7 @@
     "name": "MILOTIC",
     "series": "SSP 217/191",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 70,
     "stock": 1
@@ -6539,7 +6539,7 @@
     "name": "MIRAIDON",
     "series": "SSP 081/198",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": null,
     "stock": 1
@@ -6649,7 +6649,7 @@
     "name": "MUNKIDORI",
     "series": "SFA 037/064",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 30,
     "stock": 1
@@ -6935,7 +6935,7 @@
     "name": "N'S ZOROARK",
     "series": "JTG 98/159",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 65,
     "stock": 1
@@ -7199,7 +7199,7 @@
     "name": "OKIDOGI",
     "series": "SFA 036/064",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 35,
     "stock": 1
@@ -7408,7 +7408,7 @@
     "name": "PIKACHU",
     "series": "SSP 057/191",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 120,
     "stock": 3
@@ -7419,7 +7419,7 @@
     "name": "PIKACHU",
     "series": "SSP 057/191",
     "type": "ex prize card",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 200,
     "stock": 1
@@ -8387,7 +8387,7 @@
     "name": "RESHIRAM",
     "series": "WHT 020/086",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 35,
     "stock": 1
@@ -8585,7 +8585,7 @@
     "name": "ROTOM",
     "series": "PFL 029/094",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 20,
     "stock": 1
@@ -8695,7 +8695,7 @@
     "name": "SANDY SHOCKS",
     "series": "PAR EN 108/182",
     "type": "ex prize card",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 55,
     "stock": 1
@@ -9168,7 +9168,7 @@
     "name": "SQUAWKABILLY",
     "series": "PAF 075/091",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 35,
     "stock": 1
@@ -9432,7 +9432,7 @@
     "name": "SYLVEON",
     "series": "SSP 086/191",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 60,
     "stock": 1
@@ -9476,7 +9476,7 @@
     "name": "TAPU KOKO",
     "series": "PAR 068/182",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 30,
     "stock": 1
@@ -10081,7 +10081,7 @@
     "name": "Terapagos",
     "series": "SCR 128/142",
     "type": "ex prize card",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 80,
     "stock": 1
@@ -10092,7 +10092,7 @@
     "name": "TERAPAGOS",
     "series": "SCR 128/142",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 40,
     "stock": 2
@@ -10576,7 +10576,7 @@
     "name": "WELLSPRING MASK OGERPON",
     "series": "TWM 064/167",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 45,
     "stock": 2
@@ -10587,7 +10587,7 @@
     "name": "WIGGLYTUFF",
     "series": "MEW 040/165",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 25,
     "stock": 1
@@ -10741,7 +10741,7 @@
     "name": "ZEKROM",
     "series": "BLK 034/086",
     "type": "ex",
-    "displayType": "Prize Card",
+    "displayType": "EX",
     "group": "pokemon",
     "price": 35,
     "stock": 1

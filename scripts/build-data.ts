@@ -9,16 +9,17 @@ interface Product {
   name: string;
   series: string;
   type: string;
-  displayType: "Normal" | "Holo" | "Prize Card";
+  displayType: "Normal" | "Holo" | "Prize Card" | "EX";
   group: string;
   price: number | null;
   stock: number;
 }
 
-function mapDisplayType(rawType: string): "Normal" | "Holo" | "Prize Card" {
+function mapDisplayType(rawType: string): "Normal" | "Holo" | "Prize Card" | "EX" {
   const t = rawType.toLowerCase().trim();
   if (t === "holo") return "Holo";
-  if (t.includes("prize") || t.includes("ex")) return "Prize Card";
+  if (t.includes("ex")) return "EX";
+  if (t.includes("prize")) return "Prize Card";
   return "Normal";
 }
 

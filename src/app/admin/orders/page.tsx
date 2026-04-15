@@ -97,11 +97,11 @@ export default function AdminOrdersPage() {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
-          <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">Tong don hang</p>
+          <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">Tổng đơn hàng</p>
           <p className="text-2xl font-bold text-slate-800 mt-1">{orders.length}</p>
         </div>
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
-          <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">Cho thanh toan</p>
+          <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">Chờ thanh toán</p>
           <p className="text-2xl font-bold text-orange-500 mt-1">{pendingCount}</p>
         </div>
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">

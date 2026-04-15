@@ -1,8 +1,8 @@
 export default function AdminNav({ active }: { active: "products" | "orders" | "customers" }) {
   const links = [
-    { href: "/admin", label: "San pham", key: "products" as const },
-    { href: "/admin/orders", label: "Don hang", key: "orders" as const },
-    { href: "/admin/customers", label: "Khach hang", key: "customers" as const },
+    { href: "/admin", label: "Sản phẩm", key: "products" as const },
+    { href: "/admin/orders", label: "Đơn hàng", key: "orders" as const },
+    { href: "/admin/customers", label: "Khách hàng", key: "customers" as const },
   ];
 
   return (
@@ -12,9 +12,9 @@ export default function AdminNav({ active }: { active: "products" | "orders" | "
           <img src="/logo.png" alt="" className="h-8 w-auto rounded-lg" />
         </a>
         <h1 className="text-xl font-bold text-slate-800">
-          {active === "products" && "Quan ly san pham"}
-          {active === "orders" && "Quan ly don hang"}
-          {active === "customers" && "Khach hang"}
+          {active === "products" && "Quản lý sản phẩm"}
+          {active === "orders" && "Quản lý đơn hàng"}
+          {active === "customers" && "Khách hàng"}
         </h1>
       </div>
       <nav className="flex gap-1.5">

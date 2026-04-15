@@ -23,13 +23,13 @@ export default function AdminLoginPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Dang nhap that bai");
+        setError(data.error || "Đăng nhập thất bại");
         return;
       }
 
       window.location.href = "/admin";
     } catch {
-      setError("Loi ket noi");
+      setError("Lỗi kết nối");
     } finally {
       setLoading(false);
     }
@@ -46,10 +46,10 @@ export default function AdminLoginPage() {
               className="h-16 w-auto mx-auto mb-3 rounded-xl"
             />
             <h1 className="text-xl font-bold text-slate-800">
-              Quan ly
+              Quáº£n lÃ½
             </h1>
             <p className="text-sm text-slate-400 mt-1">
-              Dang nhap de truy cap trang quan ly
+              Đăng nhập để truy cập trang quản lý
             </p>
           </div>
 
@@ -59,7 +59,7 @@ export default function AdminLoginPage() {
                 htmlFor="username"
                 className="block text-sm font-medium text-slate-600 mb-1.5"
               >
-                Ten dang nhap
+                TÃªn ÄÄng nháº­p
               </label>
               <input
                 id="username"
@@ -77,7 +77,7 @@ export default function AdminLoginPage() {
                 htmlFor="password"
                 className="block text-sm font-medium text-slate-600 mb-1.5"
               >
-                Mat khau
+                Máº­t kháº©u
               </label>
               <input
                 id="password"
@@ -101,7 +101,7 @@ export default function AdminLoginPage() {
               disabled={loading}
               className="btn-press w-full py-3 bg-brand text-white rounded-xl text-sm font-semibold hover:bg-brand-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md shadow-red-200"
             >
-              {loading ? "Dang dang nhap..." : "Dang nhap"}
+              {loading ? "Đang đăng nhập..." : "Đăng nhập"}
             </button>
           </form>
         </div>
@@ -111,7 +111,7 @@ export default function AdminLoginPage() {
             href="/"
             className="text-sm text-slate-400 hover:text-slate-600 transition-colors"
           >
-            &larr; Quay lai cua hang
+            &larr; Quay lại cửa hàng
           </a>
         </div>
       </div>
