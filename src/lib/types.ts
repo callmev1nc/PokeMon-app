@@ -4,9 +4,16 @@ export interface Product {
   name: string;
   series: string;
   type: string;
-  displayType: "Normal" | "Holo" | "Prize Card" | "EX" | "Holo Prize Card";
+  displayType:
+    | "Normal"
+    | "Holo"
+    | "Prize Card"
+    | "EX"
+    | "Holo Prize Card"
+    | "EX Prize Card";
   group: string;
   price: number | null;
+  buyPrice: number | null;
   stock: number;
   _row?: number;
 }
@@ -16,7 +23,13 @@ export interface CartItem {
   quantity: number;
 }
 
-export type DisplayType = "Normal" | "Holo" | "Prize Card" | "EX" | "Holo Prize Card";
+export type DisplayType =
+  | "Normal"
+  | "Holo"
+  | "Prize Card"
+  | "EX"
+  | "Holo Prize Card"
+  | "EX Prize Card";
 
 export type SortOption = "price-asc" | "price-desc" | "stock-asc" | "name-asc";
 

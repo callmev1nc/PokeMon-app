@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   fetchProducts,
+  fetchProductsLive,
   fetchOrders,
+  fetchOrdersLive,
   fetchCustomers,
+  fetchCustomersLive,
   addOrder,
   updateOrder,
   updateProducts,
@@ -35,9 +38,13 @@ export async function GET(req: NextRequest) {
   // Public: products list
   if (action === "products") {
     try {
-      return NextResponse.json(fetchProducts());
+      const products = await fetchProductsLive();
+      return NextResponse.json(products);
     } catch {
-      return NextResponse.json({ error: "Failed to load products" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to load products" },
+        { status: 500 }
+      );
     }
   }
 
@@ -49,15 +56,22 @@ export async function GET(req: NextRequest) {
 
     try {
       switch (action) {
-        case "orders":
-          return NextResponse.json(fetchOrders());
-        case "customers":
-          return NextResponse.json(fetchCustomers());
+        case "orders": {
+          const orders = await fetchOrdersLive();
+          return NextResponse.json(orders);
+        }
+        case "customers": {
+          const customers = await fetchCustomersLive();
+          return NextResponse.json(customers);
+        }
         default:
           return NextResponse.json({ error: "Bad request" }, { status: 400 });
       }
     } catch {
-      return NextResponse.json({ error: "Failed to load data" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to load data" },
+        { status: 500 }
+      );
     }
   }
 
@@ -69,7 +83,10 @@ export async function POST(req: NextRequest) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid request body" },
+      { status: 400 }
+    );
   }
 
   const action = body.action;
@@ -78,7 +95,10 @@ export async function POST(req: NextRequest) {
   if (action === "addOrder") {
     const order = body.order as Record<string, unknown> | undefined;
     if (!order || typeof order !== "object") {
-      return NextResponse.json({ error: "Invalid order data" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid order data" },
+        { status: 400 }
+      );
     }
     try {
       const sanitized = {
@@ -91,21 +111,27 @@ export async function POST(req: NextRequest) {
         address: sanitize(String(order.address || "")),
         notes: sanitize(String(order.notes || "")),
         sellPrice: Number(order.sellPrice) || 0,
-        buyPrice: 0,
+        buyPrice: Number(order.buyPrice) || 0,
         shippingCost: 0,
         profit: 0,
         paymentStatus: "Chưa thanh toán" as const,
       };
       return NextResponse.json(addOrder(sanitized));
     } catch {
-      return NextResponse.json({ error: "Failed to submit order" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to submit order" },
+        { status: 500 }
+      );
     }
   }
 
   if (action === "addCustomer") {
     const customer = body.customer as Record<string, unknown> | undefined;
     if (!customer || typeof customer !== "object") {
-      return NextResponse.json({ error: "Invalid customer data" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid customer data" },
+        { status: 400 }
+      );
     }
     try {
       const sanitized = {
@@ -116,7 +142,10 @@ export async function POST(req: NextRequest) {
       };
       return NextResponse.json(addCustomer(sanitized));
     } catch {
-      return NextResponse.json({ error: "Failed to save customer" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to save customer" },
+        { status: 500 }
+      );
     }
   }
 
@@ -131,22 +160,33 @@ export async function POST(req: NextRequest) {
         const row = Number(body.row);
         const data = body.data as Record<string, unknown> | undefined;
         if (isNaN(row) || !data) {
-          return NextResponse.json({ error: "Invalid data" }, { status: 400 });
+          return NextResponse.json(
+            { error: "Invalid data" },
+            { status: 400 }
+          );
         }
         return NextResponse.json(updateOrder(row, data));
       }
       case "updateProducts": {
         const products = body.products as unknown[];
         if (!Array.isArray(products)) {
-          return NextResponse.json({ error: "Invalid data" }, { status: 400 });
+          return NextResponse.json(
+            { error: "Invalid data" },
+            { status: 400 }
+          );
         }
-        return NextResponse.json(updateProducts(products as Record<string, unknown>[]));
+        return NextResponse.json(
+          updateProducts(products as Record<string, unknown>[])
+        );
       }
       case "updateCustomer": {
         const row = Number(body.row);
         const data = body.data as Record<string, unknown> | undefined;
         if (isNaN(row) || !data) {
-          return NextResponse.json({ error: "Invalid data" }, { status: 400 });
+          return NextResponse.json(
+            { error: "Invalid data" },
+            { status: 400 }
+          );
         }
         return NextResponse.json(updateCustomer(row, data));
       }
@@ -154,6 +194,9 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Bad request" }, { status: 400 });
     }
   } catch {
-    return NextResponse.json({ error: "Failed to process" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to process" },
+      { status: 500 }
+    );
   }
 }

@@ -255,6 +255,8 @@ export default function AdminPage() {
                               ? "bg-red-100 text-red-800"
                               : p.displayType === "Holo Prize Card"
                               ? "bg-purple-100 text-purple-800"
+                              : p.displayType === "EX Prize Card"
+                              ? "bg-rose-100 text-rose-800"
                               : "bg-gray-100 text-gray-800"
                           }`}
                         >

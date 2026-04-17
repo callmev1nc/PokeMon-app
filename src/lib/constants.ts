@@ -1,8 +1,8 @@
 export const LOW_STOCK_THRESHOLD = 3;
 
 export const DISPLAY_TYPES: Array<
-  "Normal" | "Holo" | "Prize Card" | "EX" | "Holo Prize Card"
-> = ["Normal", "Holo", "Prize Card", "EX", "Holo Prize Card"];
+  "Normal" | "Holo" | "Prize Card" | "EX" | "Holo Prize Card" | "EX Prize Card"
+> = ["Normal", "Holo", "Prize Card", "EX", "Holo Prize Card", "EX Prize Card"];
 
 export const TYPE_LABELS: Record<string, string> = {
   Normal: "Normal",
@@ -10,6 +10,7 @@ export const TYPE_LABELS: Record<string, string> = {
   "Prize Card": "Prize Card",
   EX: "EX",
   "Holo Prize Card": "Holo Prize Card",
+  "EX Prize Card": "EX Prize Card",
 };
 
 export const TYPE_COLORS: Record<string, string> = {
@@ -19,6 +20,8 @@ export const TYPE_COLORS: Record<string, string> = {
   EX: "bg-red-100 text-red-800 border border-red-300",
   "Holo Prize Card":
     "bg-purple-100 text-purple-800 border border-purple-300",
+  "EX Prize Card":
+    "bg-rose-100 text-rose-800 border border-rose-300",
 };
 
 export const FACEBOOK_URL =

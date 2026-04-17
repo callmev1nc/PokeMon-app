@@ -9,15 +9,19 @@ interface Product {
   name: string;
   series: string;
   type: string;
-  displayType: "Normal" | "Holo" | "Prize Card" | "EX" | "Holo Prize Card";
+  displayType: "Normal" | "Holo" | "Prize Card" | "EX" | "Holo Prize Card" | "EX Prize Card";
   group: string;
   price: number | null;
+  buyPrice: number | null;
   stock: number;
 }
 
-function mapDisplayType(rawType: string): "Normal" | "Holo" | "Prize Card" | "EX" | "Holo Prize Card" {
+function mapDisplayType(
+  rawType: string
+): "Normal" | "Holo" | "Prize Card" | "EX" | "Holo Prize Card" | "EX Prize Card" {
   const t = rawType.toLowerCase().trim();
   if (t === "holo prize card") return "Holo Prize Card";
+  if (t === "ex prize card") return "EX Prize Card";
   if (t === "holo") return "Holo";
   if (t.includes("ex")) return "EX";
   if (t.includes("prize")) return "Prize Card";
@@ -32,32 +36,58 @@ function parseNumber(val: unknown): number | null {
 
 function main() {
   const rootDir = path.resolve(__dirname, "..");
-  const excelPath = path.join(rootDir, "2026 Stock Pokemon extra.xlsx");
+  const stockPath = path.join(rootDir, "2026 Stock Pokemon extra.xlsx");
+  const menuPath = path.join(rootDir, "2026 Stock Pokemon.xlsx");
   const outputPath = path.join(rootDir, "src", "data", "products.json");
 
-  if (!fs.existsSync(excelPath)) {
-    console.error("Excel file not found:", excelPath);
+  if (!fs.existsSync(stockPath)) {
+    console.error("Stock file not found:", stockPath);
     process.exit(1);
   }
 
-  const workbook = XLSX.readFile(excelPath);
+  // === Read MENU (Business sheet) for buy prices ===
+  const menuBuyPrices = new Map<string, number>();
+  if (fs.existsSync(menuPath)) {
+    const menuWb = XLSX.readFile(menuPath);
+    const menuSheet = menuWb.Sheets["MENU"];
+    if (menuSheet) {
+      const menuData: unknown[][] = XLSX.utils.sheet_to_json(menuSheet, {
+        header: 1,
+        defval: "",
+      });
+      for (let i = 1; i < menuData.length; i++) {
+        const code = String(menuData[i][0] || "").trim();
+        const series = String(menuData[i][2] || "").trim().toUpperCase();
+        const buyPrice = parseNumber(menuData[i][6]);
+        if (code && series && buyPrice !== null) {
+          menuBuyPrices.set(`${code}|${series}`, buyPrice);
+        }
+      }
+      console.log(
+        `Loaded ${menuBuyPrices.size} buy prices from MENU sheet`
+      );
+    }
+  }
+
+  // === Read Stock (extra.xlsx) for full product data ===
+  const workbook = XLSX.readFile(stockPath);
   const sheetName = workbook.SheetNames[0];
-  console.log(`Reading sheet: ${sheetName}`);
+  console.log(`Reading stock sheet: ${sheetName}`);
 
   const sheet = workbook.Sheets[sheetName];
-  // Use header: 1 to get raw arrays, skip row 0 (title), row 1 is headers
-  const rawData: unknown[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+  const rawData: unknown[][] = XLSX.utils.sheet_to_json(sheet, {
+    header: 1,
+    defval: "",
+  });
 
   if (rawData.length < 3) {
     console.error("Not enough rows in Excel file");
     process.exit(1);
   }
 
-  // Row 1 (index 1) has headers: No, Stype, Good description, Series, Type, KHO, Unit Price, ĐẦU KỲ, XUẤT, NHẬP, TỒN, SUM
   const products: Product[] = [];
   let skipped = 0;
 
-  // Data starts from row 2 (index 2)
   for (let i = 2; i < rawData.length; i++) {
     const row = rawData[i];
     const code = String(row[0] || "").trim();
@@ -77,10 +107,17 @@ function main() {
     const displayType = mapDisplayType(rawType);
     const typeSlug = rawType.replace(/\s+/g, "-");
     const baseId = `${code}-${typeSlug}`;
-    // Make ID unique by hashing series + row index
     const uniqueKey = `${series}-${i}`;
-    const seriesHash = crypto.createHash("md5").update(uniqueKey).digest("hex").slice(0, 6);
+    const seriesHash = crypto
+      .createHash("md5")
+      .update(uniqueKey)
+      .digest("hex")
+      .slice(0, 6);
     const id = `${baseId}-${seriesHash}`;
+
+    // Look up buy price from MENU sheet
+    const menuKey = `${code}|${series.toUpperCase()}`;
+    const buyPrice = menuBuyPrices.get(menuKey) ?? null;
 
     products.push({
       id,
@@ -91,14 +128,13 @@ function main() {
       displayType,
       group,
       price,
+      buyPrice,
       stock: Math.round(stock),
     });
   }
 
-  // Sort by name for consistent ordering
   products.sort((a, b) => a.name.localeCompare(b.name));
 
-  // Ensure output directory exists
   const outputDir = path.dirname(outputPath);
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
@@ -106,10 +142,11 @@ function main() {
 
   fs.writeFileSync(outputPath, JSON.stringify(products, null, 2), "utf-8");
 
-  console.log(`\n✅ Parsed ${products.length} products (skipped ${skipped} rows)`);
+  console.log(
+    `\n✅ Parsed ${products.length} products (skipped ${skipped} rows)`
+  );
   console.log(`📄 Output: ${outputPath}`);
 
-  // Stats
   const stats: Record<string, number> = {};
   for (const p of products) {
     stats[p.displayType] = (stats[p.displayType] || 0) + 1;
@@ -120,7 +157,10 @@ function main() {
   }
 
   const withPrice = products.filter((p) => p.price !== null).length;
-  console.log(`\nWith price: ${withPrice}/${products.length}`);
+  console.log(`\nWith sell price: ${withPrice}/${products.length}`);
+
+  const withBuyPrice = products.filter((p) => p.buyPrice !== null).length;
+  console.log(`With buy price: ${withBuyPrice}/${products.length}`);
 }
 
 main();

@@ -13,6 +13,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
     "Prize Card",
     "EX",
     "Holo Prize Card",
+    "EX Prize Card",
   ]);
   const [selectedGroups, setSelectedGroups] = useState<GroupCategory[]>([]);
   const [search, setSearch] = useState("");

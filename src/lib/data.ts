@@ -4,7 +4,11 @@ import type { Product, Order, Customer } from "./types";
 
 const dataDir = path.join(process.cwd(), "src", "data");
 
-// In-memory stores (used on Vercel where filesystem is read-only)
+// Google Sheets URLs (set via env vars)
+const STOCK_URL = process.env.GOOGLE_STOCK_URL || "";
+const BUSINESS_URL = process.env.GOOGLE_BUSINESS_URL || "";
+
+// In-memory stores (fallback for local dev)
 let productsCache: Product[] | null = null;
 const ordersStore: Order[] = [];
 const customersStore: Customer[] = [];
@@ -22,12 +26,24 @@ function readJson<T>(filename: string): T[] {
 }
 
 function writeJson<T>(filename: string, data: T[]): void {
-  if (!isDev) return; // Skip writing on production (read-only filesystem)
+  if (!isDev) return;
   try {
     const filePath = path.join(dataDir, filename);
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
   } catch {
     // Silently fail on read-only filesystem
+  }
+}
+
+// Helper: fetch from Google Sheets with fallback
+async function fetchSheet<T>(url: string): Promise<T | null> {
+  if (!url) return null;
+  try {
+    const res = await fetch(url, { next: { revalidate: 30 } });
+    if (!res.ok) return null;
+    return (await res.json()) as T;
+  } catch {
+    return null;
   }
 }
 
@@ -39,7 +55,17 @@ export function fetchProducts(): Product[] {
   return productsCache;
 }
 
-export function updateProducts(updates: Partial<Product>[]): { success: boolean; updated: number } {
+export async function fetchProductsLive(): Promise<Product[]> {
+  if (STOCK_URL) {
+    const data = await fetchSheet<Product[]>(`${STOCK_URL}?action=products`);
+    if (data && Array.isArray(data) && data.length > 0) return data;
+  }
+  return fetchProducts();
+}
+
+export function updateProducts(
+  updates: Partial<Product>[]
+): { success: boolean; updated: number } {
   const products = fetchProducts();
   const productMap = new Map(products.map((p) => [p.id, p]));
 
@@ -50,6 +76,7 @@ export function updateProducts(updates: Partial<Product>[]): { success: boolean;
     const existing = productMap.get(id)!;
     if (u.price !== undefined) existing.price = u.price;
     if (u.stock !== undefined) existing.stock = u.stock;
+    if (u.buyPrice !== undefined) existing.buyPrice = u.buyPrice;
     updated++;
   }
 
@@ -65,6 +92,14 @@ export function fetchOrders(): Order[] {
     ordersStore.push(...fileOrders);
   }
   return ordersStore;
+}
+
+export async function fetchOrdersLive(): Promise<Order[]> {
+  if (BUSINESS_URL) {
+    const data = await fetchSheet<Order[]>(`${BUSINESS_URL}?action=orders`);
+    if (data && Array.isArray(data)) return data;
+  }
+  return fetchOrders();
 }
 
 export function addOrder(order: Omit<Order, "_row">): { success: boolean } {
@@ -92,6 +127,16 @@ export function fetchCustomers(): Customer[] {
     customersStore.push(...fileCustomers);
   }
   return customersStore;
+}
+
+export async function fetchCustomersLive(): Promise<Customer[]> {
+  if (BUSINESS_URL) {
+    const data = await fetchSheet<Customer[]>(
+      `${BUSINESS_URL}?action=customers`
+    );
+    if (data && Array.isArray(data)) return data;
+  }
+  return fetchCustomers();
 }
 
 export function addCustomer(
