@@ -8,6 +8,8 @@ import {
   fetchCustomersLive,
   addOrder,
   updateOrder,
+  confirmOrder,
+  deleteOrder,
   updateProducts,
   addCustomer,
   updateCustomer,
@@ -177,6 +179,27 @@ export async function POST(req: NextRequest) {
             stock: Number(product.stock) || 0,
           })
         );
+      }
+      case "confirmOrder": {
+        const row = Number(body.row);
+        const data = body.data as Record<string, unknown> | undefined;
+        if (isNaN(row) || !data) {
+          return NextResponse.json(
+            { error: "Invalid data" },
+            { status: 400 }
+          );
+        }
+        return NextResponse.json(confirmOrder(row, data));
+      }
+      case "deleteOrder": {
+        const row = Number(body.row);
+        if (isNaN(row)) {
+          return NextResponse.json(
+            { error: "Invalid data" },
+            { status: 400 }
+          );
+        }
+        return NextResponse.json(deleteOrder(row));
       }
       case "updateOrder": {
         const row = Number(body.row);

@@ -64,8 +64,12 @@ function handlePost(body) {
   switch (action) {
     case "addOrder":
       return json(addOrder(body));
+    case "confirmOrder":
+      return json(confirmOrder(body));
     case "updateOrder":
       return json(updateOrder(body));
+    case "deleteOrder":
+      return json(deleteOrder(body));
     case "updateMenu":
       return json(updateMenu(body));
     case "addCustomer":
@@ -303,10 +307,113 @@ function updateOrder(body) {
     if (data.buyPrice !== undefined) statsSheet.getRange(row, 5).setValue(data.buyPrice);
     if (data.shippingCost !== undefined) statsSheet.getRange(row, 6).setValue(data.shippingCost);
     if (data.paymentStatus !== undefined) statsSheet.getRange(row, 8).setValue(data.paymentStatus);
-    if (data.delivered !== undefined) statsSheet.getRange(row, 9).setValue(data.delivered);
+    if (data.deliveryStatus !== undefined) statsSheet.getRange(row, 9).setValue(data.deliveryStatus);
   }
 
   return { success: true };
+}
+
+/**
+ * Confirm order: adjust inventory when payment status changes.
+ * Reduces stock when confirming to paid, restores when canceling to unpaid.
+ */
+function confirmOrder(body) {
+  var row = body.row;
+  var data = body.data;
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  // Get current products from ORDER sheet for inventory adjustment
+  var orderSheet = ss.getSheetByName("ORDER");
+  if (orderSheet && row && data.paymentStatus !== undefined) {
+    var currentProducts = String(orderSheet.getRange(row, 5).getValue() || "");
+    var quantity = Number(orderSheet.getRange(row, 6).getValue()) || 1;
+
+    if (data.paymentStatus === "Đã thanh toán" || data.paymentStatus === "DA THANH TOAN") {
+      // Confirming payment -> reduce inventory
+      adjustInventory(currentProducts, quantity, -1);
+    } else {
+      // Canceling payment -> restore inventory
+      adjustInventory(currentProducts, quantity, 1);
+    }
+
+    orderSheet.getRange(row, 8).setValue(data.paymentStatus);
+  }
+
+  // Update THỐNG KÊ
+  var statsSheet = ss.getSheetByName("THỐNG KÊ KINH DOANH");
+  if (statsSheet && row) {
+    if (data.buyPrice !== undefined) statsSheet.getRange(row, 5).setValue(data.buyPrice);
+    if (data.shippingCost !== undefined) statsSheet.getRange(row, 6).setValue(data.shippingCost);
+    if (data.paymentStatus !== undefined) statsSheet.getRange(row, 8).setValue(data.paymentStatus);
+  }
+
+  return { success: true };
+}
+
+/**
+ * Delete order: restore inventory if paid, then delete rows.
+ */
+function deleteOrder(body) {
+  var row = body.row;
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  // Check payment status and get products for inventory restore
+  var orderSheet = ss.getSheetByName("ORDER");
+  if (orderSheet && row) {
+    var paymentStatus = String(orderSheet.getRange(row, 8).getValue() || "");
+    var products = String(orderSheet.getRange(row, 5).getValue() || "");
+    var quantity = Number(orderSheet.getRange(row, 6).getValue()) || 1;
+
+    // Restore inventory if order was paid
+    if (paymentStatus.indexOf("ĐÃ") >= 0 || paymentStatus.indexOf("DA") >= 0) {
+      adjustInventory(products, quantity, 1);
+    }
+
+    // Delete from ORDER sheet
+    if (row <= orderSheet.getLastRow()) {
+      orderSheet.deleteRow(row);
+    }
+  }
+
+  // Delete from THỐNG KÊ sheet
+  var statsSheet = ss.getSheetByName("THỐNG KÊ KINH DOANH");
+  if (statsSheet && row && row <= statsSheet.getLastRow()) {
+    statsSheet.deleteRow(row);
+  }
+
+  return { success: true };
+}
+
+/**
+ * Adjust inventory in Stock sheet.
+ * delta: -1 to reduce stock, +1 to restore stock
+ */
+function adjustInventory(productsString, quantity, delta) {
+  if (!productsString || !STOCK_SS_ID) return;
+  try {
+    var stockSS = SpreadsheetApp.openById(STOCK_SS_ID);
+    var stockSheet = stockSS.getSheetByName("Tồn Kho t3");
+    if (!stockSheet) return;
+    var stockData = stockSheet.getDataRange().getValues();
+
+    for (var s = 2; s < stockData.length; s++) {
+      var stockName = String(stockData[s][2] || "").trim().toUpperCase();
+      if (stockName && productsString.toUpperCase().indexOf(stockName) >= 0) {
+        var currentStock = Number(stockData[s][10]) || 0;
+        var currentXuat = Number(stockData[s][8]) || 0;
+        var qty = quantity * delta;
+
+        stockSheet.getRange(s + 1, 11).setValue(Math.max(0, currentStock + qty));
+        if (delta < 0) {
+          stockSheet.getRange(s + 1, 9).setValue(currentXuat + quantity);
+        } else {
+          stockSheet.getRange(s + 1, 9).setValue(Math.max(0, currentXuat - quantity));
+        }
+      }
+    }
+  } catch (err) {
+    // Stock update failed silently
+  }
 }
 
 // ============================================================

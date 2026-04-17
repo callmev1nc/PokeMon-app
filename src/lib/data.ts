@@ -72,6 +72,42 @@ export function fetchProducts(): Product[] {
   return productsCache;
 }
 
+/**
+ * Adjust inventory based on order products string.
+ * delta: -1 to reduce stock (confirm), +1 to restore stock (cancel/delete)
+ */
+export function adjustInventory(orderProducts: string, delta: number): void {
+  if (!orderProducts) return;
+  const products = fetchProducts();
+
+  const items = orderProducts.split(", ");
+  for (const item of items) {
+    const match = item.match(/^(\d+)x\s+(.+?)\s+-\s+(\S+)$/);
+    if (!match) continue;
+    const quantity = parseInt(match[1]) * delta;
+    const code = match[3];
+
+    const product = products.find((p) => p.code === code);
+    if (product) {
+      product.stock = Math.max(0, product.stock + quantity);
+    }
+  }
+
+  productsCache = products;
+  writeJson("products.json", products);
+
+  // Push stock changes to Google Sheets
+  if (STOCK_URL) {
+    const updates = products.filter((p) => items.some((item) => {
+      const m = item.match(/^(\d+)x\s+(.+?)\s+-\s+(\S+)$/);
+      return m && m[3] === p.code;
+    })).map((p) => ({ _row: p._row, code: p.code, series: p.series, type: p.type, stock: p.stock }));
+    if (updates.length > 0) {
+      postSheet(STOCK_URL, { action: "updateProducts", products: updates }).catch(() => {});
+    }
+  }
+}
+
 export async function fetchProductsLive(): Promise<Product[]> {
   if (STOCK_URL) {
     const data = await fetchSheet<Product[]>(`${STOCK_URL}?action=products`);
@@ -180,6 +216,68 @@ export function updateOrder(
     }).catch(() => {});
   }
 
+  return { success: true };
+}
+
+/**
+ * Confirm order: adjust inventory when payment status changes.
+ * Reduces stock when confirming to paid, restores when canceling to unpaid.
+ */
+export function confirmOrder(
+  index: number,
+  data: Partial<Order>
+): { success: boolean } {
+  const orders = fetchOrders();
+  if (index < 0 || index >= orders.length) return { success: false };
+
+  const order = orders[index];
+  if (data.paymentStatus === "Đã thanh toán") {
+    adjustInventory(order.products, -1);
+  } else if (data.paymentStatus === "Chưa thanh toán") {
+    adjustInventory(order.products, 1);
+  }
+
+  orders[index] = { ...order, ...data };
+  writeJson("orders.json", orders);
+
+  // Push to Google Sheets in background
+  if (BUSINESS_URL) {
+    postSheet(BUSINESS_URL, {
+      action: "confirmOrder",
+      row: order._row || index + 2,
+      data,
+    }).catch(() => {});
+  }
+
+  return { success: true };
+}
+
+/**
+ * Delete order: restore inventory if paid, then remove.
+ */
+export function deleteOrder(index: number): { success: boolean } {
+  const orders = fetchOrders();
+  if (index < 0 || index >= orders.length) return { success: false };
+
+  const order = orders[index];
+  // Restore inventory only if order was paid (stock was reduced)
+  if (order.paymentStatus === "Đã thanh toán") {
+    adjustInventory(order.products, 1);
+  }
+
+  // Push delete to Google Sheets before removing locally
+  if (BUSINESS_URL) {
+    postSheet(BUSINESS_URL, {
+      action: "deleteOrder",
+      row: order._row || index + 2,
+    }).catch(() => {});
+  }
+
+  orders.splice(index, 1);
+  for (let i = index; i < orders.length; i++) {
+    orders[i]._row = i + 1;
+  }
+  writeJson("orders.json", orders);
   return { success: true };
 }
 

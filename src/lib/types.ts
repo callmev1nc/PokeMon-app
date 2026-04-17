@@ -56,6 +56,7 @@ export interface Order {
   shippingCost: number;
   profit: number;
   paymentStatus: "Chưa thanh toán" | "Đã thanh toán";
+  deliveryStatus?: "Chưa giao" | "Đã giao";
 }
 
 export type GroupCategory =
