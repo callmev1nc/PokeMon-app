@@ -10,6 +10,13 @@ var BUSINESS_SS_ID = "1iaIlu-TZg6UbH-5keqBh7YFJO-kqKX7C8i4hBNOkU38";
 
 function doGet(e) {
   try {
+    // Handle write operations sent as GET with payload parameter
+    // (Google Apps Script "Anyone" deployments lose POST body on redirect)
+    if (e.parameter.payload) {
+      var body = JSON.parse(e.parameter.payload);
+      return handlePost(body);
+    }
+
     var action = e.parameter.action;
     switch (action) {
       case "products":
@@ -27,19 +34,23 @@ function doGet(e) {
 function doPost(e) {
   try {
     var body = JSON.parse(e.postData.contents);
-    var action = body.action;
-    switch (action) {
-      case "updateProducts":
-        return json(updateProducts(body.products));
-      case "updateStock":
-        return json(updateStock(body.code, body.type, body.quantity));
-      case "addProduct":
-        return json(addProduct(body.product));
-      default:
-        return json({ error: "Unknown action" });
-    }
+    return handlePost(body);
   } catch (err) {
     return json({ error: err.message });
+  }
+}
+
+function handlePost(body) {
+  var action = body.action;
+  switch (action) {
+    case "updateProducts":
+      return json(updateProducts(body.products));
+    case "updateStock":
+      return json(updateStock(body.code, body.type, body.quantity));
+    case "addProduct":
+      return json(addProduct(body.product));
+    default:
+      return json({ error: "Unknown action" });
   }
 }
 

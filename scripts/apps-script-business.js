@@ -22,6 +22,12 @@ var STOCK_SS_ID = "1ViScta5Qa1eXWXUp5zkoBeFVkHj-BKS9Xi6pGyGea74";
 
 function doGet(e) {
   try {
+    // Handle write operations sent as GET with payload parameter
+    if (e.parameter.payload) {
+      var body = JSON.parse(e.parameter.payload);
+      return handlePost(body);
+    }
+
     var action = e.parameter.action;
     switch (action) {
       case "menu":
@@ -47,29 +53,33 @@ function doGet(e) {
 function doPost(e) {
   try {
     var body = JSON.parse(e.postData.contents);
-    var action = body.action;
-    switch (action) {
-      case "addOrder":
-        return json(addOrder(body));
-      case "updateOrder":
-        return json(updateOrder(body));
-      case "updateMenu":
-        return json(updateMenu(body));
-      case "addCustomer":
-        return json(addCustomer(body.customer));
-      case "updateCustomer":
-        return json(updateCustomer(body.row, body.data));
-      case "addFinance":
-        return json(addFinance(body));
-      case "updateFinance":
-        return json(updateFinance(body));
-      case "addProduct":
-        return json(addProductToMenu(body.product));
-      default:
-        return json({ error: "Unknown action" });
-    }
+    return handlePost(body);
   } catch (err) {
     return json({ error: err.message });
+  }
+}
+
+function handlePost(body) {
+  var action = body.action;
+  switch (action) {
+    case "addOrder":
+      return json(addOrder(body));
+    case "updateOrder":
+      return json(updateOrder(body));
+    case "updateMenu":
+      return json(updateMenu(body));
+    case "addCustomer":
+      return json(addCustomer(body.customer));
+    case "updateCustomer":
+      return json(updateCustomer(body.row, body.data));
+    case "addFinance":
+      return json(addFinance(body));
+    case "updateFinance":
+      return json(updateFinance(body));
+    case "addProduct":
+      return json(addProductToMenu(body.product));
+    default:
+      return json({ error: "Unknown action" });
   }
 }
 

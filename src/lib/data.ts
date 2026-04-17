@@ -35,11 +35,28 @@ function writeJson<T>(filename: string, data: T[]): void {
   }
 }
 
-// Helper: fetch from Google Sheets with fallback
+// Google Apps Script "Anyone" deployments use a redirect chain.
+// GET works with redirect: "follow", but POST body is lost on redirect.
+// Solution: send write data as a GET request with the payload URL-encoded.
 async function fetchSheet<T>(url: string): Promise<T | null> {
   if (!url) return null;
   try {
-    const res = await fetch(url, { next: { revalidate: 30 } });
+    const res = await fetch(url, { redirect: "follow" });
+    if (!res.ok) return null;
+    return (await res.json()) as T;
+  } catch {
+    return null;
+  }
+}
+
+async function postSheet<T>(baseUrl: string, payload: Record<string, unknown>): Promise<T | null> {
+  if (!baseUrl) return null;
+  try {
+    // Google Apps Script: POST body is lost on 302 redirect.
+    // Encode the entire payload as a GET query parameter instead.
+    const json = JSON.stringify(payload);
+    const url = `${baseUrl}?payload=${encodeURIComponent(json)}`;
+    const res = await fetch(url, { redirect: "follow" });
     if (!res.ok) return null;
     return (await res.json()) as T;
   } catch {
@@ -124,7 +141,9 @@ export function fetchOrders(): Order[] {
 
 export async function fetchOrdersLive(): Promise<Order[]> {
   if (BUSINESS_URL) {
-    const data = await fetchSheet<Order[]>(`${BUSINESS_URL}?action=orders`);
+    const data = await fetchSheet<{ error?: string; data?: Order[]; [key: number]: Order }>(
+      `${BUSINESS_URL}?action=orders`
+    );
     if (data && Array.isArray(data)) return data;
   }
   return fetchOrders();
@@ -134,6 +153,12 @@ export function addOrder(order: Omit<Order, "_row">): { success: boolean } {
   const orders = fetchOrders();
   orders.push({ ...order, _row: orders.length + 1 } as Order);
   writeJson("orders.json", orders);
+
+  // Also push to Google Sheets in background
+  if (BUSINESS_URL) {
+    postSheet(BUSINESS_URL, { action: "addOrder", order }).catch(() => {});
+  }
+
   return { success: true };
 }
 
@@ -145,6 +170,16 @@ export function updateOrder(
   if (index < 0 || index >= orders.length) return { success: false };
   orders[index] = { ...orders[index], ...data };
   writeJson("orders.json", orders);
+
+  // Also push to Google Sheets in background
+  if (BUSINESS_URL) {
+    postSheet(BUSINESS_URL, {
+      action: "updateOrder",
+      row: orders[index]._row || index + 2,
+      data,
+    }).catch(() => {});
+  }
+
   return { success: true };
 }
 
@@ -173,6 +208,14 @@ export function addCustomer(
   const customers = fetchCustomers();
   customers.push({ ...customer, _row: customers.length + 1 } as Customer);
   writeJson("customers.json", customers);
+
+  // Also push to Google Sheets in background
+  if (BUSINESS_URL) {
+    postSheet(BUSINESS_URL, { action: "addCustomer", customer }).catch(
+      () => {}
+    );
+  }
+
   return { success: true };
 }
 
@@ -184,5 +227,14 @@ export function updateCustomer(
   if (index < 0 || index >= customers.length) return { success: false };
   customers[index] = { ...customers[index], ...data };
   writeJson("customers.json", customers);
+
+  if (BUSINESS_URL) {
+    postSheet(BUSINESS_URL, {
+      action: "updateCustomer",
+      row: customers[index]._row || index + 2,
+      data,
+    }).catch(() => {});
+  }
+
   return { success: true };
 }
