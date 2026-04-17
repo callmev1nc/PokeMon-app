@@ -17,8 +17,8 @@
 //   THỐNG KÊ: [0]date [1]orderCode [2]customerName [3]sellPrice [4]buyPrice [5]shipCost [6]profit [7]paymentStatus [8]delivered
 //   THU CHI: [0]content [1]income [2]expense [3]balance
 
-// UPDATE: Replace with your Stock sheet ID
-var STOCK_SS_ID = "YOUR_STOCK_SHEET_ID_HERE";
+// Stock sheet ID (for reading stock data and reducing stock on order)
+var STOCK_SS_ID = "1ViScta5Qa1eXWXUp5zkoBeFVkHj-BKS9Xi6pGyGea74";
 
 function doGet(e) {
   try {

@@ -5,8 +5,8 @@
 // Copy the URL → set as GOOGLE_STOCK_URL env var
 // ============================================================
 
-// UPDATE: Replace with your Business sheet ID
-var BUSINESS_SS_ID = "YOUR_BUSINESS_SHEET_ID_HERE";
+// Business sheet ID (for looking up buy prices from MENU)
+var BUSINESS_SS_ID = "1iaIlu-TZg6UbH-5keqBh7YFJO-kqKX7C8i4hBNOkU38";
 
 function doGet(e) {
   try {
@@ -65,8 +65,6 @@ function getProducts() {
       for (var m = 1; m < menuData.length; m++) {
         var menuCode = String(menuData[m][0] || "").trim();
         var menuSeries = String(menuData[m][2] || "").trim().toUpperCase();
-        var menuName = String(menuData[m][3] || "").trim().toUpperCase();
-        var menuType = String(menuData[m][4] || "").trim().toLowerCase();
         var buyPrice = menuData[m][6];
         if (menuCode && buyPrice) {
           // Key by code+series for matching
