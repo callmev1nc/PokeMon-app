@@ -33,6 +33,8 @@ function doPost(e) {
         return json(updateProducts(body.products));
       case "updateStock":
         return json(updateStock(body.code, body.type, body.quantity));
+      case "addProduct":
+        return json(addProduct(body.product));
       default:
         return json({ error: "Unknown action" });
     }
@@ -188,6 +190,37 @@ function getStats() {
     totalValue: totalValue,
     typeBreakdown: typeBreakdown
   };
+}
+
+// ============================================================
+// ADD PRODUCT - Add new row to stock sheet
+// ============================================================
+
+function addProduct(product) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Tồn Kho t3");
+  if (!sheet) return { error: "Sheet not found" };
+
+  var data = sheet.getDataRange().getValues();
+  var nextRow = data.length;
+  // Find last row with data
+  while (nextRow > 2 && !String(data[nextRow - 1][0] || "").trim() && !String(data[nextRow - 1][2] || "").trim()) {
+    nextRow--;
+  }
+  nextRow++;
+
+  sheet.getRange(nextRow, 1).setValue(product.code || "");        // No/code
+  sheet.getRange(nextRow, 2).setValue(product.group || "");        // Stype/group
+  sheet.getRange(nextRow, 3).setValue(product.name || "");         // Good description
+  sheet.getRange(nextRow, 4).setValue(product.series || "");       // Series
+  sheet.getRange(nextRow, 5).setValue(product.type || "");         // Type
+  sheet.getRange(nextRow, 6).setValue("");                         // KHO
+  sheet.getRange(nextRow, 7).setValue(product.price || "");        // Unit Price
+  sheet.getRange(nextRow, 8).setValue("");                         // ĐẦU KỲ
+  sheet.getRange(nextRow, 9).setValue("");                         // XUẤT
+  sheet.getRange(nextRow, 10).setValue("");                        // NHẬP
+  sheet.getRange(nextRow, 11).setValue(product.stock || 0);        // TỒN
+
+  return { success: true };
 }
 
 // ============================================================

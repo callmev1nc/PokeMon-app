@@ -85,6 +85,34 @@ export function updateProducts(
   return { success: true, updated };
 }
 
+export function addProductLocal(
+  product: Omit<Product, "id" | "displayType">
+): { success: boolean } {
+  const products = fetchProducts();
+  const id = `${product.code}-${product.type}-${Date.now()}`;
+  const displayType = mapDisplayType(product.type || "");
+  products.push({
+    id,
+    displayType,
+    ...product,
+  } as Product);
+  productsCache = products;
+  writeJson("products.json", products);
+  return { success: true };
+}
+
+function mapDisplayType(
+  rawType: string
+): "Normal" | "Holo" | "Prize Card" | "EX" | "Holo Prize Card" | "EX Prize Card" {
+  const t = rawType.toLowerCase().trim();
+  if (t === "holo prize card") return "Holo Prize Card";
+  if (t === "ex prize card") return "EX Prize Card";
+  if (t === "holo") return "Holo";
+  if (t.includes("ex")) return "EX";
+  if (t.includes("prize")) return "Prize Card";
+  return "Normal";
+}
+
 // === Orders ===
 export function fetchOrders(): Order[] {
   if (ordersStore.length === 0) {

@@ -19,6 +19,17 @@ export default function AdminPage() {
   const [message, setMessage] = useState("");
   const [search, setSearch] = useState("");
   const [showCount, setShowCount] = useState(100);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newProduct, setNewProduct] = useState({
+    code: "",
+    group: "pokemon",
+    name: "",
+    series: "",
+    type: "normal",
+    price: "",
+    stock: 1,
+  });
+  const [addingProduct, setAddingProduct] = useState(false);
 
   useEffect(() => {
     fetchProducts();
@@ -111,6 +122,54 @@ export default function AdminPage() {
     }
   };
 
+  const handleAddProduct = async () => {
+    if (!newProduct.code || !newProduct.name) {
+      setMessage("Lỗi: Mã và tên sản phẩm là bắt buộc");
+      return;
+    }
+    setAddingProduct(true);
+    setMessage("");
+    try {
+      const res = await fetch("/api/sheets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "addProduct",
+          product: {
+            code: newProduct.code.trim(),
+            group: newProduct.group.trim().toLowerCase(),
+            name: newProduct.name.trim(),
+            series: newProduct.series.trim(),
+            type: newProduct.type.trim().toLowerCase(),
+            price: newProduct.price === "" ? null : Number(newProduct.price),
+            stock: Number(newProduct.stock) || 0,
+          },
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMessage("Đã thêm sản phẩm mới");
+        setNewProduct({
+          code: "",
+          group: "pokemon",
+          name: "",
+          series: "",
+          type: "normal",
+          price: "",
+          stock: 1,
+        });
+        setShowAddForm(false);
+        await fetchProducts();
+      } else {
+        setMessage("Lỗi: " + (data.error || "Không thể thêm"));
+      }
+    } catch {
+      setMessage("Lỗi kết nối đến Google Sheets");
+    } finally {
+      setAddingProduct(false);
+    }
+  };
+
   const filtered = products.filter((p) => {
     if (!search.trim()) return true;
     const q = search.toLowerCase();
@@ -166,7 +225,7 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* Search + Update button */}
+      {/* Search + Update button + Add button */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-4">
         <input
           type="text"
@@ -175,6 +234,12 @@ export default function AdminPage() {
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
         />
+        <button
+          onClick={() => setShowAddForm(!showAddForm)}
+          className="btn-press px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition-colors shadow-md shadow-blue-200"
+        >
+          + Thêm sản phẩm
+        </button>
         {editedProducts.size > 0 && (
           <button
             onClick={handleFinishUpdate}
@@ -185,6 +250,90 @@ export default function AdminPage() {
           </button>
         )}
       </div>
+
+      {/* Add Product Form */}
+      {showAddForm && (
+        <div className="bg-white rounded-2xl border border-blue-100 shadow-sm p-5 mb-4">
+          <h3 className="text-sm font-semibold text-slate-700 mb-3">Thêm sản phẩm mới</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            <input
+              type="text"
+              placeholder="Mã hàng (VD: PC-PO-100)"
+              value={newProduct.code}
+              onChange={(e) => setNewProduct((p) => ({ ...p, code: e.target.value }))}
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/30"
+            />
+            <input
+              type="text"
+              placeholder="Tên sản phẩm"
+              value={newProduct.name}
+              onChange={(e) => setNewProduct((p) => ({ ...p, name: e.target.value }))}
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/30"
+            />
+            <select
+              value={newProduct.group}
+              onChange={(e) => setNewProduct((p) => ({ ...p, group: e.target.value }))}
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/30"
+            >
+              <option value="pokemon">Pokemon</option>
+              <option value="item">Item</option>
+              <option value="tool">Tool</option>
+              <option value="stadium">Stadium</option>
+              <option value="suppoter">Supporter</option>
+              <option value="energy">Energy</option>
+              <option value="special energy">Special Energy</option>
+            </select>
+            <input
+              type="text"
+              placeholder="Số seri (VD: TWM 080/167)"
+              value={newProduct.series}
+              onChange={(e) => setNewProduct((p) => ({ ...p, series: e.target.value }))}
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/30"
+            />
+            <select
+              value={newProduct.type}
+              onChange={(e) => setNewProduct((p) => ({ ...p, type: e.target.value }))}
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/30"
+            >
+              <option value="normal">Normal</option>
+              <option value="holo">Holo</option>
+              <option value="prize card">Prize Card</option>
+              <option value="ex">EX</option>
+              <option value="holo prize card">Holo Prize Card</option>
+              <option value="ex prize card">EX Prize Card</option>
+            </select>
+            <input
+              type="number"
+              placeholder="Giá bán"
+              value={newProduct.price}
+              onChange={(e) => setNewProduct((p) => ({ ...p, price: e.target.value }))}
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/30"
+            />
+            <input
+              type="number"
+              placeholder="Tồn kho"
+              value={newProduct.stock}
+              onChange={(e) => setNewProduct((p) => ({ ...p, stock: Number(e.target.value) || 0 }))}
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/30"
+            />
+          </div>
+          <div className="flex gap-2 mt-3">
+            <button
+              onClick={handleAddProduct}
+              disabled={addingProduct}
+              className="px-5 py-2 bg-brand text-white rounded-lg text-sm font-semibold hover:bg-brand-dark disabled:opacity-50 transition-colors"
+            >
+              {addingProduct ? "Đang thêm..." : "Thêm"}
+            </button>
+            <button
+              onClick={() => setShowAddForm(false)}
+              className="px-5 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-semibold hover:bg-slate-200 transition-colors"
+            >
+              Hủy
+            </button>
+          </div>
+        </div>
+      )}
 
       {message && (
         <p

@@ -103,40 +103,100 @@ export default function AdminOrdersPage() {
   }
 
   function downloadPDF(order: Order, idx: number) {
-    const doc = new jsPDF();
-    const buy = Number(editValues[idx]?.buyPrice) || order.buyPrice || 0;
-    const ship = Number(editValues[idx]?.shippingCost) || order.shippingCost || 0;
-    const profit = getProfit(order, idx);
+    // A6 size: 105 x 148 mm
+    const doc = new jsPDF({ unit: "mm", format: [105, 148] });
+    const pageWidth = 105;
+    const margin = 6;
+    const contentWidth = pageWidth - margin * 2;
+    let y = 8;
 
-    doc.setFontSize(18);
-    doc.text("V1ncc TCG Card Shop - Order Details", 20, 20);
+    // Title
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text("V1ncc TCG Card Shop", pageWidth / 2, y, { align: "center" });
+    y += 6;
 
-    doc.setFontSize(12);
-    let y = 40;
-    const lines = [
-      `Customer: ${order.customerName || "N/A"}`,
-      `Phone: ${order.phone || "N/A"}`,
-      `Date: ${order.orderDate || "N/A"}`,
-      `Products: ${order.products || "N/A"}`,
-      `Address: ${order.address || "N/A"}`,
-      "",
-      `Sell Price: ${formatPrice(order.sellPrice || 0)}`,
-      `Buy Price: ${formatPrice(buy)}`,
-      `Shipping + Packaging: ${formatPrice(ship)}`,
-      `Profit: ${formatPrice(profit)}`,
-      "",
-      `Payment Status: ${order.paymentStatus}`,
-    ];
+    // Date
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Date: ${order.orderDate || "N/A"}`, margin, y);
+    y += 5;
 
-    lines.forEach((line) => {
-      doc.text(line, 20, y);
-      y += 8;
-    });
+    // Divider
+    doc.setDrawColor(200);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 4;
 
-    if (order.notes) {
-      y += 4;
-      doc.text(`Notes: ${order.notes}`, 20, y);
+    // Customer + Phone
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bold");
+    doc.text("Customer:", margin, y);
+    doc.setFont("helvetica", "normal");
+    doc.text(String(order.customerName || "N/A"), margin + 20, y);
+    y += 4;
+
+    doc.setFont("helvetica", "bold");
+    doc.text("Phone:", margin, y);
+    doc.setFont("helvetica", "normal");
+    doc.text(String(order.phone || "N/A"), margin + 20, y);
+    y += 4;
+
+    // Address
+    doc.setFont("helvetica", "bold");
+    doc.text("Address:", margin, y);
+    y += 4;
+    doc.setFont("helvetica", "normal");
+    const addrLines = doc.splitTextToSize(
+      String(order.address || "N/A"),
+      contentWidth
+    );
+    doc.text(addrLines, margin, y);
+    y += addrLines.length * 3.5 + 2;
+
+    // Divider
+    doc.setDrawColor(200);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 4;
+
+    // Products (one per line)
+    doc.setFont("helvetica", "bold");
+    doc.text("Products:", margin, y);
+    y += 4;
+    doc.setFont("helvetica", "normal");
+    const productList = (order.products || "")
+      .split(",")
+      .map((p: string) => p.trim())
+      .filter(Boolean);
+    for (const prod of productList) {
+      const prodLines = doc.splitTextToSize(
+        `- ${prod}`,
+        contentWidth
+      );
+      doc.text(prodLines, margin, y);
+      y += prodLines.length * 3.5;
     }
+    y += 3;
+
+    // Divider
+    doc.setDrawColor(200);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 5;
+
+    // Sell Price (only)
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text("Total:", margin, y);
+    doc.text(formatPrice(order.sellPrice || 0), pageWidth - margin, y, {
+      align: "right",
+    });
+    y += 6;
+
+    // Payment Status
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    const status = order.paymentStatus || "";
+    doc.text("Status:", margin, y);
+    doc.text(status, margin + 16, y);
 
     doc.save(
       `order-${order.customerName || "unknown"}-${order.orderDate || "date"}.pdf`

@@ -63,6 +63,8 @@ function doPost(e) {
         return json(addFinance(body));
       case "updateFinance":
         return json(updateFinance(body));
+      case "addProduct":
+        return json(addProductToMenu(body.product));
       default:
         return json({ error: "Unknown action" });
     }
@@ -376,6 +378,34 @@ function updateFinance(body) {
   if (body.content !== undefined) sheet.getRange(row, 1).setValue(body.content);
   if (body.income !== undefined) sheet.getRange(row, 2).setValue(body.income);
   if (body.expense !== undefined) sheet.getRange(row, 3).setValue(body.expense);
+
+  return { success: true };
+}
+
+// ============================================================
+// ADD PRODUCT TO MENU
+// ============================================================
+
+function addProductToMenu(product) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("MENU");
+  if (!sheet) return { error: "MENU sheet not found" };
+
+  var data = sheet.getDataRange().getValues();
+  var nextRow = data.length;
+  while (nextRow > 1 && !String(data[nextRow - 1][0] || "").trim() && !String(data[nextRow - 1][3] || "").trim()) {
+    nextRow--;
+  }
+  nextRow++;
+
+  sheet.getRange(nextRow, 1).setValue(product.code || "");        // Mã hàng
+  sheet.getRange(nextRow, 2).setValue(product.group || "");        // Nhóm hàng
+  sheet.getRange(nextRow, 3).setValue(product.series || "");       // Số seri
+  sheet.getRange(nextRow, 4).setValue(product.name || "");         // Tên hàng
+  sheet.getRange(nextRow, 5).setValue(product.type || "");         // Loại hàng
+  sheet.getRange(nextRow, 6).setValue(product.price || "");        // Giá bán
+  sheet.getRange(nextRow, 7).setValue("");                         // Giá mua
+  sheet.getRange(nextRow, 8).setValue(product.stock || 0);        // Tồn
+  sheet.getRange(nextRow, 9).setValue("");                         // Hình ảnh
 
   return { success: true };
 }

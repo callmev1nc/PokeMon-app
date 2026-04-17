@@ -11,6 +11,7 @@ import {
   updateProducts,
   addCustomer,
   updateCustomer,
+  addProductLocal,
 } from "@/lib/data";
 import { verifySession, COOKIE_NAME } from "@/lib/auth-edge";
 
@@ -156,6 +157,27 @@ export async function POST(req: NextRequest) {
 
   try {
     switch (action) {
+      case "addProduct": {
+        const product = body.product as Record<string, unknown> | undefined;
+        if (!product || typeof product !== "object") {
+          return NextResponse.json(
+            { error: "Invalid product data" },
+            { status: 400 }
+          );
+        }
+        return NextResponse.json(
+          addProductLocal({
+            code: sanitize(String(product.code || "")),
+            group: sanitize(String(product.group || "")),
+            name: sanitize(String(product.name || "")),
+            series: sanitize(String(product.series || "")),
+            type: sanitize(String(product.type || "")),
+            price: product.price !== null && product.price !== undefined ? Number(product.price) : null,
+            buyPrice: null,
+            stock: Number(product.stock) || 0,
+          })
+        );
+      }
       case "updateOrder": {
         const row = Number(body.row);
         const data = body.data as Record<string, unknown> | undefined;
