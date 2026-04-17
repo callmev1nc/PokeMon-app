@@ -1,14 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { Order } from "@/lib/types";
 import AdminNav from "@/components/AdminNav";
+import jsPDF from "jspdf";
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [filter, setFilter] = useState<"all" | "pending" | "paid">("all");
+  const [editValues, setEditValues] = useState<
+    Record<number, { buyPrice: string; shippingCost: string }>
+  >({});
 
   useEffect(() => {
     fetchOrders();
@@ -19,7 +23,16 @@ export default function AdminOrdersPage() {
     try {
       const res = await fetch("/api/sheets?action=orders");
       const data = await res.json();
-      setOrders(Array.isArray(data) ? data : []);
+      const fetched = Array.isArray(data) ? data : [];
+      setOrders(fetched);
+      const vals: Record<number, { buyPrice: string; shippingCost: string }> = {};
+      fetched.forEach((o: Order, i: number) => {
+        vals[i] = {
+          buyPrice: o.buyPrice ? String(o.buyPrice) : "",
+          shippingCost: o.shippingCost ? String(o.shippingCost) : "",
+        };
+      });
+      setEditValues(vals);
     } catch {
       setOrders([]);
     } finally {
@@ -56,24 +69,78 @@ export default function AdminOrdersPage() {
     }
   }
 
-  async function updateOrderField(
-    orderIndex: number,
-    field: "buyPrice" | "shippingCost" | "notes" | "orderCode",
-    value: string | number
-  ) {
-    try {
-      await fetch("/api/sheets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "updateOrder",
-          row: orderIndex,
-          data: { [field]: value },
-        }),
-      });
-    } catch {
-      // silent fail for inline edits
+  const updateOrderField = useCallback(
+    async (
+      orderIndex: number,
+      field: "buyPrice" | "shippingCost" | "notes" | "orderCode",
+      value: string | number
+    ) => {
+      try {
+        await fetch("/api/sheets", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "updateOrder",
+            row: orderIndex,
+            data: { [field]: value },
+          }),
+        });
+      } catch {
+        // silent fail for inline edits
+      }
+    },
+    []
+  );
+
+  function formatPrice(val: number): string {
+    return new Intl.NumberFormat("vi-VN").format(val * 1000) + " đ";
+  }
+
+  function getProfit(order: Order, idx: number): number {
+    const buy = Number(editValues[idx]?.buyPrice) || order.buyPrice || 0;
+    const ship = Number(editValues[idx]?.shippingCost) || order.shippingCost || 0;
+    return (order.sellPrice || 0) - buy - ship;
+  }
+
+  function downloadPDF(order: Order, idx: number) {
+    const doc = new jsPDF();
+    const buy = Number(editValues[idx]?.buyPrice) || order.buyPrice || 0;
+    const ship = Number(editValues[idx]?.shippingCost) || order.shippingCost || 0;
+    const profit = getProfit(order, idx);
+
+    doc.setFontSize(18);
+    doc.text("V1ncc TCG Card Shop - Order Details", 20, 20);
+
+    doc.setFontSize(12);
+    let y = 40;
+    const lines = [
+      `Customer: ${order.customerName || "N/A"}`,
+      `Phone: ${order.phone || "N/A"}`,
+      `Date: ${order.orderDate || "N/A"}`,
+      `Products: ${order.products || "N/A"}`,
+      `Address: ${order.address || "N/A"}`,
+      "",
+      `Sell Price: ${formatPrice(order.sellPrice || 0)}`,
+      `Buy Price: ${formatPrice(buy)}`,
+      `Shipping + Packaging: ${formatPrice(ship)}`,
+      `Profit: ${formatPrice(profit)}`,
+      "",
+      `Payment Status: ${order.paymentStatus}`,
+    ];
+
+    lines.forEach((line) => {
+      doc.text(line, 20, y);
+      y += 8;
+    });
+
+    if (order.notes) {
+      y += 4;
+      doc.text(`Notes: ${order.notes}`, 20, y);
     }
+
+    doc.save(
+      `order-${order.customerName || "unknown"}-${order.orderDate || "date"}.pdf`
+    );
   }
 
   const filtered = orders.filter((o) => {
@@ -107,7 +174,7 @@ export default function AdminOrdersPage() {
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
           <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">Doanh thu</p>
           <p className="text-2xl font-bold text-green-600">
-            {new Intl.NumberFormat("vi-VN").format(totalRevenue * 1000)} đ
+            {formatPrice(totalRevenue)}
           </p>
         </div>
       </div>
@@ -145,116 +212,147 @@ export default function AdminOrdersPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {filtered.map((order, idx) => (
-            <div
-              key={idx}
-              className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 animate-fade-in"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <p className="font-medium text-slate-800">
-                    {order.customerName || "Khách"}
-                  </p>
-                  <p className="text-xs text-slate-400">
-                    {order.orderDate} · {order.phone}
-                  </p>
+          {filtered.map((order, idx) => {
+            const orderIdx = orders.indexOf(order);
+            return (
+              <div
+                key={idx}
+                className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 animate-fade-in"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <p className="font-medium text-slate-800">
+                      {order.customerName || "Khách"}
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      {order.orderDate} · {order.phone}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
+                        order.paymentStatus === "Đã thanh toán"
+                          ? "bg-green-50 text-green-700 border border-green-100"
+                          : "bg-orange-50 text-orange-700 border border-orange-100"
+                      }`}
+                    >
+                      {order.paymentStatus}
+                    </span>
+                    <button
+                      onClick={() => togglePayment(orderIdx, order)}
+                      className="text-xs px-3 py-1.5 bg-slate-50 text-slate-500 rounded-lg hover:bg-slate-100 font-semibold transition-colors"
+                    >
+                      {order.paymentStatus === "Đã thanh toán"
+                        ? "Hủy"
+                        : "Xác nhận"}
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
-                      order.paymentStatus === "Đã thanh toán"
-                        ? "bg-green-50 text-green-700 border border-green-100"
-                        : "bg-orange-50 text-orange-700 border border-orange-100"
-                    }`}
-                  >
-                    {order.paymentStatus}
-                  </span>
-                  <button
-                    onClick={() => togglePayment(idx, order)}
-                    className="text-xs px-3 py-1.5 bg-slate-50 text-slate-500 rounded-lg hover:bg-slate-100 font-semibold transition-colors"
-                  >
-                    {order.paymentStatus === "Đã thanh toán"
-                      ? "Hủy"
-                      : "Xác nhận"}
-                  </button>
-                </div>
-              </div>
 
-              <p className="text-sm text-slate-600 mb-2">
-                <span className="text-slate-400">Sản phẩm:</span>{" "}
-                {order.products}
-              </p>
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-                <div>
-                  <span className="text-slate-400 text-xs">GIÁ BÁN</span>
-                  <p className="font-medium text-slate-800">
-                    {new Intl.NumberFormat("vi-VN").format(
-                      (order.sellPrice || 0) * 1000
-                    )}{" "}
-                    đ
-                  </p>
-                </div>
-                <div>
-                  <span className="text-slate-400 text-xs">GIÁ MUA</span>
-                  <input
-                    type="number"
-                    defaultValue={order.buyPrice || ""}
-                    placeholder="0"
-                    onBlur={(e) =>
-                      updateOrderField(
-                        idx,
-                        "buyPrice",
-                        Number(e.target.value) || 0
-                      )
-                    }
-                    className="w-full px-2 py-1 border border-slate-200 rounded text-sm"
-                  />
-                </div>
-                <div>
-                  <span className="text-slate-400 text-xs">
-                    SHIP + ĐÓNG GÓI
-                  </span>
-                  <input
-                    type="number"
-                    defaultValue={order.shippingCost || ""}
-                    placeholder="0"
-                    onBlur={(e) =>
-                      updateOrderField(
-                        idx,
-                        "shippingCost",
-                        Number(e.target.value) || 0
-                      )
-                    }
-                    className="w-full px-2 py-1 border border-slate-200 rounded text-sm"
-                  />
-                </div>
-                <div>
-                  <span className="text-slate-400 text-xs">LỢI NHUẬN</span>
-                  <p className="font-medium text-blue-600">
-                    {new Intl.NumberFormat("vi-VN").format(
-                      ((order.sellPrice || 0) -
-                        (order.buyPrice || 0) -
-                        (order.shippingCost || 0)) *
-                        1000
-                    )}{" "}
-                    đ
-                  </p>
-                </div>
-              </div>
-
-              {order.address && (
-                <p className="text-xs text-slate-400 mt-2">
-                  Địa chỉ: {order.address}
+                <p className="text-sm text-slate-600 mb-2">
+                  <span className="text-slate-400">Sản phẩm:</span>{" "}
+                  {order.products}
                 </p>
-              )}
-              {order.notes && (
-                <p className="text-xs text-slate-400 mt-1">
-                  Ghi chú: {order.notes}
-                </p>
-              )}
-            </div>
-          ))}
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                  <div>
+                    <span className="text-slate-400 text-xs">GIÁ BÁN</span>
+                    <p className="font-medium text-slate-800">
+                      {formatPrice(order.sellPrice || 0)}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 text-xs">GIÁ MUA</span>
+                    <input
+                      type="number"
+                      value={editValues[orderIdx]?.buyPrice ?? ""}
+                      placeholder="0"
+                      onChange={(e) =>
+                        setEditValues((prev) => ({
+                          ...prev,
+                          [orderIdx]: {
+                            buyPrice: e.target.value,
+                            shippingCost:
+                              prev[orderIdx]?.shippingCost ?? "",
+                          },
+                        }))
+                      }
+                      onBlur={(e) =>
+                        updateOrderField(
+                          orderIdx,
+                          "buyPrice",
+                          Number(e.target.value) || 0
+                        )
+                      }
+                      className="w-full px-2 py-1 border border-slate-200 rounded text-sm"
+                    />
+                  </div>
+                  <div>
+                    <span className="text-slate-400 text-xs">
+                      SHIP + ĐÓNG GÓI
+                    </span>
+                    <input
+                      type="number"
+                      value={editValues[orderIdx]?.shippingCost ?? ""}
+                      placeholder="0"
+                      onChange={(e) =>
+                        setEditValues((prev) => ({
+                          ...prev,
+                          [orderIdx]: {
+                            buyPrice: prev[orderIdx]?.buyPrice ?? "",
+                            shippingCost: e.target.value,
+                          },
+                        }))
+                      }
+                      onBlur={(e) =>
+                        updateOrderField(
+                          orderIdx,
+                          "shippingCost",
+                          Number(e.target.value) || 0
+                        )
+                      }
+                      className="w-full px-2 py-1 border border-slate-200 rounded text-sm"
+                    />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400 text-xs">LỢI NHUẬN</span>
+                      <button
+                        onClick={() => downloadPDF(order, orderIdx)}
+                        className="text-xs px-2 py-0.5 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition-colors font-semibold flex items-center gap-1"
+                        title="Tải PDF"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                        </svg>
+                        PDF
+                      </button>
+                    </div>
+                    <p
+                      className={`font-medium ${
+                        getProfit(order, orderIdx) >= 0
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      {formatPrice(getProfit(order, orderIdx))}
+                    </p>
+                  </div>
+                </div>
+
+                {order.address && (
+                  <p className="text-xs text-slate-400 mt-2">
+                    Địa chỉ: {order.address}
+                  </p>
+                )}
+                {order.notes && (
+                  <p className="text-xs text-slate-400 mt-1">
+                    Ghi chú: {order.notes}
+                  </p>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 

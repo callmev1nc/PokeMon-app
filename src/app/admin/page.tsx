@@ -18,6 +18,7 @@ export default function AdminPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [search, setSearch] = useState("");
+  const [showCount, setShowCount] = useState(100);
 
   useEffect(() => {
     fetchProducts();
@@ -131,6 +132,14 @@ export default function AdminPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="mb-4">
+        <a
+          href="/"
+          className="text-sm text-blue-600 hover:underline"
+        >
+          ← Quay lại cửa hàng
+        </a>
+      </div>
       <AdminNav active="products" />
 
       {/* Stats */}
@@ -221,7 +230,7 @@ export default function AdminPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.slice(0, 100).map((p) => {
+                {filtered.slice(0, showCount).map((p) => {
                   const edited = editedProducts.get(p.id);
                   return (
                     <tr
@@ -244,6 +253,8 @@ export default function AdminPage() {
                               ? "bg-yellow-100 text-yellow-800"
                               : p.displayType === "EX"
                               ? "bg-red-100 text-red-800"
+                              : p.displayType === "Holo Prize Card"
+                              ? "bg-purple-100 text-purple-800"
                               : "bg-gray-100 text-gray-800"
                           }`}
                         >
@@ -272,23 +283,22 @@ export default function AdminPage() {
                 })}
               </tbody>
             </table>
-            {filtered.length > 100 && (
-              <p className="text-center text-xs text-slate-400 py-2">
-                Hiển thị 100/{filtered.length} sản phẩm
-              </p>
+            {filtered.length > showCount && (
+              <div className="text-center py-3">
+                <p className="text-xs text-slate-400 mb-2">
+                  Hiển thị {showCount}/{filtered.length} sản phẩm
+                </p>
+                <button
+                  onClick={() => setShowCount((c) => c + 100)}
+                  className="px-5 py-2 bg-slate-50 text-slate-600 rounded-xl text-sm font-semibold hover:bg-slate-100 transition-colors border border-slate-200"
+                >
+                  Hiển thị thêm
+                </button>
+              </div>
             )}
           </div>
         </div>
       )}
-
-      <div className="mt-8">
-        <a
-          href="/"
-          className="text-sm text-blue-600 hover:underline"
-        >
-          ← Quay lại cửa hàng
-        </a>
-      </div>
     </div>
   );
 }

@@ -236,7 +236,7 @@
     "name": "ARCHALUDON",
     "series": "SCR 107/142",
     "type": "holo prize card",
-    "displayType": "Prize Card",
+    "displayType": "Holo Prize Card",
     "group": "pokemon",
     "price": 9,
     "stock": 3
@@ -1677,7 +1677,7 @@
     "name": "COLRESS'S TENACITY",
     "series": "SFA 057/064",
     "type": "holo prize card",
-    "displayType": "Prize Card",
+    "displayType": "Holo Prize Card",
     "group": "suppoter",
     "price": 8,
     "stock": 1
@@ -1743,7 +1743,7 @@
     "name": "COUNTER CATCHER",
     "series": "PAR 160/182",
     "type": "holo prize card",
-    "displayType": "Prize Card",
+    "displayType": "Holo Prize Card",
     "group": "item",
     "price": 8,
     "stock": 1
@@ -2469,7 +2469,7 @@
     "name": "DRAKLOAK",
     "series": "TWM 129/167",
     "type": "holo prize card",
-    "displayType": "Prize Card",
+    "displayType": "Holo Prize Card",
     "group": "pokemon",
     "price": 20,
     "stock": 4
@@ -2755,7 +2755,7 @@
     "name": "DUSKNOIR",
     "series": "SFA 020/064",
     "type": "holo prize card",
-    "displayType": "Prize Card",
+    "displayType": "Holo Prize Card",
     "group": "pokemon",
     "price": 10,
     "stock": 1
@@ -2821,7 +2821,7 @@
     "name": "EARTHEN VESSEL",
     "series": "PAR EN 163/182",
     "type": "holo prize card",
-    "displayType": "Prize Card",
+    "displayType": "Holo Prize Card",
     "group": "item",
     "price": 14,
     "stock": 1
@@ -3503,7 +3503,7 @@
     "name": "EXPLORER'S GUIDANCE",
     "series": "TEF EN 147/162",
     "type": "holo prize card",
-    "displayType": "Prize Card",
+    "displayType": "Holo Prize Card",
     "group": "suppoter",
     "price": 5,
     "stock": 1
@@ -4680,7 +4680,7 @@
     "name": "HEATRAN",
     "series": "TWM EN 123/167",
     "type": "holo prize card",
-    "displayType": "Prize Card",
+    "displayType": "Holo Prize Card",
     "group": "pokemon",
     "price": 7,
     "stock": 3
@@ -4878,7 +4878,7 @@
     "name": "HOP'S CHOICE BAND",
     "series": "JTG EN 148/159",
     "type": "holo prize card",
-    "displayType": "Prize Card",
+    "displayType": "Holo Prize Card",
     "group": "tool",
     "price": 7,
     "stock": 2
@@ -5087,7 +5087,7 @@
     "name": "IRON BOULDER",
     "series": "SCR 071/142",
     "type": "holo prize card",
-    "displayType": "Prize Card",
+    "displayType": "Holo Prize Card",
     "group": "pokemon",
     "price": 8,
     "stock": 3
@@ -5318,7 +5318,7 @@
     "name": "JOLTIK",
     "series": "SCR 050/142",
     "type": "holo prize card",
-    "displayType": "Prize Card",
+    "displayType": "Holo Prize Card",
     "group": "pokemon",
     "price": null,
     "stock": 2
@@ -5769,7 +5769,7 @@
     "name": "LEVINCIA",
     "series": "JTG EN 150/159",
     "type": "holo prize card",
-    "displayType": "Prize Card",
+    "displayType": "Holo Prize Card",
     "group": "pokemon",
     "price": 10,
     "stock": 2
@@ -5835,7 +5835,7 @@
     "name": "LILLIE'S PEARL",
     "series": "JTG EN 151/159",
     "type": "holo prize card",
-    "displayType": "Prize Card",
+    "displayType": "Holo Prize Card",
     "group": "tool",
     "price": 10,
     "stock": 1
@@ -5868,7 +5868,7 @@
     "name": "LILLIE'S RIBOMBEE",
     "series": "JTG 067/159",
     "type": "holo prize card",
-    "displayType": "Prize Card",
+    "displayType": "Holo Prize Card",
     "group": "pokemon",
     "price": 8,
     "stock": 1
@@ -6462,7 +6462,7 @@
     "name": "METANG",
     "series": "TEF EN 114/162",
     "type": "holo prize card",
-    "displayType": "Prize Card",
+    "displayType": "Holo Prize Card",
     "group": "pokemon",
     "price": 8,
     "stock": 3
@@ -7078,7 +7078,7 @@
     "name": "NEST BALL",
     "series": "SVI EN 181/198",
     "type": "holo prize card",
-    "displayType": "Prize Card",
+    "displayType": "Holo Prize Card",
     "group": "item",
     "price": 10,
     "stock": 1
@@ -7342,7 +7342,7 @@
     "name": "PERILOUS JUNGLE",
     "series": "TEF EN 156/162",
     "type": "holo prize card",
-    "displayType": "Prize Card",
+    "displayType": "Holo Prize Card",
     "group": "stadium",
     "price": 8,
     "stock": 1
@@ -7628,7 +7628,7 @@
     "name": "POWERGLASS",
     "series": "SFA 063/064",
     "type": "holo prize card",
-    "displayType": "Prize Card",
+    "displayType": "Holo Prize Card",
     "group": "tool",
     "price": 9,
     "stock": 1
@@ -9421,7 +9421,7 @@
     "name": "SWITCH",
     "series": "SVI 194/198",
     "type": "holo prize card",
-    "displayType": "Prize Card",
+    "displayType": "Holo Prize Card",
     "group": "item",
     "price": 12,
     "stock": 1
@@ -10026,7 +10026,7 @@
     "name": "TECHNO RADAR",
     "series": "PAR EN 180/182",
     "type": "holo prize card",
-    "displayType": "Prize Card",
+    "displayType": "Holo Prize Card",
     "group": "item",
     "price": 7,
     "stock": 2
@@ -10543,7 +10543,7 @@
     "name": "Wally's Compassion",
     "series": "MEG 132/132",
     "type": "holo prize card",
-    "displayType": "Prize Card",
+    "displayType": "Holo Prize Card",
     "group": "suppoter",
     "price": 8,
     "stock": 1

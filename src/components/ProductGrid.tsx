@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { Product, DisplayType, SortOption, GroupCategory } from "@/lib/types";
+import { DISPLAY_TYPES } from "@/lib/constants";
 import ProductCard from "./ProductCard";
 import FilterBar from "./FilterBar";
 
@@ -10,6 +11,8 @@ export default function ProductGrid({ products }: { products: Product[] }) {
     "Normal",
     "Holo",
     "Prize Card",
+    "EX",
+    "Holo Prize Card",
   ]);
   const [selectedGroups, setSelectedGroups] = useState<GroupCategory[]>([]);
   const [search, setSearch] = useState("");
@@ -30,14 +33,14 @@ export default function ProductGrid({ products }: { products: Product[] }) {
   const filtered = useMemo(() => {
     let result = products;
 
-    // Filter by display type
-    if (selectedTypes.length < 3) {
-      result = result.filter((p) => selectedTypes.includes(p.displayType));
-    }
-
     // Filter by group category
     if (selectedGroups.length > 0) {
       result = result.filter((p) => selectedGroups.includes(p.group as GroupCategory));
+    }
+
+    // Filter by display type (only if no group is selected)
+    if (selectedGroups.length === 0 && selectedTypes.length < DISPLAY_TYPES.length) {
+      result = result.filter((p) => selectedTypes.includes(p.displayType));
     }
 
     // Filter by search

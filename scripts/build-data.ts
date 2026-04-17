@@ -9,14 +9,15 @@ interface Product {
   name: string;
   series: string;
   type: string;
-  displayType: "Normal" | "Holo" | "Prize Card" | "EX";
+  displayType: "Normal" | "Holo" | "Prize Card" | "EX" | "Holo Prize Card";
   group: string;
   price: number | null;
   stock: number;
 }
 
-function mapDisplayType(rawType: string): "Normal" | "Holo" | "Prize Card" | "EX" {
+function mapDisplayType(rawType: string): "Normal" | "Holo" | "Prize Card" | "EX" | "Holo Prize Card" {
   const t = rawType.toLowerCase().trim();
+  if (t === "holo prize card") return "Holo Prize Card";
   if (t === "holo") return "Holo";
   if (t.includes("ex")) return "EX";
   if (t.includes("prize")) return "Prize Card";

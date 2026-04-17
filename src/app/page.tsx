@@ -31,7 +31,7 @@ export default function HomePage() {
           <div className="flex items-center gap-6">
             <div className="flex-1">
               <h2 className="text-2xl md:text-4xl font-bold mb-2">
-                Pokemon Card Store
+                V1ncc TCG Card Shop
               </h2>
               <p className="text-red-100 text-sm md:text-base max-w-lg">
                 Thẻ bài Pokémon chất lượng cao - Normal, Holo, Prize Card, EX.
@@ -81,7 +81,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
           <div className="flex items-center gap-2">
             <img src="/logo.png" alt="" className="h-6 w-auto" />
-            <span>Pokemon Card Store</span>
+            <span>V1ncc TCG Card Shop</span>
           </div>
           <p>Thẻ bài Pokémon chất lượng, giá tốt</p>
         </div>

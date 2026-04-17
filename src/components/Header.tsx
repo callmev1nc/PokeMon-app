@@ -16,12 +16,12 @@ export default function Header({
         <a href="/" className="flex items-center gap-3 group">
           <img
             src="/logo.png"
-            alt="Pokemon Card Store"
+            alt="V1ncc TCG Card Shop"
             className="h-10 w-auto rounded-lg transition-transform group-hover:scale-105"
           />
           <div className="hidden sm:block">
             <h1 className="text-lg font-bold text-slate-800 leading-tight">
-              Pokemon Card Store
+              V1ncc TCG Card Shop
             </h1>
             <p className="text-[10px] text-slate-400 -mt-0.5 tracking-wide uppercase">
               Thẻ Bài Pokémon Chất Lượng

@@ -87,8 +87,12 @@ export default function CustomerInfoPage() {
               id="phone"
               type="tel"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value.replace(/\D/g, "").slice(0, 11);
+                setPhone(val);
+              }}
               required
+              maxLength={11}
               className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
               placeholder="0xxx xxx xxx"
             />
@@ -110,15 +114,16 @@ export default function CustomerInfoPage() {
 
           <div>
             <label htmlFor="oldAddress" className="block text-sm font-semibold text-slate-700 mb-1.5">
-              Địa chỉ cũ
+              Địa chỉ cũ <span className="text-brand">*</span>
             </label>
             <input
               id="oldAddress"
               type="text"
               value={oldAddress}
               onChange={(e) => setOldAddress(e.target.value)}
+              required
               className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
-              placeholder="Địa chỉ cũ (nếu có)"
+              placeholder="Địa chỉ cũ"
             />
           </div>
 

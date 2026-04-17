@@ -1,1 +1,18 @@
-[]
+[
+  {
+    "timestamp": "2026-04-17T01:21:52.682Z",
+    "orderDate": "17/4/2026",
+    "orderCode": "",
+    "products": "1x ABRA - PO-P-01, 1x ACADEMY AT NIGHT - STA-01",
+    "customerName": "v1ncc",
+    "phone": "0909013878",
+    "address": "244 vinh vien",
+    "notes": "",
+    "sellPrice": 7,
+    "buyPrice": 2,
+    "shippingCost": 0,
+    "profit": 0,
+    "paymentStatus": "Chưa thanh toán",
+    "_row": 1
+  }
+]
