@@ -47,6 +47,9 @@ function doGet(e) {
 
     var action = e.parameter.action;
     switch (action) {
+      case "sheets":
+        var ss = getBizSS();
+        return json(ss.getSheets().map(function(s) { return s.getName(); }));
       case "orders":
         return json(getOrders());
       case "customers":
