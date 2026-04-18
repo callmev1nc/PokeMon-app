@@ -38,6 +38,18 @@ function getBizSS() {
   return SpreadsheetApp.openById(BIZ_SS_ID);
 }
 
+// Get sheet by name, trimming whitespace (Google Sheets tabs sometimes have trailing spaces)
+function getSheet(ss, name) {
+  var sheet = ss.getSheetByName(name);
+  if (sheet) return sheet;
+  // Fallback: try matching with trimmed names
+  var sheets = ss.getSheets();
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].getName().trim() === name.trim()) return sheets[i];
+  }
+  return null;
+}
+
 function doGet(e) {
   try {
     if (e.parameter.payload) {
@@ -108,7 +120,7 @@ function handlePost(body) {
 // ============================================================
 
 function getOrders() {
-  var sheet = getBizSS().getSheetByName("ĐƠN HÀNG");
+  var sheet = getSheet(getBizSS(), "ĐƠN HÀNG");
   if (!sheet) return [];
   var data = sheet.getDataRange().getValues();
 
@@ -141,7 +153,7 @@ function addOrder(body) {
   var order = body.order || body;
   var ss = getBizSS();
 
-  var orderSheet = ss.getSheetByName("ĐƠN HÀNG");
+  var orderSheet = getSheet(ss, "ĐƠN HÀNG");
   if (!orderSheet) return { error: "ĐƠN HÀNG sheet not found" };
 
   var orderData = orderSheet.getDataRange().getValues();
@@ -180,7 +192,7 @@ function updateOrder(body) {
   var data = body.data;
   var ss = getBizSS();
 
-  var orderSheet = ss.getSheetByName("ĐƠN HÀNG");
+  var orderSheet = getSheet(ss, "ĐƠN HÀNG");
   if (!orderSheet || !row) return { success: true };
 
   if (data.orderCode !== undefined) orderSheet.getRange(row, 3).setValue(data.orderCode);
@@ -207,7 +219,7 @@ function confirmOrder(body) {
   var data = body.data;
   var ss = getBizSS();
 
-  var orderSheet = ss.getSheetByName("ĐƠN HÀNG");
+  var orderSheet = getSheet(ss, "ĐƠN HÀNG");
   if (!orderSheet || !row) return { success: true };
 
   // Get current products from ĐƠN HÀNG col 4
@@ -239,7 +251,7 @@ function deleteOrder(body) {
   var row = body.row;
   var ss = getBizSS();
 
-  var orderSheet = ss.getSheetByName("ĐƠN HÀNG");
+  var orderSheet = getSheet(ss, "ĐƠN HÀNG");
   if (!orderSheet || !row) return { success: true };
 
   // Get products and payment status before deleting
@@ -267,7 +279,7 @@ function adjustInventory(productsString, delta) {
   if (!productsString || !STOCK_SS_ID) return;
   try {
     var stockSS = SpreadsheetApp.openById(STOCK_SS_ID);
-    var stockSheet = stockSS.getSheetByName("Tồn Kho t3");
+    var stockSheet = getSheet(stockSS, "Tồn Kho t3");
     if (!stockSheet) return;
     var stockData = stockSheet.getDataRange().getValues();
 
@@ -307,7 +319,7 @@ function adjustInventory(productsString, delta) {
 // ============================================================
 
 function getCustomers() {
-  var sheet = getBizSS().getSheetByName("Customers");
+  var sheet = getSheet(getBizSS(), "Customers");
   if (!sheet) return [];
   var data = sheet.getDataRange().getValues();
 
@@ -327,7 +339,7 @@ function getCustomers() {
 
 function addCustomer(customer) {
   var ss = getBizSS();
-  var sheet = ss.getSheetByName("Customers");
+  var sheet = getSheet(ss, "Customers");
   if (!sheet) {
     sheet = ss.insertSheet("Customers");
     sheet.appendRow(["Tên", "Số Điện Thoại", "Địa Chỉ mới", "Địa chỉ cũ"]);
@@ -342,7 +354,7 @@ function addCustomer(customer) {
 }
 
 function updateCustomer(row, data) {
-  var sheet = getBizSS().getSheetByName("Customers");
+  var sheet = getSheet(getBizSS(), "Customers");
   if (!sheet) return { error: "Customers sheet not found" };
   if (data.name !== undefined) sheet.getRange(row, 1).setValue(data.name);
   if (data.phone !== undefined) sheet.getRange(row, 2).setValue(String(data.phone));
@@ -357,7 +369,7 @@ function updateCustomer(row, data) {
 
 function getAllProducts() {
   var menuProducts = [];
-  var menuSheet = getBizSS().getSheetByName("MENU");
+  var menuSheet = getSheet(getBizSS(), "MENU");
   if (menuSheet) {
     var menuData = menuSheet.getDataRange().getValues();
     for (var i = 1; i < menuData.length; i++) {
@@ -382,7 +394,7 @@ function getAllProducts() {
   var stockMap = {};
   try {
     var stockSS = SpreadsheetApp.openById(STOCK_SS_ID);
-    var stockSheet = stockSS.getSheetByName("Tồn Kho t3");
+    var stockSheet = getSheet(stockSS, "Tồn Kho t3");
     if (stockSheet) {
       var stockData = stockSheet.getDataRange().getValues();
       for (var i = 2; i < stockData.length; i++) {
@@ -415,7 +427,7 @@ function getAllProducts() {
 // ============================================================
 
 function addProductToMenu(product) {
-  var sheet = getBizSS().getSheetByName("MENU");
+  var sheet = getSheet(getBizSS(), "MENU");
   if (!sheet) return { error: "MENU sheet not found" };
 
   var data = sheet.getDataRange().getValues();
@@ -443,7 +455,7 @@ function addProductToMenu(product) {
 // ============================================================
 
 function getStats() {
-  var sheet = getBizSS().getSheetByName("THỐNG KÊ KINH DOANH");
+  var sheet = getSheet(getBizSS(), "THỐNG KÊ KINH DOANH");
   if (!sheet) return [];
   var data = sheet.getDataRange().getValues();
 
@@ -471,7 +483,7 @@ function getStats() {
 // ============================================================
 
 function getFinance() {
-  var sheet = getBizSS().getSheetByName("QUẢN LÝ THU CHI");
+  var sheet = getSheet(getBizSS(), "QUẢN LÝ THU CHI");
   if (!sheet) return [];
   var data = sheet.getDataRange().getValues();
 
@@ -490,7 +502,7 @@ function getFinance() {
 }
 
 function addFinance(body) {
-  var sheet = getBizSS().getSheetByName("QUẢN LÝ THU CHI");
+  var sheet = getSheet(getBizSS(), "QUẢN LÝ THU CHI");
   if (!sheet) return { error: "QUẢN LÝ THU CHI sheet not found" };
 
   var data = sheet.getDataRange().getValues();
@@ -508,7 +520,7 @@ function addFinance(body) {
 }
 
 function updateFinance(body) {
-  var sheet = getBizSS().getSheetByName("QUẢN LÝ THU CHI");
+  var sheet = getSheet(getBizSS(), "QUẢN LÝ THU CHI");
   if (!sheet) return { error: "QUẢN LÝ THU CHI sheet not found" };
   var row = body.row;
   if (!row) return { error: "Row required" };
