@@ -7,15 +7,16 @@
 //
 // This sheet has 4 tabs:
 //   MENU: Product catalog with sell/buy prices
-//   ORDER: Order tracking
+//   ĐƠN HÀNG: Order tracking
 //   THỐNG KÊ KINH DOANH: Business statistics / profit tracking
 //   QUẢN LÝ THU CHI: Income & expense management
 //
 // Sheets layout:
-//   MENU:    [0]code [1]group [2]series [3]name [4]type [5]sellPrice [6]buyPrice [7]stock [8]image
-//   ORDER:   [0]date [1]orderCode [2]customerName [3]phone [4]products [5]quantity [6]total [7]status
-//   THỐNG KÊ: [0]date [1]orderCode [2]customerName [3]sellPrice [4]buyPrice [5]shipCost [6]profit [7]paymentStatus [8]delivered
-//   THU CHI: [0]content [1]income [2]expense [3]balance
+//   MENU:      [0]code [1]group [2]series [3]name [4]type [5]sellPrice [6]buyPrice [7]stock [8]image
+//   ĐƠN HÀNG:  [0]Dấu thời gian [1]Ngày đơn hàng [2]Mã đơn hàng(026XXX) [3]Sản phẩm-SL
+//              [4]Tên Khách [5]SĐT [6]Địa chỉ nhận(new+old)
+//   THỐNG KÊ:  [0]date [1]orderCode [2]customerName [3]sellPrice [4]buyPrice [5]shipCost [6]profit [7]paymentStatus [8]delivered
+//   THU CHI:   [0]content [1]income [2]expense [3]balance
 
 // Stock sheet ID (for reading stock data and reducing stock on order)
 var STOCK_SS_ID = "1ViScta5Qa1eXWXUp5zkoBeFVkHj-BKS9Xi6pGyGea74";
@@ -183,29 +184,32 @@ function getAllProducts() {
 }
 
 // ============================================================
-// ORDERS - ORDER sheet
+// ORDERS - ĐƠN HÀNG sheet (Google Form responses)
+// Columns (7 total):
+//   [0] Dấu thời gian    [1] Ngày đơn hàng  [2] Mã đơn hàng (026XXX)
+//   [3] Sản phẩm - SL    [4] Tên Khách      [5] Số điện thoại
+//   [6] Địa chỉ nhận hàng
 // ============================================================
 
 function getOrders() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("ORDER");
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("ĐƠN HÀNG");
   if (!sheet) return [];
   var data = sheet.getDataRange().getValues();
 
   var orders = [];
   for (var i = 1; i < data.length; i++) {
-    var orderCode = String(data[i][1] || "").trim();
-    if (!orderCode) continue;
+    // Skip completely empty rows
+    if (!data[i][0] && !data[i][1] && !data[i][2] && !data[i][3] && !data[i][4]) continue;
 
     orders.push({
       _row: i + 1,
-      date: String(data[i][0] || ""),
-      orderCode: orderCode,
-      customerName: String(data[i][2] || ""),
-      phone: String(data[i][3] || ""),
-      products: String(data[i][4] || ""),
-      quantity: data[i][5] || 0,
-      total: data[i][6] || 0,
-      status: String(data[i][7] || ""),
+      timestamp: String(data[i][0] || ""),
+      orderDate: String(data[i][1] || ""),
+      orderCode: String(data[i][2] || "").trim(),
+      products: String(data[i][3] || ""),
+      customerName: String(data[i][4] || ""),
+      phone: String(data[i][5] || ""),
+      address: String(data[i][6] || ""),
     });
   }
   return orders;
@@ -215,31 +219,32 @@ function addOrder(body) {
   var order = body.order || body;
   var ss = SpreadsheetApp.getActiveSpreadsheet();
 
-  // Add to ORDER sheet
-  var orderSheet = ss.getSheetByName("ORDER");
-  if (!orderSheet) return { error: "ORDER sheet not found" };
+  // Add to ĐƠN HÀNG sheet (7 columns: timestamp, date, code, products, name, phone, address)
+  var orderSheet = ss.getSheetByName("ĐƠN HÀNG");
+  if (!orderSheet) return { error: "ĐƠN HÀNG sheet not found" };
 
   var orderData = orderSheet.getDataRange().getValues();
   var nextOrderRow = orderData.length;
-  while (nextOrderRow > 1 && !String(orderData[nextOrderRow - 1][1] || "").trim()) {
+  while (nextOrderRow > 1 && !String(orderData[nextOrderRow - 1][0] || "").trim() && !String(orderData[nextOrderRow - 1][2] || "").trim()) {
     nextOrderRow--;
   }
   nextOrderRow++;
 
-  // Generate order code
-  var orderCode = order.orderCode || ("O2026" + String(nextOrderRow - 1).padStart(5, "0"));
+  // Generate order code: 026XXX format (e.g. 026001, 026023)
+  var orderCount = nextOrderRow - 1; // number of data rows
+  var orderCode = order.orderCode || ("026" + String(orderCount).padStart(3, "0"));
+  var timestamp = order.timestamp || new Date().toLocaleString("vi-VN");
   var date = order.orderDate || new Date().toLocaleDateString("vi-VN");
 
-  orderSheet.getRange(nextOrderRow, 1).setValue(date);           // Ngày đơn hàng
-  orderSheet.getRange(nextOrderRow, 2).setValue(orderCode);      // Mã đơn
-  orderSheet.getRange(nextOrderRow, 3).setValue(order.customerName || ""); // Tên khách
-  orderSheet.getRange(nextOrderRow, 4).setValue(order.phone || "");       // SĐT
-  orderSheet.getRange(nextOrderRow, 5).setValue(order.products || "");    // Sản phẩm
-  orderSheet.getRange(nextOrderRow, 6).setValue(order.quantity || 1);     // Số lượng
-  // Col 7 (Tổng tiền) has formula =SP*SL, auto-calculates
-  orderSheet.getRange(nextOrderRow, 8).setValue(order.paymentStatus || "CHƯA THANH TOÁN - ĐỢI LIÊN HỆ");
+  orderSheet.getRange(nextOrderRow, 1).setValue(timestamp);                     // Dấu thời gian
+  orderSheet.getRange(nextOrderRow, 2).setValue(date);                          // Ngày đơn hàng
+  orderSheet.getRange(nextOrderRow, 3).setValue(orderCode);                     // Mã đơn hàng (026XXX)
+  orderSheet.getRange(nextOrderRow, 4).setValue(order.products || "");          // Sản phẩm - Số lượng
+  orderSheet.getRange(nextOrderRow, 5).setValue(order.customerName || "");      // Tên Khách
+  orderSheet.getRange(nextOrderRow, 6).setValue(order.phone || "");             // SĐT
+  orderSheet.getRange(nextOrderRow, 7).setValue(order.address || "");           // Địa chỉ nhận hàng
 
-  // Add to THỐNG KÊ KINH DOANH sheet
+  // Add financial details to THỐNG KÊ KINH DOANH sheet
   var statsSheet = ss.getSheetByName("THỐNG KÊ KINH DOANH");
   if (statsSheet) {
     var statsData = statsSheet.getDataRange().getValues();
@@ -249,24 +254,23 @@ function addOrder(body) {
     }
     nextStatsRow++;
 
-    statsSheet.getRange(nextStatsRow, 1).setValue(date);           // Ngày đơn hàng
-    statsSheet.getRange(nextStatsRow, 2).setValue(orderCode);      // Mã đơn
-    statsSheet.getRange(nextStatsRow, 3).setValue(order.customerName || ""); // Tên khách
-    statsSheet.getRange(nextStatsRow, 4).setValue(order.sellPrice || 0);     // GIÁ BÁN
-    statsSheet.getRange(nextStatsRow, 5).setValue(order.buyPrice || 0);      // GIÁ MUA
-    statsSheet.getRange(nextStatsRow, 6).setValue(order.shippingCost || 0);  // GIÁ SHIP
+    statsSheet.getRange(nextStatsRow, 1).setValue(date);                           // Ngày
+    statsSheet.getRange(nextStatsRow, 2).setValue(orderCode);                      // Mã đơn
+    statsSheet.getRange(nextStatsRow, 3).setValue(order.customerName || "");       // Tên khách
+    statsSheet.getRange(nextStatsRow, 4).setValue(Number(order.sellPrice) || 0);   // Giá bán
+    statsSheet.getRange(nextStatsRow, 5).setValue(Number(order.buyPrice) || 0);    // Giá mua
+    statsSheet.getRange(nextStatsRow, 6).setValue(Number(order.shippingCost) || 0); // Phí ship
     // Col 7 (LỢI NHUẬN) has formula =GIÁ BÁN - GIÁ MUA - GIÁ SHIP, auto-calculates
-    statsSheet.getRange(nextStatsRow, 8).setValue(order.paymentStatus || "CHƯA THANH TOÁN - ĐỢI LIÊN HỆ");
+    statsSheet.getRange(nextStatsRow, 8).setValue(order.paymentStatus || "Chưa thanh toán");
   }
 
   // Update stock in Stock sheet (reduce quantity)
-  if (order.products && STOCK_SS_ID !== "YOUR_STOCK_SHEET_ID_HERE") {
+  if (order.products && STOCK_SS_ID) {
     try {
       var stockSS = SpreadsheetApp.openById(STOCK_SS_ID);
       var stockSheet = stockSS.getSheetByName("Tồn Kho t3");
       if (stockSheet) {
         var stockData = stockSheet.getDataRange().getValues();
-        // Find matching product and reduce stock
         for (var s = 2; s < stockData.length; s++) {
           var stockName = String(stockData[s][2] || "").trim().toUpperCase();
           var orderProd = (order.products || "").toUpperCase();
@@ -293,15 +297,17 @@ function updateOrder(body) {
   var data = body.data;
   var ss = SpreadsheetApp.getActiveSpreadsheet();
 
-  // Update ORDER sheet
-  var orderSheet = ss.getSheetByName("ORDER");
+  // Update ĐƠN HÀNG sheet (7 columns only)
+  var orderSheet = ss.getSheetByName("ĐƠN HÀNG");
   if (orderSheet && row) {
-    if (data.paymentStatus !== undefined) {
-      orderSheet.getRange(row, 8).setValue(data.paymentStatus);
-    }
+    if (data.orderCode !== undefined) orderSheet.getRange(row, 3).setValue(data.orderCode);
+    if (data.products !== undefined) orderSheet.getRange(row, 4).setValue(data.products);
+    if (data.customerName !== undefined) orderSheet.getRange(row, 5).setValue(data.customerName);
+    if (data.phone !== undefined) orderSheet.getRange(row, 6).setValue(data.phone);
+    if (data.address !== undefined) orderSheet.getRange(row, 7).setValue(data.address);
   }
 
-  // Update THỐNG KÊ KINH DOANH sheet
+  // Update THỐNG KÊ KINH DOANH sheet (financial details)
   var statsSheet = ss.getSheetByName("THỐNG KÊ KINH DOANH");
   if (statsSheet && row) {
     if (data.buyPrice !== undefined) statsSheet.getRange(row, 5).setValue(data.buyPrice);
@@ -322,24 +328,21 @@ function confirmOrder(body) {
   var data = body.data;
   var ss = SpreadsheetApp.getActiveSpreadsheet();
 
-  // Get current products from ORDER sheet for inventory adjustment
-  var orderSheet = ss.getSheetByName("ORDER");
+  // Get current products from ĐƠN HÀNG sheet for inventory adjustment
+  var orderSheet = ss.getSheetByName("ĐƠN HÀNG");
   if (orderSheet && row && data.paymentStatus !== undefined) {
-    var currentProducts = String(orderSheet.getRange(row, 5).getValue() || "");
-    var quantity = Number(orderSheet.getRange(row, 6).getValue()) || 1;
+    var currentProducts = String(orderSheet.getRange(row, 4).getValue() || ""); // col 4 = products
 
     if (data.paymentStatus === "Đã thanh toán" || data.paymentStatus === "DA THANH TOAN") {
       // Confirming payment -> reduce inventory
-      adjustInventory(currentProducts, quantity, -1);
+      adjustInventory(currentProducts, 1, -1);
     } else {
       // Canceling payment -> restore inventory
-      adjustInventory(currentProducts, quantity, 1);
+      adjustInventory(currentProducts, 1, 1);
     }
-
-    orderSheet.getRange(row, 8).setValue(data.paymentStatus);
   }
 
-  // Update THỐNG KÊ
+  // Update payment status in THỐNG KÊ KINH DOANH (not in ĐƠN HÀNG)
   var statsSheet = ss.getSheetByName("THỐNG KÊ KINH DOANH");
   if (statsSheet && row) {
     if (data.buyPrice !== undefined) statsSheet.getRange(row, 5).setValue(data.buyPrice);
@@ -357,26 +360,31 @@ function deleteOrder(body) {
   var row = body.row;
   var ss = SpreadsheetApp.getActiveSpreadsheet();
 
-  // Check payment status and get products for inventory restore
-  var orderSheet = ss.getSheetByName("ORDER");
-  if (orderSheet && row) {
-    var paymentStatus = String(orderSheet.getRange(row, 8).getValue() || "");
-    var products = String(orderSheet.getRange(row, 5).getValue() || "");
-    var quantity = Number(orderSheet.getRange(row, 6).getValue()) || 1;
+  // Get products for inventory restore; check THỐNG KÊ for payment status
+  var orderSheet = ss.getSheetByName("ĐƠN HÀNG");
+  var statsSheet = ss.getSheetByName("THỐNG KÊ KINH DOANH");
 
-    // Restore inventory if order was paid
-    if (paymentStatus.indexOf("ĐÃ") >= 0 || paymentStatus.indexOf("DA") >= 0) {
-      adjustInventory(products, quantity, 1);
+  if (orderSheet && row) {
+    var products = String(orderSheet.getRange(row, 4).getValue() || ""); // col 4 = products
+
+    // Check payment status from THỐNG KÊ sheet (col 8)
+    var paymentStatus = "";
+    if (statsSheet && row <= statsSheet.getLastRow()) {
+      paymentStatus = String(statsSheet.getRange(row, 8).getValue() || "");
     }
 
-    // Delete from ORDER sheet
+    // Restore inventory if order was paid
+    if (paymentStatus.indexOf("Đã") >= 0 || paymentStatus.indexOf("DA") >= 0 || paymentStatus.indexOf("ĐÃ") >= 0) {
+      adjustInventory(products, 1, 1);
+    }
+
+    // Delete from ĐƠN HÀNG sheet
     if (row <= orderSheet.getLastRow()) {
       orderSheet.deleteRow(row);
     }
   }
 
   // Delete from THỐNG KÊ sheet
-  var statsSheet = ss.getSheetByName("THỐNG KÊ KINH DOANH");
   if (statsSheet && row && row <= statsSheet.getLastRow()) {
     statsSheet.deleteRow(row);
   }
