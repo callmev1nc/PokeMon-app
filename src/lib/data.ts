@@ -135,6 +135,20 @@ export function updateProducts(
 
   productsCache = products;
   writeJson("products.json", products);
+
+  // Push product updates to Google Sheets
+  if (STOCK_URL) {
+    const sheetUpdates = updates
+      .filter((u) => u.id && productMap.has(u.id))
+      .map((u) => {
+        const p = productMap.get(u.id!)!;
+        return { _row: p._row, code: p.code, series: p.series, type: p.type, price: p.price, stock: p.stock };
+      });
+    if (sheetUpdates.length > 0) {
+      postSheet(STOCK_URL, { action: "updateProducts", products: sheetUpdates }).catch(() => {});
+    }
+  }
+
   return { success: true, updated };
 }
 
@@ -151,6 +165,15 @@ export function addProductLocal(
   } as Product);
   productsCache = products;
   writeJson("products.json", products);
+
+  // Push new product to Google Sheets
+  if (STOCK_URL) {
+    postSheet(STOCK_URL, { action: "addProduct", product }).catch(() => {});
+  }
+  if (BUSINESS_URL) {
+    postSheet(BUSINESS_URL, { action: "addProduct", product }).catch(() => {});
+  }
+
   return { success: true };
 }
 
