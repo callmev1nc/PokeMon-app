@@ -194,13 +194,32 @@ export async function POST(req: NextRequest) {
       }
       case "deleteOrder": {
         const row = Number(body.row);
-        if (isNaN(row)) {
+        const orderData = body.orderData as Record<string, unknown> | undefined;
+        if (!isNaN(row) && orderData) {
+          return NextResponse.json(deleteOrder({ _row: row, products: String(orderData.products || "") }));
+        }
+        if (!isNaN(row)) {
+          return NextResponse.json(deleteOrder(row));
+        }
+        return NextResponse.json(
+          { error: "Invalid data" },
+          { status: 400 }
+        );
+      }
+      case "deleteOrders": {
+        const items = body.items as { row: number; products: string }[];
+        if (!Array.isArray(items) || items.length === 0) {
           return NextResponse.json(
             { error: "Invalid data" },
             { status: 400 }
           );
         }
-        return NextResponse.json(deleteOrder(row));
+        let deleted = 0;
+        for (const item of items) {
+          const result = deleteOrder({ _row: item.row, products: item.products });
+          if (result.success) deleted++;
+        }
+        return NextResponse.json({ success: true, deleted });
       }
       case "updateOrder": {
         const row = Number(body.row);

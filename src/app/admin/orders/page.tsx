@@ -14,6 +14,8 @@ export default function AdminOrdersPage() {
   const [editValues, setEditValues] = useState<
     Record<number, { buyPrice: string; shippingCost: string }>
   >({});
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [selectMode, setSelectMode] = useState(false);
 
   useEffect(() => {
     fetchOrders();
@@ -109,11 +111,7 @@ export default function AdminOrdersPage() {
 
     if (
       !confirm(
-        `Xóa đơn hàng của ${order.customerName || "Khách"}?\n${
-          order.paymentStatus === "Đã thanh toán"
-            ? "Đơn đã thanh toán - tồn kho sẽ được hoàn lại."
-            : ""
-        }`
+        `Xóa đơn hàng của ${order.customerName || "Khách"}?\nTồn kho sẽ được hoàn lại.`
       )
     ) {
       return;
@@ -123,18 +121,73 @@ export default function AdminOrdersPage() {
       const res = await fetch("/api/sheets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "deleteOrder", row: orderIdx }),
+        body: JSON.stringify({
+          action: "deleteOrder",
+          row: order._row || orderIdx + 2,
+          orderData: { products: order.products },
+        }),
       });
 
       const data = await res.json();
       if (data.success) {
         setMessage("Đã xóa đơn hàng");
+        setSelected(new Set());
         await fetchOrders();
       } else {
         setMessage("Lỗi xóa đơn hàng");
       }
     } catch {
       setMessage("Lỗi kết nối");
+    }
+  }
+
+  async function handleBulkDelete() {
+    if (selected.size === 0) return;
+    if (!confirm(`Xóa ${selected.size} đơn hàng đã chọn?\nTồn kho sẽ được hoàn lại.`)) return;
+
+    const items = Array.from(selected).map((idx) => {
+      const order = filtered[idx];
+      return {
+        row: order._row || orders.indexOf(order) + 2,
+        products: order.products,
+      };
+    });
+
+    try {
+      const res = await fetch("/api/sheets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "deleteOrders", items }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setMessage(`Đã xóa ${data.deleted} đơn hàng`);
+        setSelected(new Set());
+        setSelectMode(false);
+        await fetchOrders();
+      } else {
+        setMessage("Lỗi xóa đơn hàng");
+      }
+    } catch {
+      setMessage("Lỗi kết nối");
+    }
+  }
+
+  function toggleSelect(idx: number) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx);
+      else next.add(idx);
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    if (selected.size === filtered.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(filtered.map((_, i) => i)));
     }
   }
 
@@ -373,8 +426,8 @@ export default function AdminOrdersPage() {
         </div>
       </div>
 
-      {/* Filter + Print */}
-      <div className="flex flex-wrap gap-2 mb-4">
+      {/* Filter + Actions */}
+      <div className="flex flex-wrap gap-2 mb-4 items-center">
         {(
           [
             ["all", "Tất cả"],
@@ -386,7 +439,7 @@ export default function AdminOrdersPage() {
         ).map(([f, label]) => (
           <button
             key={f}
-            onClick={() => setFilter(f)}
+            onClick={() => { setFilter(f); setSelected(new Set()); }}
             className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               filter === f
                 ? "bg-blue-600 text-white"
@@ -396,16 +449,59 @@ export default function AdminOrdersPage() {
             {label}
           </button>
         ))}
-        <button
-          onClick={handlePrintTable}
-          className="ml-auto px-4 py-1.5 rounded-lg text-sm font-medium bg-slate-800 text-white hover:bg-slate-700 transition-colors flex items-center gap-1.5"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0 1 10.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0 .229 2.523a1.125 1.125 0 0 1-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0 0 21 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 0 0-1.913-.247M6.34 18H5.25A2.25 2.25 0 0 1 3 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 0 1 1.913-.247m10.5 0a48.536 48.536 0 0 0-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18.75 12h.008v.008h-.008V12Zm-2.25 0h.008v.008H16.5V12Z" />
-          </svg>
-          In / Tải PDF
-        </button>
+        <div className="ml-auto flex items-center gap-2">
+          {/* Select mode toggle */}
+          <button
+            onClick={() => { setSelectMode(!selectMode); setSelected(new Set()); }}
+            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              selectMode
+                ? "bg-amber-500 text-white"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            }`}
+          >
+            {selectMode ? "Hủy chọn" : "Chọn xóa"}
+          </button>
+          {/* Bulk delete */}
+          {selectMode && selected.size > 0 && (
+            <button
+              onClick={handleBulkDelete}
+              className="px-4 py-1.5 rounded-lg text-sm font-medium bg-red-600 text-white hover:bg-red-700 transition-colors"
+            >
+              Xóa ({selected.size})
+            </button>
+          )}
+          {/* Print all */}
+          <button
+            onClick={handlePrintTable}
+            className="px-4 py-1.5 rounded-lg text-sm font-medium bg-slate-800 text-white hover:bg-slate-700 transition-colors flex items-center gap-1.5"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0 1 10.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0 .229 2.523a1.125 1.125 0 0 1-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0 0 21 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 0 0-1.913-.247M6.34 18H5.25A2.25 2.25 0 0 1 3 15.75V9.456c0-1.081-.768-2.015 1.837-2.175a48.041 48.041 0 0 1 1.913-.247m10.5 0a48.536 48.536 0 0 0-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18.75 12h.008v.008h-.008V12Zm-2.25 0h.008v.008H16.5V12Z" />
+            </svg>
+            In tất cả
+          </button>
+        </div>
       </div>
+
+      {/* Select all bar */}
+      {selectMode && filtered.length > 0 && (
+        <div className="flex items-center gap-3 mb-3 px-1">
+          <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={selected.size === filtered.length && filtered.length > 0}
+              onChange={toggleSelectAll}
+              className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+            />
+            Chọn tất cả ({filtered.length})
+          </label>
+          {selected.size > 0 && (
+            <span className="text-sm text-slate-400">
+              Đã chọn {selected.size}/{filtered.length}
+            </span>
+          )}
+        </div>
+      )}
 
       {message && (
         <p className="text-sm text-green-600 bg-green-50 px-3 py-2 rounded-lg mb-4">
@@ -423,21 +519,35 @@ export default function AdminOrdersPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {filtered.map((order) => {
+          {filtered.map((order, idx) => {
             const orderIdx = orders.indexOf(order);
+            const isSelected = selected.has(idx);
             return (
               <div
                 key={`${order.orderDate}-${order.customerName}-${orderIdx}`}
-                className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 animate-fade-in"
+                className={`bg-white rounded-2xl border shadow-sm p-5 animate-fade-in transition-colors ${
+                  isSelected ? "border-red-200 bg-red-50/30" : "border-slate-100"
+                }`}
               >
                 <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <p className="font-medium text-slate-800">
-                      {order.customerName || "Khách"}
-                    </p>
-                    <p className="text-xs text-slate-400">
-                      {order.orderDate || order.timestamp} · {order.phone}
-                    </p>
+                  <div className="flex items-start gap-3">
+                    {/* Checkbox */}
+                    {selectMode && (
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleSelect(idx)}
+                        className="mt-1 w-4 h-4 rounded border-slate-300 text-red-600 focus:ring-red-500 cursor-pointer"
+                      />
+                    )}
+                    <div>
+                      <p className="font-medium text-slate-800">
+                        {order.customerName || "Khách"}
+                      </p>
+                      <p className="text-xs text-slate-400">
+                        {order.orderDate || order.timestamp} · {order.phone}
+                      </p>
+                    </div>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap justify-end">
                     {/* Payment badge */}
@@ -485,13 +595,13 @@ export default function AdminOrdersPage() {
                     >
                       Xóa
                     </button>
-                    {/* Print single order */}
+                    {/* Print */}
                     <button
                       onClick={() => handlePrintSingle(order)}
                       className="text-xs px-3 py-1.5 bg-slate-800 text-white rounded-lg hover:bg-slate-700 font-semibold transition-colors flex items-center gap-1"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0 1 10.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0 .229 2.523a1.125 1.125 0 0 1-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0 0 21 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 0 0-1.913-.247M6.34 18H5.25A2.25 2.25 0 0 1 3 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 0 1 1.913-.247m10.5 0a48.536 48.536 0 0 0-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18.75 12h.008v.008h-.008V12Zm-2.25 0h.008v.008H16.5V12Z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0 1 10.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0 .229 2.523a1.125 1.125 0 0 1-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0 0 21 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 0 0-1.913-.247M6.34 18H5.25A2.25 2.25 0 0 1 3 15.75V9.456c0-1.081-.768-2.015 1.837-2.175a48.041 48.041 0 0 1 1.913-.247m10.5 0a48.536 48.536 0 0 0-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18.75 12h.008v.008h-.008V12Zm-2.25 0h.008v.008H16.5V12Z" />
                       </svg>
                       In
                     </button>

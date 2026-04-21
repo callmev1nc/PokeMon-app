@@ -276,16 +276,40 @@ export function confirmOrder(
 }
 
 /**
- * Delete order: restore inventory if paid, then remove.
+ * Delete order by _row (Google Sheets row number) or local index.
+ * Works with both live (Google Sheets) and local data.
  */
-export function deleteOrder(index: number): { success: boolean } {
+export function deleteOrder(
+  identifier: number | { _row?: number; products?: string }
+): { success: boolean } {
   const orders = fetchOrders();
-  if (index < 0 || index >= orders.length) return { success: false };
+  let index = -1;
+  let order: Order | undefined;
 
-  const order = orders[index];
+  if (typeof identifier === "object") {
+    // Find by _row from live data
+    const row = identifier._row;
+    if (row) {
+      index = orders.findIndex((o) => o._row === row);
+    }
+    if (index === -1) {
+      // Fallback: still try to adjust inventory from the passed order data
+      if (identifier.products) adjustInventory(identifier.products, 1);
+      if (BUSINESS_URL && row) {
+        postSheet(BUSINESS_URL, { action: "deleteOrder", row }).catch(() => {});
+      }
+      return { success: true };
+    }
+    order = orders[index];
+  } else {
+    if (identifier < 0 || identifier >= orders.length) return { success: false };
+    index = identifier;
+    order = orders[index];
+  }
+
+  if (!order) return { success: false };
   adjustInventory(order.products, 1);
 
-  // Push delete to Google Sheets before removing locally
   if (BUSINESS_URL) {
     postSheet(BUSINESS_URL, {
       action: "deleteOrder",
