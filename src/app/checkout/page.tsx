@@ -39,7 +39,7 @@ export default function CheckoutPage() {
         address: customer.newAddress || customer.oldAddress,
         oldAddress: customer.oldAddress || "",
         notes: "",
-        sellPrice: total,
+        sellPrice: total * 1000,
         buyPrice: 0,
         shippingCost: 0,
         profit: 0,

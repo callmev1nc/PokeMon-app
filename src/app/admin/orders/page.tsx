@@ -210,7 +210,7 @@ export default function AdminOrdersPage() {
   );
 
   function formatPrice(val: number): string {
-    return new Intl.NumberFormat("vi-VN").format(val * 1000) + " đ";
+    return new Intl.NumberFormat("vi-VN").format(val) + " đ";
   }
 
   function getProfit(order: Order, idx: number): number {
