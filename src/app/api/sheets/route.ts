@@ -184,13 +184,15 @@ export async function POST(req: NextRequest) {
       case "confirmOrder": {
         const row = Number(body.row);
         const data = body.data as Record<string, unknown> | undefined;
+        const orderRow = body.orderRow ? Number(body.orderRow) : undefined;
+        const products = body.products as string | undefined;
         if (isNaN(row) || !data) {
           return NextResponse.json(
             { error: "Invalid data" },
             { status: 400 }
           );
         }
-        return NextResponse.json(confirmOrder(row, data));
+        return NextResponse.json(confirmOrder(row, data, products, orderRow));
       }
       case "deleteOrder": {
         const row = Number(body.row);

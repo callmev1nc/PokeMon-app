@@ -161,12 +161,19 @@ function updateStock(code, type, quantity) {
     var rowCode = String(data[i][0] || "").trim();
     var rowType = String(data[i][4] || "").trim().toLowerCase();
     if (rowCode === code && rowType === type.toLowerCase()) {
-      var currentStock = Number(data[i][10]) || 0;
-      var newStock = Math.max(0, currentStock - quantity);
-      sheet.getRange(i + 1, 11).setValue(newStock); // TỒN
+      // Always update XUẤT (column I = col 9)
       var currentXuat = Number(data[i][8]) || 0;
-      sheet.getRange(i + 1, 9).setValue(currentXuat + quantity); // XUẤT
-      return { success: true, stock: newStock };
+      sheet.getRange(i + 1, 9).setValue(currentXuat + quantity);
+
+      // Only update TỒN (column K = col 11) if it's not a formula
+      var tonCell = sheet.getRange(i + 1, 11);
+      var formula = tonCell.getFormula();
+      if (!formula) {
+        var currentStock = Number(data[i][10]) || 0;
+        var newStock = Math.max(0, currentStock - quantity);
+        tonCell.setValue(newStock);
+      }
+      return { success: true };
     }
   }
   return { error: "Product not found" };

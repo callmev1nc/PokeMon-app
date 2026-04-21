@@ -96,14 +96,26 @@ export function adjustInventory(orderProducts: string, delta: number): void {
   productsCache = products;
   writeJson("products.json", products);
 
-  // Push stock changes to Google Sheets
+  // Push stock changes to Google Sheets using updateStock for each product.
+  // updateStock handles both XUẤT (col I) and TỒN (col K) correctly.
   if (STOCK_URL) {
-    const updates = products.filter((p) => items.some((item) => {
-      const m = item.match(/^(\d+)x\s+(.+?)\s+-\s+(\S+)$/);
-      return m && m[3] === p.code;
-    })).map((p) => ({ _row: p._row, code: p.code, series: p.series, type: p.type, stock: p.stock }));
-    if (updates.length > 0) {
-      postSheet(STOCK_URL, { action: "updateProducts", products: updates }).catch(() => {});
+    for (const item of items) {
+      const match = item.match(/^(\d+)x\s+(.+?)\s+-\s+(\S+)$/);
+      if (!match) continue;
+      const qty = parseInt(match[1]);
+      const code = match[3];
+      const product = products.find((p) => p.code === code);
+      if (product) {
+        // updateStock: quantity is subtracted from TỒN, added to XUẤT
+        // For confirm (delta=-1): send +qty to reduce stock, increase xuất
+        // For cancel (delta=+1): send -qty to restore stock, decrease xuất
+        postSheet(STOCK_URL, {
+          action: "updateStock",
+          code: product.code,
+          type: product.type,
+          quantity: -delta * qty,
+        }).catch(() => {});
+      }
     }
   }
 }
@@ -248,26 +260,34 @@ export function updateOrder(
  */
 export function confirmOrder(
   index: number,
-  data: Partial<Order>
+  data: Partial<Order>,
+  orderProducts?: string,
+  orderRow?: number,
 ): { success: boolean } {
   const orders = fetchOrders();
-  if (index < 0 || index >= orders.length) return { success: false };
+  const order = (index >= 0 && index < orders.length) ? orders[index] : null;
 
-  const order = orders[index];
+  // Use provided products string or fall back to local order's products
+  const productsStr = orderProducts || (order?.products ?? "");
+
   if (data.paymentStatus === "Đã thanh toán") {
-    adjustInventory(order.products, -1);
+    adjustInventory(productsStr, -1);
   } else if (data.paymentStatus === "Chưa thanh toán") {
-    adjustInventory(order.products, 1);
+    adjustInventory(productsStr, 1);
   }
 
-  orders[index] = { ...order, ...data };
-  writeJson("orders.json", orders);
+  // Update local store if possible
+  if (order) {
+    orders[index] = { ...order, ...data };
+    writeJson("orders.json", orders);
+  }
 
-  // Push to Google Sheets in background
+  // Push to Google Sheets
   if (BUSINESS_URL) {
+    const row = orderRow || order?._row || index + 2;
     postSheet(BUSINESS_URL, {
       action: "confirmOrder",
-      row: order._row || index + 2,
+      row,
       data,
     }).catch(() => {});
   }
