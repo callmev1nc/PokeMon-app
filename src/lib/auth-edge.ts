@@ -3,7 +3,7 @@
 
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "chausieudethuong";
 const SESSION_SECRET =
-  process.env.SESSION_SECRET || "pokemon-admin-secret-key-2026";
+  process.env.SESSION_SECRET || "42ebae182eac29e02cc5f9fdba6fd1d8b809f5f1af7b3c77e5192d3cc031cb8e";
 export const COOKIE_NAME = "admin-session";
 const SESSION_MAX_AGE = 60 * 60 * 24; // 24 hours
 

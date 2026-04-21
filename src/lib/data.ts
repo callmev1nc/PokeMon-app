@@ -283,10 +283,7 @@ export function deleteOrder(index: number): { success: boolean } {
   if (index < 0 || index >= orders.length) return { success: false };
 
   const order = orders[index];
-  // Restore inventory only if order was paid (stock was reduced)
-  if (order.paymentStatus === "Đã thanh toán") {
-    adjustInventory(order.products, 1);
-  }
+  adjustInventory(order.products, 1);
 
   // Push delete to Google Sheets before removing locally
   if (BUSINESS_URL) {

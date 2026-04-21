@@ -112,6 +112,7 @@ export async function POST(req: NextRequest) {
         customerName: sanitize(String(order.customerName || "")),
         phone: sanitize(String(order.phone || "")),
         address: sanitize(String(order.address || "")),
+        oldAddress: sanitize(String(order.oldAddress || "")),
         notes: sanitize(String(order.notes || "")),
         sellPrice: Number(order.sellPrice) || 0,
         buyPrice: Number(order.buyPrice) || 0,

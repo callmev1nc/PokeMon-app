@@ -180,67 +180,147 @@ export default function AdminOrdersPage() {
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#39;");
 
+  function buildOrderHtml(order: Order): string {
+    const now = new Date();
+    const hanoiTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" }));
+    const dateStr = hanoiTime.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }) + " " + hanoiTime.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+
+    const productLines = (order.products || "").split(", ").map((p) => {
+      const match = p.match(/^(\d+)x\s+(.+?)\s+-\s+(\S+)$/);
+      if (match) return `<div>${match[1]}x ${match[2]} - ${match[3]}</div>`;
+      return `<div>${esc(p)}</div>`;
+    }).join("");
+
+    return `<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Order - ${esc(order.customerName || "Khách")}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; color: #1a202c; max-width: 400px; margin: 0 auto; }
+    h1 { font-size: 18px; text-align: center; margin-bottom: 12px; border-bottom: 2px solid #333; padding-bottom: 8px; }
+    .field { margin-bottom: 6px; font-size: 13px; }
+    .field strong { display: inline-block; min-width: 90px; }
+    .products { margin: 10px 0; padding: 8px; background: #f9f9f9; border-radius: 4px; font-size: 12px; line-height: 1.6; }
+    .products-title { font-weight: 700; margin-bottom: 4px; font-size: 13px; }
+    .status { margin-top: 8px; padding: 6px 10px; border-radius: 4px; font-size: 13px; font-weight: 600; text-align: center; }
+    .status-paid { background: #d1fae5; color: #065f46; }
+    .status-unpaid { background: #fff7ed; color: #9a3412; }
+    .total { font-size: 16px; font-weight: 700; text-align: right; margin-top: 10px; }
+    @media print { body { padding: 10px; } }
+  </style>
+</head>
+<body>
+  <h1>V1ncc TCG Card Shop - Order Details</h1>
+  <div class="field"><strong>Customer:</strong> ${esc(order.customerName || "Khách")}</div>
+  <div class="field"><strong>Phone:</strong> ${esc(order.phone || "")}</div>
+  <div class="field"><strong>Date:</strong> ${dateStr}</div>
+  <div class="products">
+    <div class="products-title">Products:</div>
+    ${productLines}
+  </div>
+  ${order.oldAddress ? `<div class="field"><strong>Địa chỉ cũ:</strong> ${esc(order.oldAddress)}</div>` : ""}
+  <div class="field"><strong>Địa chỉ mới:</strong> ${esc(order.address || "")}</div>
+  <div class="status ${order.paymentStatus === "Đã thanh toán" ? "status-paid" : "status-unpaid"}">
+    ${order.paymentStatus === "Đã thanh toán" ? "Đã thanh toán" : "Chưa thanh toán"}
+  </div>
+  <div class="total">${formatPrice(order.sellPrice || 0)}</div>
+</body>
+</html>`;
+  }
+
+  function handleDownloadPdf(order: Order) {
+    const html = buildOrderHtml(order);
+    const blob = new Blob([html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const safeName = (order.customerName || "order").replace(/\s+/g, "-");
+    const datePart = (order.orderDate || "").replace(/\//g, "-");
+    a.href = url;
+    a.download = `order-${safeName}-${datePart}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function handlePrintSingle(order: Order) {
+    const html = buildOrderHtml(order);
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+    printWindow.document.write(html);
+    printWindow.document.close();
+    setTimeout(() => { printWindow.focus(); printWindow.print(); }, 500);
+  }
+
   function handlePrintTable() {
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
 
     const ordersToPrint = filtered;
-    const rowsHtml = ordersToPrint
-      .map(
-        (o) => `
-      <tr>
-        <td>${esc(o.customerName || "Khách")}</td>
-        <td>${esc(o.orderDate || o.timestamp)}</td>
-        <td>${esc(o.phone)}</td>
-        <td>${esc(o.products)}</td>
-        <td style="text-align:right">${formatPrice(o.sellPrice || 0)}</td>
-        <td>${esc(o.paymentStatus)}</td>
-        <td>${esc(o.deliveryStatus || "Chưa giao")}</td>
-        <td>${esc(o.address || "")}</td>
-      </tr>`
-      )
-      .join("");
-
     const totalRevenue = ordersToPrint
       .filter((o) => o.paymentStatus === "Đã thanh toán")
       .reduce((sum, o) => sum + (o.sellPrice || 0), 0);
+
+    const orderCards = ordersToPrint.map((o) => {
+      const now = new Date();
+      const hanoiTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" }));
+      const dateStr = hanoiTime.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }) + " " + hanoiTime.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+
+      const productLines = (o.products || "").split(", ").map((p) => {
+        const match = p.match(/^(\d+)x\s+(.+?)\s+-\s+(\S+)$/);
+        if (match) return `<div>${match[1]}x ${match[2]} - ${match[3]}</div>`;
+        return `<div>${esc(p)}</div>`;
+      }).join("");
+
+      return `
+      <div class="order-card">
+        <h2>V1ncc TCG Card Shop - Order Details</h2>
+        <div class="field"><strong>Customer:</strong> ${esc(o.customerName || "Khách")}</div>
+        <div class="field"><strong>Phone:</strong> ${esc(o.phone || "")}</div>
+        <div class="field"><strong>Date:</strong> ${dateStr}</div>
+        <div class="products">
+          <div class="products-title">Products:</div>
+          ${productLines}
+        </div>
+        ${o.oldAddress ? `<div class="field"><strong>Địa chỉ cũ:</strong> ${esc(o.oldAddress)}</div>` : ""}
+        <div class="field"><strong>Địa chỉ mới:</strong> ${esc(o.address || "")}</div>
+        <div class="status ${o.paymentStatus === "Đã thanh toán" ? "status-paid" : "status-unpaid"}">
+          ${o.paymentStatus === "Đã thanh toán" ? "Đã thanh toán" : "Chưa thanh toán"}
+        </div>
+        <div class="total">${formatPrice(o.sellPrice || 0)}</div>
+      </div>`;
+    }).join("");
 
     printWindow.document.write(`<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
   <title>Danh sách đơn hàng</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', 'Segoe UI', sans-serif; padding: 24px; color: #1a202c; }
-    h1 { font-size: 20px; margin-bottom: 4px; }
-    .subtitle { color: #718096; font-size: 13px; margin-bottom: 16px; }
-    .stats { display: flex; gap: 24px; margin-bottom: 16px; font-size: 13px; }
-    .stats strong { color: #2d3748; }
-    table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    th { background: #f7fafc; border: 1px solid #e2e8f0; padding: 8px 10px; text-align: left; font-weight: 600; color: #4a5568; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
-    td { border: 1px solid #e2e8f0; padding: 6px 10px; color: #2d3748; }
-    tr:nth-child(even) td { background: #fafbfc; }
-    @media print { body { padding: 0; } }
+    body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; color: #1a202c; }
+    .order-card { max-width: 400px; margin: 0 auto 30px; page-break-inside: avoid; border-bottom: 1px dashed #ccc; padding-bottom: 20px; }
+    .order-card:last-child { border-bottom: none; }
+    h2 { font-size: 18px; text-align: center; margin-bottom: 10px; }
+    .field { margin-bottom: 5px; font-size: 13px; }
+    .field strong { display: inline-block; min-width: 90px; }
+    .products { margin: 8px 0; padding: 6px 8px; background: #f9f9f9; border-radius: 4px; font-size: 12px; line-height: 1.6; }
+    .products-title { font-weight: 700; margin-bottom: 3px; font-size: 13px; }
+    .status { margin-top: 6px; padding: 5px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; text-align: center; }
+    .status-paid { background: #d1fae5; color: #065f46; }
+    .status-unpaid { background: #fff7ed; color: #9a3412; }
+    .total { font-size: 15px; font-weight: 700; text-align: right; margin-top: 8px; }
+    .summary { text-align: center; font-size: 12px; color: #718096; margin-bottom: 20px; }
+    @media print { body { padding: 10px; } }
   </style>
 </head>
 <body>
-  <h1>Danh sách đơn hàng</h1>
-  <p class="subtitle">In lúc: ${new Date().toLocaleString("vi-VN")}</p>
-  <div class="stats">
-    <span>Tổng: <strong>${ordersToPrint.length}</strong> đơn</span>
-    <span>Đã thanh toán: <strong>${ordersToPrint.filter((o) => o.paymentStatus === "Đã thanh toán").length}</strong></span>
-    <span>Đã giao: <strong>${ordersToPrint.filter((o) => o.deliveryStatus === "Đã giao").length}</strong></span>
-    <span>Doanh thu: <strong>${formatPrice(totalRevenue)}</strong></span>
+  <div class="summary">
+    Tổng: ${ordersToPrint.length} đơn | Đã thanh toán: ${ordersToPrint.filter((o) => o.paymentStatus === "Đã thanh toán").length} | Doanh thu: ${formatPrice(totalRevenue)}
   </div>
-  <table>
-    <thead><tr>
-      <th>Khách hàng</th><th>Ngày</th><th>SĐT</th><th>Sản phẩm</th>
-      <th style="text-align:right">Giá bán</th><th>Thanh toán</th><th>Giao hàng</th><th>Địa chỉ</th>
-    </tr></thead>
-    <tbody>${rowsHtml}</tbody>
-  </table>
+  ${orderCards}
 </body>
 </html>`);
     printWindow.document.close();
@@ -405,6 +485,26 @@ export default function AdminOrdersPage() {
                     >
                       Xóa
                     </button>
+                    {/* Print single order */}
+                    <button
+                      onClick={() => handlePrintSingle(order)}
+                      className="text-xs px-3 py-1.5 bg-slate-800 text-white rounded-lg hover:bg-slate-700 font-semibold transition-colors flex items-center gap-1"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0 1 10.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0 .229 2.523a1.125 1.125 0 0 1-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0 0 21 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 0 0-1.913-.247M6.34 18H5.25A2.25 2.25 0 0 1 3 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 0 1 1.913-.247m10.5 0a48.536 48.536 0 0 0-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18.75 12h.008v.008h-.008V12Zm-2.25 0h.008v.008H16.5V12Z" />
+                      </svg>
+                      In
+                    </button>
+                    {/* Download PDF */}
+                    <button
+                      onClick={() => handleDownloadPdf(order)}
+                      className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition-colors flex items-center gap-1"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                      </svg>
+                      PDF
+                    </button>
                   </div>
                 </div>
 
@@ -478,7 +578,12 @@ export default function AdminOrdersPage() {
 
                 {order.address && (
                   <p className="text-xs text-slate-400 mt-2">
-                    Địa chỉ: {order.address}
+                    Địa chỉ mới: {order.address}
+                  </p>
+                )}
+                {order.oldAddress && (
+                  <p className="text-xs text-slate-400 mt-1">
+                    Địa chỉ cũ: {order.oldAddress}
                   </p>
                 )}
                 {order.notes && (

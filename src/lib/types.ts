@@ -50,6 +50,7 @@ export interface Order {
   customerName: string;
   phone: string;
   address: string;
+  oldAddress?: string;
   notes: string;
   sellPrice: number;
   buyPrice: number;

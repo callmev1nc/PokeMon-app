@@ -37,6 +37,7 @@ export default function CheckoutPage() {
         customerName: customer.name,
         phone: customer.phone,
         address: customer.newAddress || customer.oldAddress,
+        oldAddress: customer.oldAddress || "",
         notes: "",
         sellPrice: total,
         buyPrice: 0,
@@ -58,6 +59,8 @@ export default function CheckoutPage() {
       }
 
       setSubmitted(true);
+      clearCart();
+      sessionStorage.removeItem("customerInfo");
     } catch {
       setError("Lỗi kết nối");
     } finally {
@@ -113,7 +116,6 @@ export default function CheckoutPage() {
 
         <QRCodeSection
           onDone={() => {
-            clearCart();
             window.location.href = "/";
           }}
         />
