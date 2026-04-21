@@ -8,7 +8,9 @@
     "build": "npm run build-data && next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "jest"
+    "test": "jest",
+    "validate-cards": "npx tsx scripts/validate-cards.ts && node -e \"require('fs').copyFileSync('validation-report.json','public/data/validation-report.json')\"",
+    "validate-cards:sheet": "npx tsx scripts/validate-cards.ts --sheet-url=$GOOGLE_BUSINESS_URL && node -e \"require('fs').copyFileSync('validation-report.json','public/data/validation-report.json')\""
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.2.2",

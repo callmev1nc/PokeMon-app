@@ -1,9 +1,10 @@
-export default function AdminNav({ active }: { active: "dashboard" | "products" | "orders" | "customers" }) {
+export default function AdminNav({ active }: { active: "dashboard" | "products" | "orders" | "customers" | "validate" }) {
   const links = [
     { href: "/admin/dashboard", label: "Dashboard", key: "dashboard" as const },
     { href: "/admin", label: "Sản phẩm", key: "products" as const },
     { href: "/admin/orders", label: "Đơn hàng", key: "orders" as const },
     { href: "/admin/customers", label: "Khách hàng", key: "customers" as const },
+    { href: "/admin/validate", label: "Validate", key: "validate" as const },
   ];
 
   return (
@@ -17,6 +18,7 @@ export default function AdminNav({ active }: { active: "dashboard" | "products" 
           {active === "products" && "Quản lý sản phẩm"}
           {active === "orders" && "Quản lý đơn hàng"}
           {active === "customers" && "Khách hàng"}
+          {active === "validate" && "Card Validation"}
         </h1>
       </div>
       <nav className="flex gap-1.5">
