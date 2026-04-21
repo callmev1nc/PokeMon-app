@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { Product } from "@/lib/types";
 import { TYPE_COLORS, GROUP_LABELS } from "@/lib/constants";
@@ -17,6 +17,14 @@ function formatPrice(price: number | null): string {
 }
 
 export default function ProductDetailPage() {
+  return (
+    <Suspense fallback={<><Header onCartClick={() => {}} /><div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-3 border-brand border-t-transparent rounded-full animate-spin" /></div></>}>
+      <ProductDetailContent />
+    </Suspense>
+  );
+}
+
+function ProductDetailContent() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
   const [product, setProduct] = useState<Product | null>(null);

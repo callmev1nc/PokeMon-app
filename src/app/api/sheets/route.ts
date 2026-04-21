@@ -190,7 +190,6 @@ export async function POST(req: NextRequest) {
         );
       }
       case "confirmOrder": {
-        logAction("confirmOrder", "admin", `Row ${row}: ${JSON.stringify(data)}`);
         const row = Number(body.row);
         const data = body.data as Record<string, unknown> | undefined;
         const orderRow = body.orderRow ? Number(body.orderRow) : undefined;
@@ -201,11 +200,12 @@ export async function POST(req: NextRequest) {
             { status: 400 }
           );
         }
+        logAction("confirmOrder", "admin", `Row ${row}: ${JSON.stringify(data)}`);
         return NextResponse.json(confirmOrder(row, data, products, orderRow));
       }
       case "deleteOrder": {
-        logAction("deleteOrder", "admin", `Row ${row}`);
         const row = Number(body.row);
+        logAction("deleteOrder", "admin", `Row ${row}`);
         const orderData = body.orderData as Record<string, unknown> | undefined;
         if (!isNaN(row) && orderData) {
           return NextResponse.json(deleteOrder({ _row: row, products: String(orderData.products || "") }));
@@ -245,7 +245,6 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(updateOrder(row, data));
       }
       case "updateProducts": {
-        logAction("updateProducts", "admin", `${products.length} products updated`);
         const products = body.products as unknown[];
         if (!Array.isArray(products)) {
           return NextResponse.json(
@@ -253,6 +252,7 @@ export async function POST(req: NextRequest) {
             { status: 400 }
           );
         }
+        logAction("updateProducts", "admin", `${products.length} products updated`);
         return NextResponse.json(
           updateProducts(products as Record<string, unknown>[])
         );
