@@ -168,7 +168,6 @@ export async function POST(req: NextRequest) {
   try {
     switch (action) {
       case "addProduct": {
-        logAction("addProduct", "admin", `${product.name} (${product.code})`);
         const product = body.product as Record<string, unknown> | undefined;
         if (!product || typeof product !== "object") {
           return NextResponse.json(
@@ -176,6 +175,7 @@ export async function POST(req: NextRequest) {
             { status: 400 }
           );
         }
+        logAction("addProduct", "admin", `${product.name} (${product.code})`);
         return NextResponse.json(
           addProductLocal({
             code: sanitize(String(product.code || "")),
