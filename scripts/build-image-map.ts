@@ -58,17 +58,41 @@ const TCGDEX_SET_MAP: Record<string, string> = {
   SVP: "svp",
 };
 
+// D/F/E are multi-set codes from Sword & Shield era.
+// The total card count determines which specific set.
+const SWSH_SET_BY_TOTAL: Record<string, string> = {
+  "202": "swsh1",      // Sword & Shield
+  "192": "swsh2",      // Rebel Clash
+  "189": "swsh3",      // Darkness Ablaze / Astral Radiance
+  "72": "swsh4.5",     // Shining Fates
+  "73": "swsh4.5",     // Shining Fates variant
+  "163": "swsh5",      // Battle Styles
+  "172": "swsh9",      // Brilliant Stars
+  "264": "swsh8",      // Fusion Strike
+  "159": "swsh12.5",   // Crown Zenith
+  "78": "swsh10.5",    // Lost Origin
+};
+
 const TCGDEX_BASE = "https://api.tcgdex.net/v2/en";
 
-function parseSeries(series: string): { setCode: string; cardNumber: string } | null {
+function parseSeries(series: string): { setCode: string; cardNumber: string; totalCards: string } | null {
   const s = series.trim();
   if (!s) return null;
-  const match = s.match(/^(.+?)\s+(\d+)\//i);
+  const match = s.match(/^(.+?)\s+(\d+)\/(\d+)$/i);
   if (match) {
     const code = match[1].trim().toUpperCase().replace(/\s+(EN|GG|TG)$/i, "");
-    return { setCode: code, cardNumber: match[2] };
+    return { setCode: code, cardNumber: match[2], totalCards: match[3] };
   }
   return null;
+}
+
+function getTCGdexSetId(parsed: { setCode: string; totalCards: string }): string | null {
+  // D/F/E codes need total card count to determine the set
+  if (["D", "F", "E"].includes(parsed.setCode)) {
+    const total = String(parseInt(parsed.totalCards, 10)); // "072" → "72"
+    return SWSH_SET_BY_TOTAL[total] || null;
+  }
+  return TCGDEX_SET_MAP[parsed.setCode] || null;
 }
 
 function normalizeName(name: string): string {
@@ -191,6 +215,45 @@ async function main() {
 
   console.log(`  ${fromReport} images from validation report`);
 
+  // 3b. Override D/F/E products with correct TCGdex images
+  // (validation report mapped them to wrong sets)
+  const tcgdexCache = new Map<string, any[]>();
+  let overridden = 0;
+
+  const dfEProducts = products.filter((p) => {
+    const parsed = parseSeries(p.series);
+    return parsed && ["D", "F", "E"].includes(parsed.setCode);
+  });
+
+  for (const product of dfEProducts) {
+    const parsed = parseSeries(product.series);
+    if (!parsed) continue;
+    const setId = getTCGdexSetId(parsed);
+    if (!setId) continue;
+
+    if (!tcgdexCache.has(setId)) {
+      const cards = await fetchTCGdexCards(setId);
+      tcgdexCache.set(setId, cards);
+      console.log(`  Fetched TCGdex set ${setId}: ${cards.length} cards (for D/F/E override)`);
+    }
+
+    const cards = tcgdexCache.get(setId)!;
+    const match =
+      cards.find((c: any) => c.localId === parsed.cardNumber && namesMatch(c.name || "", product.name)) ||
+      cards.find((c: any) => namesMatch(c.name || "", product.name));
+
+    if (match && match.image) {
+      const compositeKey = `${product.code}|${product.type}|${product.series}`;
+      imageMap[product.id] = match.image;
+      imageMap[compositeKey] = match.image;
+      overridden++;
+    }
+  }
+
+  if (overridden > 0) {
+    console.log(`  Overridden ${overridden} D/F/E images with correct TCGdex data`);
+  }
+
   // 4. Find unmatched products
   const unmatched = results.filter((r) => !r.tcgMatch.found);
   console.log(`  ${unmatched.length} unmatched products`);
@@ -198,13 +261,12 @@ async function main() {
   // 5. Try TCGdex for unmatched
   let fromTCGdex = 0;
   const tcgdexSetsFetched = new Set<string>();
-  const tcgdexCache = new Map<string, any[]>();
 
   for (const entry of unmatched) {
     const parsed = parseSeries(entry.product.series);
     if (!parsed) continue;
 
-    const setId = TCGDEX_SET_MAP[parsed.setCode];
+    const setId = getTCGdexSetId(parsed);
     if (!setId) continue;
 
     // Fetch set cards (cached)
@@ -246,7 +308,7 @@ async function main() {
     const parsed = parseSeries(product.series);
     if (!parsed) continue;
 
-    const setId = TCGDEX_SET_MAP[parsed.setCode];
+    const setId = getTCGdexSetId(parsed);
     if (!setId) continue;
 
     if (!tcgdexCache.has(setId)) {
