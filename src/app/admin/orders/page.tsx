@@ -100,6 +100,7 @@ export default function AdminOrdersPage() {
         paymentStatus: normalizePayment(o.paymentStatus),
         deliveryStatus: normalizeDelivery(o.deliveryStatus),
       }));
+      fetched.reverse();
       setOrders(fetched);
       const vals: Record<number, { buyPrice: string; shippingCost: string }> = {};
       fetched.forEach((o: Order, i: number) => {
