@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "build-data": "npx tsx scripts/build-data.ts",
-    "dev": "npm run build-data && next dev",
-    "build": "npm run build-data && next build",
+    "build-image-map": "npx tsx scripts/build-image-map.ts",
+    "dev": "npm run build-data && npm run build-image-map && next dev",
+    "build": "npm run build-data && npm run build-image-map && next build",
     "start": "next start",
     "lint": "next lint",
     "test": "jest",

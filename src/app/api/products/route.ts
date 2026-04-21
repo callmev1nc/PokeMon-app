@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server";
 import { fetchProductsLive } from "@/lib/data";
-import { resolveImages, getCachedImageUrl } from "@/lib/cardImageCache";
+import { getImageUrl } from "@/lib/cardImageCache";
 
 export const dynamic = "force-dynamic";
-export const revalidate = 60; // Cache for 60 seconds
+export const revalidate = 60;
 
 let cachedResponse: { data: unknown; timestamp: number } | null = null;
-const CACHE_TTL = 30_000; // 30 seconds in-memory cache
+const CACHE_TTL = 30_000;
 
 export async function GET() {
-  // Return cached response if fresh
   if (cachedResponse && Date.now() - cachedResponse.timestamp < CACHE_TTL) {
     return NextResponse.json(cachedResponse.data);
   }
@@ -20,15 +19,15 @@ export async function GET() {
       console.error("fetchProductsLive returned empty. STOCK_URL:", process.env.GOOGLE_STOCK_URL ? "SET" : "MISSING");
     }
 
-    // Resolve missing card images in background (non-blocking)
-    const uniqueNames = [...new Set(products.map((p) => p.name))];
-    resolveImages(uniqueNames).catch(() => {});
-
-    const withId = products.map((p, i) => ({
-      ...p,
-      id: p.id || `${p.code}-${p.type}-${i}`,
-      imageUrl: getCachedImageUrl(p.name) || undefined,
-    }));
+    const withId = products.map((p, i) => {
+      const id = p.id || `${p.code}-${p.type}-${i}`;
+      const compositeKey = `${p.code}|${p.type}|${p.series}`;
+      return {
+        ...p,
+        id,
+        imageUrl: getImageUrl(id) || getImageUrl(compositeKey) || undefined,
+      };
+    });
 
     cachedResponse = { data: withId, timestamp: Date.now() };
     return NextResponse.json(withId);
