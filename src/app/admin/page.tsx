@@ -497,8 +497,7 @@ export default function AdminPage() {
       )}
 
       {message && (
-          {message}
-        </p>
+        <p>{message}</p>
       )}
 
       {/* Product table */}
