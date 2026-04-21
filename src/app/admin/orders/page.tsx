@@ -22,6 +22,14 @@ interface ParsedProduct {
   group: string;
 }
 
+function codeSortKey(code: string): [string, string, number] {
+  const parts = code.split("-");
+  const seg1 = (parts[0] || "").toUpperCase();
+  const seg2 = (parts[1] || "").toUpperCase();
+  const seg3 = parseInt(parts[2] || "0") || 0;
+  return [seg1, seg2, seg3];
+}
+
 function parseAndSortProducts(productsStr: string, codeToGroup: Map<string, string>): ParsedProduct[] {
   const items: ParsedProduct[] = (productsStr || "").split(", ").map((p) => {
     const match = p.match(/^(\d+)x\s+(.+?)\s+-\s+(\S+)$/);
@@ -34,7 +42,16 @@ function parseAndSortProducts(productsStr: string, codeToGroup: Map<string, stri
     };
   }).filter(Boolean) as ParsedProduct[];
 
-  return items.sort((a, b) => (GROUP_ORDER[a.group] || 99) - (GROUP_ORDER[b.group] || 99));
+  return items.sort((a, b) => {
+    const ga = GROUP_ORDER[a.group] || 99;
+    const gb = GROUP_ORDER[b.group] || 99;
+    if (ga !== gb) return ga - gb;
+    const ka = codeSortKey(a.code);
+    const kb = codeSortKey(b.code);
+    if (ka[0] !== kb[0]) return ka[0].localeCompare(kb[0]);
+    if (ka[1] !== kb[1]) return ka[1].localeCompare(kb[1]);
+    return ka[2] - kb[2];
+  });
 }
 
 export default function AdminOrdersPage() {
