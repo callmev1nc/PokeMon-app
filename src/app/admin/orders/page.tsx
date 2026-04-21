@@ -54,6 +54,18 @@ function parseAndSortProducts(productsStr: string, codeToGroup: Map<string, stri
   });
 }
 
+function normalizePayment(val: string): Order["paymentStatus"] {
+  if (!val || val === "false" || val === "FALSE" || val === "0") return "Chưa thanh toán";
+  if (val === "true" || val === "TRUE" || val === "1") return "Đã thanh toán";
+  return val as Order["paymentStatus"];
+}
+
+function normalizeDelivery(val: string | undefined): "Chưa giao" | "Đang giao" | "Đã giao" {
+  if (!val || val === "false" || val === "FALSE" || val === "0") return "Chưa giao";
+  if (val === "true" || val === "TRUE" || val === "1") return "Đã giao";
+  return val as "Chưa giao" | "Đang giao" | "Đã giao";
+}
+
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -82,7 +94,12 @@ export default function AdminOrdersPage() {
     try {
       const res = await fetch("/api/sheets?action=orders");
       const data = await res.json();
-      const fetched = Array.isArray(data) ? data : [];
+      const raw = Array.isArray(data) ? data : [];
+      const fetched = raw.map((o: Order) => ({
+        ...o,
+        paymentStatus: normalizePayment(o.paymentStatus),
+        deliveryStatus: normalizeDelivery(o.deliveryStatus),
+      }));
       setOrders(fetched);
       const vals: Record<number, { buyPrice: string; shippingCost: string }> = {};
       fetched.forEach((o: Order, i: number) => {
@@ -99,10 +116,9 @@ export default function AdminOrdersPage() {
     }
   }
 
-  async function togglePayment(order: Order) {
+  async function updatePaymentStatus(order: Order, newStatus: string) {
     const orderIdx = orders.indexOf(order);
     if (orderIdx === -1) return;
-    const newStatus = order.paymentStatus === "Đã thanh toán" ? "Chưa thanh toán" : "Đã thanh toán";
     try {
       const res = await fetch("/api/sheets", {
         method: "POST",
@@ -110,15 +126,14 @@ export default function AdminOrdersPage() {
         body: JSON.stringify({ action: "confirmOrder", row: orderIdx, data: { paymentStatus: newStatus } }),
       });
       const data = await res.json();
-      if (data.success) { setMessage(`Đã cập nhật: ${newStatus}`); await fetchOrders(); }
+      if (data.success) { setMessage(`Thanh toán: ${newStatus}`); await fetchOrders(); }
       else setMessage("Lỗi cập nhật");
     } catch { setMessage("Lỗi kết nối"); }
   }
 
-  async function toggleDelivery(order: Order) {
+  async function updateDeliveryStatus(order: Order, newStatus: string) {
     const orderIdx = orders.indexOf(order);
     if (orderIdx === -1) return;
-    const newStatus = order.deliveryStatus === "Đã giao" ? "Chưa giao" : "Đã giao";
     try {
       const res = await fetch("/api/sheets", {
         method: "POST",
@@ -188,7 +203,7 @@ export default function AdminOrdersPage() {
   );
 
   function formatPrice(val: number): string {
-    return new Intl.NumberFormat("vi-VN").format(val * 1000) + " đ";
+    return new Intl.NumberFormat("vi-VN").format(val) + " đ";
   }
 
   function getProfit(order: Order, idx: number): number {
@@ -361,15 +376,17 @@ export default function AdminOrdersPage() {
     setTimeout(() => { printWindow.focus(); printWindow.print(); }, 500);
   }
 
+  const isPaid = (o: Order) => o.paymentStatus === "Đã thanh toán" || o.paymentStatus === "Đã chuyển khoản";
+
   const filtered = orders.filter((o) => {
     if (filter === "pending") return o.paymentStatus === "Chưa thanh toán";
-    if (filter === "paid") return o.paymentStatus === "Đã thanh toán";
+    if (filter === "paid") return isPaid(o);
     if (filter === "delivered") return o.deliveryStatus === "Đã giao";
     if (filter === "undelivered") return o.deliveryStatus !== "Đã giao";
     return true;
   });
 
-  const totalRevenue = orders.filter((o) => o.paymentStatus === "Đã thanh toán").reduce((sum, o) => sum + (o.sellPrice || 0), 0);
+  const totalRevenue = orders.filter(isPaid).reduce((sum, o) => sum + (o.sellPrice || 0), 0);
   const pendingCount = orders.filter((o) => o.paymentStatus === "Chưa thanh toán").length;
   const deliveredCount = orders.filter((o) => o.deliveryStatus === "Đã giao").length;
 
@@ -460,18 +477,36 @@ export default function AdminOrdersPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap justify-end">
-                    <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${order.paymentStatus === "Đã thanh toán" ? "bg-green-50 text-green-700 border border-green-100" : "bg-orange-50 text-orange-700 border border-orange-100"}`}>
-                      {order.paymentStatus}
-                    </span>
-                    <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${order.deliveryStatus === "Đã giao" ? "bg-blue-50 text-blue-700 border border-blue-100" : "bg-slate-50 text-slate-500 border border-slate-100"}`}>
-                      {order.deliveryStatus || "Chưa giao"}
-                    </span>
-                    <button onClick={() => togglePayment(order)} className="text-xs px-3 py-1.5 bg-slate-50 text-slate-500 rounded-lg hover:bg-slate-100 font-semibold transition-colors">
-                      {order.paymentStatus === "Đã thanh toán" ? "Hủy TT" : "Xác nhận TT"}
-                    </button>
-                    <button onClick={() => toggleDelivery(order)} className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors ${order.deliveryStatus === "Đã giao" ? "bg-blue-50 text-blue-600 hover:bg-blue-100" : "bg-slate-50 text-slate-500 hover:bg-slate-100"}`}>
-                      {order.deliveryStatus === "Đã giao" ? "Đã giao" : "Giao hàng"}
-                    </button>
+                    <select
+                      value={order.paymentStatus || "Chưa thanh toán"}
+                      onChange={(e) => updatePaymentStatus(order, e.target.value)}
+                      className={`text-xs px-2 py-1.5 rounded-lg font-semibold border-0 cursor-pointer focus:ring-2 focus:ring-blue-400 ${
+                        order.paymentStatus === "Đã thanh toán"
+                          ? "bg-green-50 text-green-700"
+                          : order.paymentStatus === "Đã chuyển khoản"
+                          ? "bg-emerald-50 text-emerald-700"
+                          : "bg-orange-50 text-orange-700"
+                      }`}
+                    >
+                      <option value="Chưa thanh toán">Chưa thanh toán</option>
+                      <option value="Đã chuyển khoản">Đã chuyển khoản</option>
+                      <option value="Đã thanh toán">Đã thanh toán</option>
+                    </select>
+                    <select
+                      value={order.deliveryStatus || "Chưa giao"}
+                      onChange={(e) => updateDeliveryStatus(order, e.target.value)}
+                      className={`text-xs px-2 py-1.5 rounded-lg font-semibold border-0 cursor-pointer focus:ring-2 focus:ring-blue-400 ${
+                        order.deliveryStatus === "Đã giao"
+                          ? "bg-blue-50 text-blue-700"
+                          : order.deliveryStatus === "Đang giao"
+                          ? "bg-yellow-50 text-yellow-700"
+                          : "bg-slate-50 text-slate-500"
+                      }`}
+                    >
+                      <option value="Chưa giao">Chưa giao</option>
+                      <option value="Đang giao">Đang giao</option>
+                      <option value="Đã giao">Đã giao</option>
+                    </select>
                     <button onClick={() => handleDeleteOrder(order)} className="text-xs px-3 py-1.5 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 font-semibold transition-colors">Xóa</button>
                     <button onClick={() => handlePrintSingle(order)} className="text-xs px-3 py-1.5 bg-slate-800 text-white rounded-lg hover:bg-slate-700 font-semibold transition-colors flex items-center gap-1">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
