@@ -16,6 +16,8 @@ import {
   addProductLocal,
 } from "@/lib/data";
 import { verifySession, COOKIE_NAME } from "@/lib/auth-edge";
+import { logAction, getAuditLog } from "@/lib/auditLog";
+import { getSessionRole } from "@/lib/auth";
 
 // Check admin session cookie
 async function isAdmin(req: NextRequest): Promise<boolean> {
@@ -51,8 +53,8 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Admin-only: orders and customers
-  if (action === "orders" || action === "customers") {
+  // Admin-only: orders, customers, and audit log
+  if (action === "orders" || action === "customers" || action === "audit-log") {
     if (!(await isAdmin(req))) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -66,6 +68,10 @@ export async function GET(req: NextRequest) {
         case "customers": {
           const customers = await fetchCustomersLive();
           return NextResponse.json(customers);
+        }
+        case "audit-log": {
+          const limit = Number(req.nextUrl.searchParams.get("limit")) || 100;
+          return NextResponse.json(getAuditLog(limit));
         }
         default:
           return NextResponse.json({ error: "Bad request" }, { status: 400 });
@@ -120,6 +126,7 @@ export async function POST(req: NextRequest) {
         profit: 0,
         paymentStatus: "Chưa thanh toán" as const,
       };
+      logAction("addOrder", "customer", `Order ${sanitized.orderCode} from ${sanitized.customerName}`);
       return NextResponse.json(addOrder(sanitized));
     } catch {
       return NextResponse.json(
@@ -161,6 +168,7 @@ export async function POST(req: NextRequest) {
   try {
     switch (action) {
       case "addProduct": {
+        logAction("addProduct", "admin", `${product.name} (${product.code})`);
         const product = body.product as Record<string, unknown> | undefined;
         if (!product || typeof product !== "object") {
           return NextResponse.json(
@@ -182,6 +190,7 @@ export async function POST(req: NextRequest) {
         );
       }
       case "confirmOrder": {
+        logAction("confirmOrder", "admin", `Row ${row}: ${JSON.stringify(data)}`);
         const row = Number(body.row);
         const data = body.data as Record<string, unknown> | undefined;
         const orderRow = body.orderRow ? Number(body.orderRow) : undefined;
@@ -195,6 +204,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(confirmOrder(row, data, products, orderRow));
       }
       case "deleteOrder": {
+        logAction("deleteOrder", "admin", `Row ${row}`);
         const row = Number(body.row);
         const orderData = body.orderData as Record<string, unknown> | undefined;
         if (!isNaN(row) && orderData) {
@@ -235,6 +245,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(updateOrder(row, data));
       }
       case "updateProducts": {
+        logAction("updateProducts", "admin", `${products.length} products updated`);
         const products = body.products as unknown[];
         if (!Array.isArray(products)) {
           return NextResponse.json(

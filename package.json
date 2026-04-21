@@ -7,7 +7,8 @@
     "dev": "npm run build-data && next dev",
     "build": "npm run build-data && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "jest"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.2.2",
@@ -26,6 +27,15 @@
     "tsx": "^4.21.0",
     "typescript": "^6.0.2",
     "xlsx": "^0.18.5",
+    "zod": "^4.3.6",
     "zustand": "^5.0.12"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/jest": "^30.0.0",
+    "jest": "^30.3.0",
+    "jest-environment-jsdom": "^30.3.0",
+    "ts-jest": "^29.4.9"
   }
 }

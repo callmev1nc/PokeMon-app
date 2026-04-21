@@ -1,0 +1,12 @@
+{
+  "name": "V1ncc TCG Card Shop",
+  "short_name": "V1ncc TCG",
+  "description": "Thẻ bài Pokémon chất lượng cao",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7fafc",
+  "theme_color": "#e53e3e",
+  "icons": [
+    { "src": "/logo.png", "sizes": "any", "type": "image/png" }
+  ]
+}

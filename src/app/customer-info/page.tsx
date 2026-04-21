@@ -3,6 +3,13 @@
 import { useState } from "react";
 import Header from "@/components/Header";
 
+function validatePhone(phone: string): string | null {
+  if (!phone) return "Vui lòng nhập số điện thoại";
+  if (phone.length < 9) return "Số điện thoại quá ngắn";
+  if (!/^(0[3-9]\d{8,9})$/.test(phone)) return "Số điện thoại không hợp lệ";
+  return null;
+}
+
 export default function CustomerInfoPage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -10,10 +17,46 @@ export default function CustomerInfoPage() {
   const [oldAddress, setOldAddress] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const validateField = (field: string, value: string) => {
+    const errs = { ...fieldErrors };
+    if (field === "name" && !value.trim()) errs.name = "Vui lòng nhập họ tên";
+    else if (field === "name") delete errs.name;
+
+    if (field === "phone") {
+      const e = validatePhone(value);
+      if (e) errs.phone = e; else delete errs.phone;
+    }
+
+    if (field === "oldAddress" && !value.trim()) errs.oldAddress = "Vui lòng nhập địa chỉ";
+    else if (field === "oldAddress") delete errs.oldAddress;
+
+    setFieldErrors(errs);
+  };
+
+  const handleBlur = (field: string) => {
+    setTouched((t) => ({ ...t, [field]: true }));
+    const val = field === "name" ? name : field === "phone" ? phone : field === "oldAddress" ? oldAddress : newAddress;
+    validateField(field, val);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    // Validate all
+    const errs: Record<string, string> = {};
+    if (!name.trim()) errs.name = "Vui lòng nhập họ tên";
+    const phoneErr = validatePhone(phone);
+    if (phoneErr) errs.phone = phoneErr;
+    if (!oldAddress.trim()) errs.oldAddress = "Vui lòng nhập địa chỉ";
+    setFieldErrors(errs);
+    setTouched({ name: true, phone: true, oldAddress: true });
+
+    if (Object.keys(errs).length > 0) return;
+
     setLoading(true);
 
     try {
@@ -73,10 +116,16 @@ export default function CustomerInfoPage() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              onBlur={() => handleBlur("name")}
               required
-              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
+              className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors ${
+                touched.name && fieldErrors.name ? "border-red-300 bg-red-50/50" : "border-slate-200"
+              }`}
               placeholder="Họ và tên"
             />
+            {touched.name && fieldErrors.name && (
+              <p className="text-xs text-red-500 mt-1">{fieldErrors.name}</p>
+            )}
           </div>
 
           <div>
@@ -91,11 +140,17 @@ export default function CustomerInfoPage() {
                 const val = e.target.value.replace(/\D/g, "").slice(0, 11);
                 setPhone(val);
               }}
+              onBlur={() => handleBlur("phone")}
               required
               maxLength={11}
-              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
+              className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors ${
+                touched.phone && fieldErrors.phone ? "border-red-300 bg-red-50/50" : "border-slate-200"
+              }`}
               placeholder="0xxx xxx xxx"
             />
+            {touched.phone && fieldErrors.phone && (
+              <p className="text-xs text-red-500 mt-1">{fieldErrors.phone}</p>
+            )}
           </div>
 
           <div>
@@ -121,10 +176,16 @@ export default function CustomerInfoPage() {
               type="text"
               value={oldAddress}
               onChange={(e) => setOldAddress(e.target.value)}
+              onBlur={() => handleBlur("oldAddress")}
               required
-              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
+              className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors ${
+                touched.oldAddress && fieldErrors.oldAddress ? "border-red-300 bg-red-50/50" : "border-slate-200"
+              }`}
               placeholder="Địa chỉ cũ"
             />
+            {touched.oldAddress && fieldErrors.oldAddress && (
+              <p className="text-xs text-red-500 mt-1">{fieldErrors.oldAddress}</p>
+            )}
           </div>
 
           {error && (

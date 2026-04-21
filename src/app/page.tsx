@@ -2,9 +2,13 @@
 
 import { useEffect, useState } from "react";
 import type { Product } from "@/lib/types";
+import { SHOP_NAME, SHOP_DESCRIPTION } from "@/lib/constants";
 import Header from "@/components/Header";
 import ProductGrid from "@/components/ProductGrid";
 import CartDrawer from "@/components/CartDrawer";
+import RecentlyViewedBar from "@/components/RecentlyViewedBar";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import ProductCardSkeleton from "@/components/ProductCardSkeleton";
 
 export default function HomePage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -31,11 +35,10 @@ export default function HomePage() {
           <div className="flex items-center gap-6">
             <div className="flex-1">
               <h2 className="text-2xl md:text-4xl font-bold mb-2">
-                V1ncc TCG Card Shop
+                {SHOP_NAME}
               </h2>
               <p className="text-red-100 text-sm md:text-base max-w-lg">
-                Thẻ bài Pokémon chất lượng cao - Normal, Holo, Prize Card, EX.
-                Hàng luôn cập nhật mỗi ngày!
+                {SHOP_DESCRIPTION}
               </p>
               <div className="flex gap-3 mt-4">
                 <span className="inline-flex items-center gap-1.5 text-xs bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full">
@@ -62,16 +65,20 @@ export default function HomePage() {
       </div>
 
       <main className="max-w-7xl mx-auto px-4 py-6">
+        {!loading && (
+          <RecentlyViewedBar products={products} />
+        )}
         {loading ? (
-          <div className="flex items-center justify-center py-20 animate-fade-in">
-            <div className="flex flex-col items-center gap-3">
-              <div className="w-8 h-8 border-3 border-brand border-t-transparent rounded-full animate-spin" />
-              <p className="text-sm text-slate-400">Đang tải sản phẩm...</p>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <ProductCardSkeleton key={i} />
+            ))}
           </div>
         ) : (
           <div className="animate-fade-in">
-            <ProductGrid products={products} />
+            <ErrorBoundary>
+              <ProductGrid products={products} />
+            </ErrorBoundary>
           </div>
         )}
       </main>

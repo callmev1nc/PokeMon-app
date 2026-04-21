@@ -16,6 +16,7 @@ export interface Product {
   buyPrice: number | null;
   stock: number;
   _row?: number;
+  imageUrl?: string | null;
 }
 
 export interface CartItem {

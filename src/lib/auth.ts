@@ -1,10 +1,5 @@
-import bcrypt from "bcryptjs";
 import crypto from "crypto";
-
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "chausieudethuong";
-const ADMIN_PASSWORD_HASH =
-  process.env.ADMIN_PASSWORD_HASH ||
-  "$2b$10$Am2Ue30uKNWF9uXLMGlauOXdFcKtbzAGzt5PIF3AikmPbHKixPOnO";
+import { findAdmin, getAdmins, type AdminRole } from "./adminAccounts";
 
 const SESSION_SECRET =
   process.env.SESSION_SECRET || "42ebae182eac29e02cc5f9fdba6fd1d8b809f5f1af7b3c77e5192d3cc031cb8e";
@@ -16,13 +11,14 @@ export { COOKIE_NAME };
 export async function verifyCredentials(
   username: string,
   password: string
-): Promise<boolean> {
-  if (username !== ADMIN_USERNAME) return false;
-  return bcrypt.compare(password, ADMIN_PASSWORD_HASH);
+): Promise<{ valid: boolean; role?: AdminRole }> {
+  const account = await findAdmin(username, password);
+  if (!account) return { valid: false };
+  return { valid: true, role: account.role };
 }
 
-export function createSession(): string {
-  const payload = `${ADMIN_USERNAME}:${Date.now()}`;
+export function createSession(username: string, role: AdminRole): string {
+  const payload = `${username}:${role}:${Date.now()}`;
   const hmac = crypto.createHmac("sha256", SESSION_SECRET);
   hmac.update(payload);
   const signature = hmac.digest("hex");
@@ -33,15 +29,18 @@ export function verifySession(token: string): boolean {
   try {
     const decoded = Buffer.from(token, "base64").toString();
     const parts = decoded.split(":");
-    if (parts.length !== 3) return false;
-    const [username, timestamp, signature] = parts;
-    if (username !== ADMIN_USERNAME) return false;
+    if (parts.length !== 4) return false;
+    const [username, role, timestamp, signature] = parts;
+
+    const admins = getAdmins();
+    const account = admins.find((a) => a.username === username);
+    if (!account) return false;
 
     const age = Date.now() - parseInt(timestamp);
     if (isNaN(age) || age > SESSION_MAX_AGE * 1000) return false;
 
     const hmac = crypto.createHmac("sha256", SESSION_SECRET);
-    hmac.update(`${username}:${timestamp}`);
+    hmac.update(`${username}:${role}:${timestamp}`);
     const expected = hmac.digest("hex");
     return crypto.timingSafeEqual(
       Buffer.from(signature),
@@ -49,6 +48,17 @@ export function verifySession(token: string): boolean {
     );
   } catch {
     return false;
+  }
+}
+
+export function getSessionRole(token: string): AdminRole | null {
+  try {
+    const decoded = Buffer.from(token, "base64").toString();
+    const parts = decoded.split(":");
+    if (parts.length !== 4) return null;
+    return parts[1] as AdminRole;
+  } catch {
+    return null;
   }
 }
 

@@ -1,5 +1,6 @@
-export default function AdminNav({ active }: { active: "products" | "orders" | "customers" }) {
+export default function AdminNav({ active }: { active: "dashboard" | "products" | "orders" | "customers" }) {
   const links = [
+    { href: "/admin/dashboard", label: "Dashboard", key: "dashboard" as const },
     { href: "/admin", label: "Sản phẩm", key: "products" as const },
     { href: "/admin/orders", label: "Đơn hàng", key: "orders" as const },
     { href: "/admin/customers", label: "Khách hàng", key: "customers" as const },
@@ -12,6 +13,7 @@ export default function AdminNav({ active }: { active: "products" | "orders" | "
           <img src="/logo.png" alt="" className="h-8 w-auto rounded-lg" />
         </a>
         <h1 className="text-xl font-bold text-slate-800">
+          {active === "dashboard" && "Dashboard"}
           {active === "products" && "Quản lý sản phẩm"}
           {active === "orders" && "Quản lý đơn hàng"}
           {active === "customers" && "Khách hàng"}

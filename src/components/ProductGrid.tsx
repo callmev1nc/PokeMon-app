@@ -6,6 +6,8 @@ import { DISPLAY_TYPES } from "@/lib/constants";
 import ProductCard from "./ProductCard";
 import FilterBar from "./FilterBar";
 
+const PAGE_SIZE = 24;
+
 export default function ProductGrid({ products }: { products: Product[] }) {
   const [selectedTypes, setSelectedTypes] = useState<DisplayType[]>([
     "Normal",
@@ -18,33 +20,33 @@ export default function ProductGrid({ products }: { products: Product[] }) {
   const [selectedGroups, setSelectedGroups] = useState<GroupCategory[]>([]);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortOption>("name-asc");
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const toggleType = (type: DisplayType) => {
     setSelectedTypes((prev) =>
       prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
     );
+    setVisibleCount(PAGE_SIZE);
   };
 
   const toggleGroup = (group: GroupCategory) => {
     setSelectedGroups((prev) =>
       prev.includes(group) ? prev.filter((g) => g !== group) : [...prev, group]
     );
+    setVisibleCount(PAGE_SIZE);
   };
 
   const filtered = useMemo(() => {
     let result = products;
 
-    // Filter by group category
     if (selectedGroups.length > 0) {
       result = result.filter((p) => selectedGroups.includes(p.group as GroupCategory));
     }
 
-    // Filter by display type (only if no group is selected)
     if (selectedGroups.length === 0 && selectedTypes.length < DISPLAY_TYPES.length) {
       result = result.filter((p) => selectedTypes.includes(p.displayType));
     }
 
-    // Filter by search
     if (search.trim()) {
       const q = search.toLowerCase().trim();
       result = result.filter(
@@ -55,7 +57,6 @@ export default function ProductGrid({ products }: { products: Product[] }) {
       );
     }
 
-    // Sort
     result = [...result].sort((a, b) => {
       switch (sort) {
         case "price-asc":
@@ -74,6 +75,8 @@ export default function ProductGrid({ products }: { products: Product[] }) {
   }, [products, selectedTypes, selectedGroups, search, sort]);
 
   const totalStock = filtered.reduce((sum, p) => sum + p.stock, 0);
+  const visible = filtered.slice(0, visibleCount);
+  const hasMore = visibleCount < filtered.length;
 
   return (
     <div>
@@ -83,9 +86,9 @@ export default function ProductGrid({ products }: { products: Product[] }) {
         selectedGroups={selectedGroups}
         onToggleGroup={toggleGroup}
         search={search}
-        onSearchChange={setSearch}
+        onSearchChange={(v) => { setSearch(v); setVisibleCount(PAGE_SIZE); }}
         sort={sort}
-        onSortChange={setSort}
+        onSortChange={(v) => { setSort(v); setVisibleCount(PAGE_SIZE); }}
         filteredTotal={filtered.length}
         filteredStock={totalStock}
       />
@@ -96,11 +99,30 @@ export default function ProductGrid({ products }: { products: Product[] }) {
           <p className="text-sm mt-1">Thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filtered.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {visible.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+
+          {hasMore && (
+            <div className="text-center mt-8">
+              <button
+                onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+                className="px-8 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
+              >
+                Xem thêm ({filtered.length - visibleCount} sản phẩm)
+              </button>
+            </div>
+          )}
+
+          {!hasMore && filtered.length > PAGE_SIZE && (
+            <p className="text-center text-xs text-slate-400 mt-6">
+              Đã hiển thị tất cả {filtered.length} sản phẩm
+            </p>
+          )}
+        </>
       )}
     </div>
   );

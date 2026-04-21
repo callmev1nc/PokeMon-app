@@ -5,6 +5,10 @@ import {
   COOKIE_NAME,
   sessionCookieOptions,
 } from "@/lib/auth";
+import {
+  generateCsrfToken,
+  csrfCookieOptions,
+} from "@/lib/csrf";
 
 // Simple in-memory rate limiter
 const attempts = new Map<string, { count: number; lastAttempt: number }>();
@@ -18,7 +22,6 @@ export async function POST(req: NextRequest) {
   const record = attempts.get(ip);
 
   if (record) {
-    // Reset window if expired
     if (now - record.lastAttempt > WINDOW_MS) {
       record.count = 0;
     }
@@ -60,20 +63,30 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const valid = await verifyCredentials(username, password);
-  if (!valid) {
+  const result = await verifyCredentials(username, password);
+  if (!result.valid) {
     return NextResponse.json(
       { error: "Tên đăng nhập hoặc mật khẩu không đúng" },
       { status: 401 }
     );
   }
 
-  const token = createSession();
-  const response = NextResponse.json({ success: true });
+  const token = createSession(username, result.role!);
+  const csrfToken = generateCsrfToken();
+  const response = NextResponse.json({
+    success: true,
+    role: result.role,
+    csrfToken,
+  });
 
   response.headers.set(
     "Set-Cookie",
     `${COOKIE_NAME}=${token}; ${sessionCookieOptions()}`
+  );
+
+  response.headers.append(
+    "Set-Cookie",
+    csrfCookieOptions(csrfToken)
   );
 
   return response;

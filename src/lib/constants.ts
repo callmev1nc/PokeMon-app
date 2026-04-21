@@ -25,7 +25,15 @@ export const TYPE_COLORS: Record<string, string> = {
 };
 
 export const FACEBOOK_URL =
+  process.env.NEXT_PUBLIC_FACEBOOK_URL ||
   "https://www.facebook.com/profile.php?id=61578802334775";
+
+export const SHOP_NAME =
+  process.env.NEXT_PUBLIC_SHOP_NAME || "V1ncc TCG Card Shop";
+
+export const SHOP_DESCRIPTION =
+  process.env.NEXT_PUBLIC_SHOP_DESCRIPTION ||
+  "Thẻ bài Pokémon chất lượng cao - Normal, Holo, Prize Card, EX. Hàng luôn cập nhật mỗi ngày!";
 
 export const GROUP_CATEGORIES = [
   "stadium",
@@ -56,3 +64,7 @@ export const GROUP_COLORS: Record<string, string> = {
   tool: "bg-cyan-100 text-cyan-800 border border-cyan-300",
   energy: "bg-yellow-100 text-yellow-800 border border-yellow-300",
 };
+
+export const PAYMENT_STATUSES = ["Chưa thanh toán", "Đã chuyển khoản", "Đã thanh toán"] as const;
+
+export const DELIVERY_STATUSES = ["Chưa giao", "Đang giao", "Đã giao"] as const;

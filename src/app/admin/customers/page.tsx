@@ -10,6 +10,18 @@ export default function AdminCustomersPage() {
   const [message, setMessage] = useState("");
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const [editData, setEditData] = useState<Partial<Customer>>({});
+  const [search, setSearch] = useState("");
+
+  const filtered = customers.filter((c) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      c.name.toLowerCase().includes(q) ||
+      c.phone.includes(q) ||
+      (c.newAddress || "").toLowerCase().includes(q) ||
+      (c.oldAddress || "").toLowerCase().includes(q)
+    );
+  });
 
   useEffect(() => {
     fetchCustomers();
@@ -76,6 +88,15 @@ export default function AdminCustomersPage() {
         </p>
       )}
 
+      {/* Search */}
+      <input
+        type="text"
+        placeholder="Tìm khách hàng (tên, SĐT, địa chỉ)..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors mb-4"
+      />
+
       {loading ? (
         <div className="text-center py-12">
           <p className="text-slate-500">Đang tải danh sách khách hàng...</p>
@@ -108,7 +129,7 @@ export default function AdminCustomersPage() {
                 </tr>
               </thead>
               <tbody>
-                {customers.map((customer, idx) => (
+                {filtered.map((customer, idx) => (
                   <tr
                     key={idx}
                     className="border-b border-slate-50 hover:bg-slate-50"

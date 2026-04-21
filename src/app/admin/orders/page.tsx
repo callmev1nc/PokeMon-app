@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import type { Order, Product } from "@/lib/types";
 import AdminNav from "@/components/AdminNav";
+import ConfirmDialog, { useConfirmDialog } from "@/components/ConfirmDialog";
 
 const GROUP_ORDER: Record<string, number> = {
   pokemon: 1,
@@ -80,6 +81,7 @@ export default function AdminOrdersPage() {
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [selectMode, setSelectMode] = useState(false);
   const pdfGenerating = useRef(false);
+  const { dialogProps, confirm: confirmAction } = useConfirmDialog();
 
   const codeToGroup = new Map<string, string>();
   products.forEach((p) => codeToGroup.set(p.code, p.group));
@@ -153,39 +155,68 @@ export default function AdminOrdersPage() {
     } catch { setMessage("Lỗi kết nối"); }
   }
 
-  async function handleDeleteOrder(order: Order) {
-    const orderIdx = orders.indexOf(order);
-    if (orderIdx === -1) return;
-    if (!confirm(`Xóa đơn hàng của ${order.customerName || "Khách"}?\nTồn kho sẽ được hoàn lại.`)) return;
+  async function handleRefundOrder(order: Order) {
+    if (!confirm("Hoàn hàng và khôi phục tồn kho?")) return;
     try {
-      const res = await fetch("/api/sheets", {
+      const res = await fetch("/api/refund", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "deleteOrder", row: order._row || orderIdx + 2, orderData: { products: order.products } }),
+        body: JSON.stringify({ products: order.products }),
       });
       const data = await res.json();
-      if (data.success) { setMessage("Đã xóa đơn hàng"); setSelected(new Set()); await fetchOrders(); }
-      else setMessage("Lỗi xóa đơn hàng");
-    } catch { setMessage("Lỗi kết nối"); }
+      if (data.success) {
+        setMessage("Đã hoàn hàng và khôi phục tồn kho");
+      } else {
+        setMessage("Lỗi hoàn hàng");
+      }
+    } catch {
+      setMessage("Lỗi kết nối");
+    }
   }
 
-  async function handleBulkDelete() {
+  function handleDeleteOrder(order: Order) {
+    const orderIdx = orders.indexOf(order);
+    if (orderIdx === -1) return;
+    confirmAction(
+      "Xóa đơn hàng?",
+      `Xóa đơn hàng của ${order.customerName || "Khách"}? Tồn kho sẽ được hoàn lại.`,
+      async () => {
+        try {
+          const res = await fetch("/api/sheets", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "deleteOrder", row: order._row || orderIdx + 2, orderData: { products: order.products } }),
+          });
+          const data = await res.json();
+          if (data.success) { setMessage("Đã xóa đơn hàng"); setSelected(new Set()); await fetchOrders(); }
+          else setMessage("Lỗi xóa đơn hàng");
+        } catch { setMessage("Lỗi kết nối"); }
+      }
+    );
+  }
+
+  function handleBulkDelete() {
     if (selected.size === 0) return;
-    if (!confirm(`Xóa ${selected.size} đơn hàng đã chọn?\nTồn kho sẽ được hoàn lại.`)) return;
-    const items = Array.from(selected).map((idx) => {
-      const order = filtered[idx];
-      return { row: order._row || orders.indexOf(order) + 2, products: order.products };
-    });
-    try {
-      const res = await fetch("/api/sheets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "deleteOrders", items }),
-      });
-      const data = await res.json();
-      if (data.success) { setMessage(`Đã xóa ${data.deleted} đơn hàng`); setSelected(new Set()); setSelectMode(false); await fetchOrders(); }
-      else setMessage("Lỗi xóa đơn hàng");
-    } catch { setMessage("Lỗi kết nối"); }
+    confirmAction(
+      `Xóa ${selected.size} đơn hàng?`,
+      "Tồn kho sẽ được hoàn lại.",
+      async () => {
+        const items = Array.from(selected).map((idx) => {
+          const order = filtered[idx];
+          return { row: order._row || orders.indexOf(order) + 2, products: order.products };
+        });
+        try {
+          const res = await fetch("/api/sheets", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "deleteOrders", items }),
+          });
+          const data = await res.json();
+          if (data.success) { setMessage(`Đã xóa ${data.deleted} đơn hàng`); setSelected(new Set()); setSelectMode(false); await fetchOrders(); }
+          else setMessage("Lỗi xóa đơn hàng");
+        } catch { setMessage("Lỗi kết nối"); }
+      }
+    );
   }
 
   function toggleSelect(idx: number) {
@@ -234,26 +265,30 @@ export default function AdminOrdersPage() {
 
   function buildOrderPdfHtml(order: Order): string {
     const dateStr = getHanoiTime();
-    const productLines = renderProductLines(order.products);
+    const sorted = parseAndSortProducts(order.products, codeToGroup);
 
     return `
     <div style="font-family: 'Segoe UI', Arial, sans-serif; color: #1a202c; padding: 8mm; font-size: 11px; line-height: 1.5;">
-      <div style="text-align:center; font-size:14px; font-weight:700; margin-bottom:6px; border-bottom:1.5px solid #333; padding-bottom:4px;">
+      <div style="text-align:center; font-size:14px; font-weight:700; margin-bottom:2px; border-bottom:2px solid #e53e3e; padding-bottom:4px;">
         V1ncc TCG Card Shop
       </div>
-      <div style="margin-bottom:3px;"><b>Customer:</b> ${esc(order.customerName || "Khách")}</div>
-      <div style="margin-bottom:3px;"><b>Phone:</b> ${esc(order.phone || "")}</div>
-      <div style="margin-bottom:3px;"><b>Date:</b> ${dateStr}</div>
+      ${order.orderCode ? `<div style="text-align:center; font-size:9px; color:#999; margin-bottom:4px;">Mã đơn: ${esc(order.orderCode)}</div>` : ""}
+      <div style="margin-bottom:3px;"><b>Khách hàng:</b> ${esc(order.customerName || "Khách")}</div>
+      <div style="margin-bottom:3px;"><b>SĐT:</b> ${esc(order.phone || "")}</div>
+      <div style="margin-bottom:3px;"><b>Ngày:</b> ${dateStr}</div>
       <div style="margin:5px 0; padding:4px; background:#f5f5f5; border-radius:3px;">
-        <div style="font-weight:700; margin-bottom:2px; font-size:11px;">Products:</div>
-        ${productLines}
+        <div style="font-weight:700; margin-bottom:2px; font-size:11px;">Sản phẩm:</div>
+        ${sorted.map((p) => `<div style="padding:1px 0;">${p.qty}x ${esc(p.name)} <span style="color:#888;">(${esc(p.code)})</span></div>`).join("")}
       </div>
-      ${order.oldAddress ? `<div><b>Địa chỉ cũ:</b> ${esc(order.oldAddress)}</div>` : ""}
+      ${order.oldAddress ? `<div style="margin-bottom:2px;"><b>Địa chỉ cũ:</b> ${esc(order.oldAddress)}</div>` : ""}
       <div style="margin-bottom:3px;"><b>Địa chỉ mới:</b> ${esc(order.address || "")}</div>
+      ${order.notes ? `<div style="margin-bottom:3px;"><b>Ghi chú:</b> ${esc(order.notes)}</div>` : ""}
       <div style="margin-top:5px; padding:4px 8px; border-radius:3px; font-weight:600; text-align:center; font-size:11px; background:${order.paymentStatus === "Đã thanh toán" ? "#d1fae5" : "#fff7ed"}; color:${order.paymentStatus === "Đã thanh toán" ? "#065f46" : "#9a3412"};">
         ${order.paymentStatus === "Đã thanh toán" ? "Đã thanh toán" : "Chưa thanh toán"}
       </div>
-      <div style="font-size:13px; font-weight:700; text-align:right; margin-top:5px;">${formatPrice(order.sellPrice || 0)}</div>
+      <div style="font-size:14px; font-weight:700; text-align:right; margin-top:6px; padding-top:4px; border-top:1.5px solid #333;">
+        Tổng: ${formatPrice(order.sellPrice || 0)}
+      </div>
     </div>`;
   }
 
@@ -514,6 +549,7 @@ export default function AdminOrdersPage() {
                       <option value="Đang giao">Đang giao</option>
                       <option value="Đã giao">Đã giao</option>
                     </select>
+                    <button onClick={() => handleRefundOrder(order)} className="text-xs px-3 py-1.5 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100 font-semibold transition-colors">Hoàn hàng</button>
                     <button onClick={() => handleDeleteOrder(order)} className="text-xs px-3 py-1.5 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 font-semibold transition-colors">Xóa</button>
                     <button onClick={() => handlePrintSingle(order)} className="text-xs px-3 py-1.5 bg-slate-800 text-white rounded-lg hover:bg-slate-700 font-semibold transition-colors flex items-center gap-1">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
@@ -574,6 +610,8 @@ export default function AdminOrdersPage() {
       <div className="mt-8">
         <a href="/admin" className="text-sm text-blue-600 hover:underline">← Quay lại quản lý</a>
       </div>
+
+      <ConfirmDialog {...dialogProps} />
     </div>
   );
 }

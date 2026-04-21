@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Product } from "@/lib/types";
 import { TYPE_COLORS } from "@/lib/constants";
 import { useCartStore } from "@/store/cartStore";
+import { useWishlistStore } from "@/store/wishlistStore";
+import { useRecentlyViewedStore } from "@/store/recentlyViewedStore";
 import LowStockBadge from "./LowStockBadge";
+import CardImage from "./CardImage";
 
 function formatPrice(price: number | null): string {
   if (price === null) return "Liên hệ";
@@ -16,6 +19,13 @@ export default function ProductCard({ product }: { product: Product }) {
   const [added, setAdded] = useState(false);
   const addItem = useCartStore((s) => s.addItem);
   const cartItems = useCartStore((s) => s.items);
+  const toggleWish = useWishlistStore((s) => s.toggle);
+  const isWished = useWishlistStore((s) => s.ids.includes(product.id));
+  const addViewed = useRecentlyViewedStore((s) => s.addViewed);
+
+  useEffect(() => {
+    addViewed(product.id);
+  }, [product.id, addViewed]);
 
   const cartItem = cartItems.find((i) => i.product.id === product.id);
   const inCart = cartItem?.quantity ?? 0;
@@ -33,11 +43,31 @@ export default function ProductCard({ product }: { product: Product }) {
 
   return (
     <div className="product-card bg-white rounded-2xl border border-slate-100 overflow-hidden flex flex-col shadow-sm">
+      {/* Card Image */}
+      <div className="p-3 pb-0 relative">
+        <a href={`/product?id=${encodeURIComponent(product.id)}`}>
+          <CardImage
+          src={product.imageUrl}
+          name={product.name}
+          displayType={product.displayType}
+        />
+        </a>
+        <button
+          onClick={(e) => { e.stopPropagation(); toggleWish(product.id); }}
+          className="absolute top-5 right-5 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm hover:bg-white transition-all"
+          aria-label={isWished ? "Bỏ yêu thích" : "Yêu thích"}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={`w-5 h-5 transition-colors ${isWished ? "fill-red-500 text-red-500" : "fill-none text-slate-400 hover:text-red-400"}`} strokeWidth={2} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+          </svg>
+        </button>
+      </div>
+
       <div className="p-4 flex-1 flex flex-col gap-2">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold text-slate-800 text-sm leading-tight line-clamp-2">
+          <a href={`/product?id=${encodeURIComponent(product.id)}`} className="font-semibold text-slate-800 text-sm leading-tight line-clamp-2 hover:text-brand transition-colors">
             {product.name}
-          </h3>
+          </a>
           <LowStockBadge stock={product.stock} />
         </div>
 

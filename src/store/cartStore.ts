@@ -1,19 +1,27 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 import type { Product, CartItem } from "@/lib/types";
+
+const CART_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 interface CartState {
   items: CartItem[];
+  savedAt: number;
   addItem: (product: Product, quantity: number) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
 }
 
+function isExpired(savedAt: number): boolean {
+  return Date.now() - savedAt > CART_EXPIRY_MS;
+}
+
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
+      savedAt: Date.now(),
 
       addItem: (product: Product, quantity: number) => {
         const items = get().items;
@@ -26,16 +34,20 @@ export const useCartStore = create<CartState>()(
             items: items.map((i) =>
               i.product.id === product.id ? { ...i, quantity: newQty } : i
             ),
+            savedAt: Date.now(),
           });
         } else {
           const qty = Math.min(quantity, product.stock);
           if (qty <= 0) return;
-          set({ items: [...items, { product, quantity: qty }] });
+          set({ items: [...items, { product, quantity: qty }], savedAt: Date.now() });
         }
       },
 
       removeItem: (productId: string) => {
-        set({ items: get().items.filter((i) => i.product.id !== productId) });
+        set({
+          items: get().items.filter((i) => i.product.id !== productId),
+          savedAt: Date.now(),
+        });
       },
 
       updateQuantity: (productId: string, quantity: number) => {
@@ -49,13 +61,28 @@ export const useCartStore = create<CartState>()(
               ? { ...i, quantity: Math.min(quantity, i.product.stock) }
               : i
           ),
+          savedAt: Date.now(),
         });
       },
 
-      clearCart: () => set({ items: [] }),
+      clearCart: () => set({ items: [], savedAt: Date.now() }),
     }),
     {
       name: "pokemon-cart",
+      storage: createJSONStorage(() => {
+        try {
+          const raw = localStorage.getItem("pokemon-cart");
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed?.state?.savedAt && isExpired(parsed.state.savedAt)) {
+              localStorage.removeItem("pokemon-cart");
+            }
+          }
+        } catch {
+          localStorage.removeItem("pokemon-cart");
+        }
+        return localStorage;
+      }),
     }
   )
 );
