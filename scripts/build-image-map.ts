@@ -2,7 +2,7 @@
 // ============================================================
 // BUILD IMAGE MAP
 // Generates src/data/image-map.json from validation report
-// + TCGdex API for unmatched cards
+// + pokemontcg.io API for unmatched cards
 // ============================================================
 
 import * as fs from "fs";
@@ -32,29 +32,30 @@ interface Product {
   type: string;
 }
 
-// TCGdex set ID mapping (user series code → TCGdex set ID)
-const TCGDEX_SET_MAP: Record<string, string> = {
-  MEG: "me01",
-  PFL: "me02",
-  ASC: "me02.5",
-  POR: "me03",
-  SVI: "sv01",
-  PAL: "sv02",
-  OBF: "sv03",
-  MEW: "sv03.5",
-  PAR: "sv04",
-  PAF: "sv04.5",
-  TEF: "sv05",
-  TWM: "sv06",
-  SFA: "sv06.5",
-  SCR: "sv07",
-  SSP: "sv08",
-  PRE: "sv08.5",
-  JTG: "sv09",
+// pokemontcg.io set ID mapping (user series code → pokemontcg.io set ID)
+const POKEMON_TCG_SET_MAP: Record<string, string> = {
+  SVI: "sv1",
+  PAL: "sv2",
+  OBF: "sv3",
+  MEW: "sv3pt5",
+  PAR: "sv4",
+  PAF: "sv4pt5",
+  TEF: "sv5",
+  TWM: "sv6",
+  SFA: "sv7pt5",
+  SCR: "sv7",
+  SSP: "sv8",
+  PRE: "sv8pt5",
+  JTG: "sv9",
   DRI: "sv10",
-  BLK: "sv10.5b",
-  WHT: "sv10.5w",
-  SVE: "sve",
+  BLK: "zsv10pt5",
+  WHT: "rsv10pt5",
+  MEG: "me1",
+  PFL: "me2",
+  ASC: "me2pt5",
+  POR: "me3",
+  PEL: "sv4pt5gg",
+  SVE: "sv1pt5",
   SVP: "svp",
 };
 
@@ -73,15 +74,7 @@ const SWSH_SET_BY_TOTAL: Record<string, string> = {
   "78": "swsh10.5",    // Lost Origin
 };
 
-const TCGDEX_BASE = "https://api.tcgdex.net/v2/en";
-
-// TCGdex image URLs need /high.png suffix to return actual image (bare URL returns text/html)
-function fixTcgdexUrl(url: string): string {
-  if (url.includes("assets.tcgdex.net") && !url.endsWith(".png") && !url.endsWith(".webp")) {
-    return url + "/high.png";
-  }
-  return url;
-}
+const POKEMON_TCG_API = "https://api.pokemontcg.io/v2";
 
 function parseSeries(series: string): { setCode: string; cardNumber: string; totalCards: string } | null {
   const s = series.trim();
@@ -94,13 +87,16 @@ function parseSeries(series: string): { setCode: string; cardNumber: string; tot
   return null;
 }
 
-function getTCGdexSetId(parsed: { setCode: string; totalCards: string }): string | null {
-  // D/F/E codes need total card count to determine the set
+function getSetId(parsed: { setCode: string; totalCards: string }): string | null {
   if (["D", "F", "E"].includes(parsed.setCode)) {
-    const total = String(parseInt(parsed.totalCards, 10)); // "072" → "72"
+    const total = String(parseInt(parsed.totalCards, 10));
     return SWSH_SET_BY_TOTAL[total] || null;
   }
-  return TCGDEX_SET_MAP[parsed.setCode] || null;
+  return POKEMON_TCG_SET_MAP[parsed.setCode] || null;
+}
+
+function buildImageUrl(setId: string, cardNumber: string): string {
+  return `https://images.pokemontcg.io/${setId}/${cardNumber}_hires.png`;
 }
 
 function normalizeName(name: string): string {
@@ -113,7 +109,6 @@ function normalizeName(name: string): string {
     .trim();
 }
 
-// Base Pokémon name without variant suffixes (ex, V, VMAX, GX, etc.)
 function baseName(name: string): string {
   return normalizeName(name)
     .replace(/\s+(EX|V|VMAX|VSTAR|GX|LV\s*X|E4|BREAK|PRISMATIC|STELLAR|\d+)$/i, "")
@@ -125,7 +120,6 @@ function namesMatch(a: string, b: string): boolean {
   const nb = normalizeName(b);
   if (na === nb) return true;
 
-  // Check base names (strips EX, V, VMAX, etc.)
   const ba = baseName(a);
   const bb = baseName(b);
   if (ba && bb && (ba === bb || ba.includes(bb) || bb.includes(ba))) return true;
@@ -138,7 +132,6 @@ function namesMatch(a: string, b: string): boolean {
     if (naNoHyphen.includes(nbNoHyphen) || nbNoHyphen.includes(naNoHyphen)) return true;
   }
 
-  // Levenshtein for short differences (handles typos like ARBOLIVIA vs ARBOLIVA)
   if (ba.length >= 4 && bb.length >= 4) {
     const dist = levenshtein(ba.replace(/-/g, ""), bb.replace(/-/g, ""));
     if (dist <= 2) return true;
@@ -162,19 +155,63 @@ function levenshtein(a: string, b: string): number {
   return dp[m][n];
 }
 
-async function fetchTCGdexCards(setId: string): Promise<any[]> {
+async function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+interface PokemonTcgCard {
+  id: string;
+  name: string;
+  number: string;
+  images: { small: string; large: string };
+  set: { id: string; name: string };
+}
+
+// Cache of cards fetched per set from pokemontcg.io
+const setCardCache = new Map<string, PokemonTcgCard[]>();
+
+async function fetchSetCards(setId: string): Promise<PokemonTcgCard[]> {
+  if (setCardCache.has(setId)) return setCardCache.get(setId)!;
+
+  const allCards: PokemonTcgCard[] = [];
+  let page = 1;
+  let hasMore = true;
+
+  while (hasMore) {
+    try {
+      const res = await fetch(
+        `${POKEMON_TCG_API}/cards?q=set.id:${setId}&pageSize=250&page=${page}`
+      );
+      if (!res.ok) break;
+      const data = await res.json();
+      allCards.push(...data.data);
+      hasMore = data.page * data.pageSize < data.totalCount;
+      page++;
+      if (hasMore) await sleep(100);
+    } catch {
+      break;
+    }
+  }
+
+  setCardCache.set(setId, allCards);
+  return allCards;
+}
+
+async function searchCardsByName(name: string): Promise<PokemonTcgCard[]> {
   try {
-    const res = await fetch(`${TCGDEX_BASE}/sets/${setId}`);
+    const res = await fetch(
+      `${POKEMON_TCG_API}/cards?q=name:"${encodeURIComponent(name)}"&pageSize=10`
+    );
     if (!res.ok) return [];
     const data = await res.json();
-    return data.cards || [];
+    return data.data || [];
   } catch {
     return [];
   }
 }
 
 async function main() {
-  console.log("=== Build Image Map ===\n");
+  console.log("=== Build Image Map (pokemontcg.io) ===\n");
 
   const rootDir = path.resolve(__dirname, "..");
 
@@ -193,217 +230,126 @@ async function main() {
   const products: Product[] = JSON.parse(fs.readFileSync(productsPath, "utf-8"));
   console.log(`Loaded ${products.length} products`);
 
-  // Build product lookup by ID
-  const productById = new Map<string, Product>();
-  for (const p of products) {
-    productById.set(p.id, p);
-  }
-
-  // 3. Build image map from validation report
+  // 3. Build image map from validation report — use pokemontcg.io URLs, fallback if not available
   const imageMap: Record<string, string> = {};
   let fromReport = 0;
+  let convertedToPokemontcg = 0;
 
   for (const entry of results) {
     if (!entry.tcgMatch.found) continue;
+    // Prefer large image from pokemontcg.io
     const imageUrl =
       entry.tcgMatch.officialImageLarge ||
       entry.tcgMatch.officialImageSmall;
     if (!imageUrl) continue;
 
-    // Key by product ID
     const productId = entry.product.id;
-    imageMap[productId] = imageUrl;
-
-    // Also key by composite: code|type|series
     const compositeKey = `${entry.product.code}|${entry.product.type}|${entry.product.series}`;
-    imageMap[compositeKey] = imageUrl;
 
-    fromReport++;
-  }
-
-  console.log(`  ${fromReport} images from validation report`);
-
-  // 3b. Override products where card numbering doesn't match English API sets.
-  // The validation report matched by card number, but Japanese sets have different numbering.
-  // Use TCGdex name-based matching for these products.
-  const tcgdexCache = new Map<string, any[]>();
-  let overridden = 0;
-
-  // Known API total cards per set (from pokemontcg.io / TCGdex English)
-  const API_SET_TOTALS: Record<string, number> = {
-    me01: 188, me02: 130, "me02.5": 295, me03: 124,
-    sv01: 198, sv02: 193, sv03: 197, "sv03.5": 165,
-    sv04: 266, "sv04.5": 245, sv05: 162, sv06: 167,
-    "sv06.5": 99, sv07: 142, sv08: 252, "sv08.5": 180,
-    sv09: 159, sv10: 244,
-    "sv10.5b": 172, "sv10.5w": 173,
-    sve: 17, svp: 200,
-    swsh1: 216, swsh2: 209, swsh3: 201, "swsh4.5": 195,
-    swsh5: 183, swsh9: 216, swsh8: 284, "swsh12.5": 230,
-    "swsh10.5": 88,
-  };
-
-  const needsOverride = products.filter((p) => {
-    const parsed = parseSeries(p.series);
-    if (!parsed) return false;
-
-    // D/F/E always need override (multi-set codes)
-    if (["D", "F", "E"].includes(parsed.setCode)) return true;
-
-    // Check if card count matches API total
-    const setId = getTCGdexSetId(parsed);
-    if (!setId) return false;
-    const apiTotal = API_SET_TOTALS[setId];
-    if (!apiTotal) return false;
-    return parseInt(parsed.totalCards) !== apiTotal;
-  });
-
-  console.log(`  ${needsOverride.length} products need TCGdex name-based matching`);
-
-  for (const product of needsOverride) {
-    const parsed = parseSeries(product.series);
-    if (!parsed) continue;
-    const setId = getTCGdexSetId(parsed);
-
-    let match: any = null;
-
-    // First try the mapped set
-    if (setId) {
-      if (!tcgdexCache.has(setId)) {
-        const cards = await fetchTCGdexCards(setId);
-        tcgdexCache.set(setId, cards);
-        console.log(`  Fetched TCGdex set ${setId}: ${cards.length} cards`);
-      }
-
-      const cards = tcgdexCache.get(setId)!;
-      match =
-        cards.find((c: any) => c.localId === parsed.cardNumber && namesMatch(c.name || "", product.name)) ||
-        cards.find((c: any) => namesMatch(c.name || "", product.name));
-    }
-
-    // If not found in the mapped set, search TCGdex globally by name
-    if (!match || !match.image) {
-      try {
-        const searchRes = await fetch(
-          `${TCGDEX_BASE}/cards?name=${encodeURIComponent(product.name)}&pagination:page=1&pagination:itemsPerPage=5`
-        );
-        if (searchRes.ok) {
-          const searchCards = await searchRes.json();
-          const found = (Array.isArray(searchCards) ? searchCards : []).find(
-            (c: any) => namesMatch(c.name || "", product.name) && c.image
+    // If URL is from scrydex or tcgdex, try to convert to pokemontcg.io
+    if (imageUrl.includes("scrydex.com") || imageUrl.includes("tcgdex.net")) {
+      // Try to find the product's series to build a pokemontcg.io URL
+      const parsed = parseSeries(entry.product.series);
+      if (parsed) {
+        const setId = getSetId(parsed);
+        if (setId) {
+          // First try to find the exact card in the set
+          const cards = await fetchSetCards(setId);
+          const cardMatch = cards.find(c =>
+            c.number === parsed.cardNumber && namesMatch(c.name, entry.product.name)
           );
-          if (found) match = found;
+
+          if (cardMatch && cardMatch.images?.large) {
+            imageMap[productId] = cardMatch.images.large;
+            imageMap[compositeKey] = cardMatch.images.large;
+            fromReport++;
+            convertedToPokemontcg++;
+            continue;
+          }
         }
-      } catch {
-        // global search failed
       }
-    }
 
-    if (match && match.image) {
-      const compositeKey = `${product.code}|${product.type}|${product.series}`;
-      imageMap[product.id] = fixTcgdexUrl(match.image);
-      imageMap[compositeKey] = fixTcgdexUrl(match.image);
-      overridden++;
-    }
-  }
-
-  if (overridden > 0) {
-    console.log(`  Overridden ${overridden} images with correct TCGdex name-based matching`);
-  }
-
-  // 4. Find unmatched products
-  const unmatched = results.filter((r) => !r.tcgMatch.found);
-  console.log(`  ${unmatched.length} unmatched products`);
-
-  // 5. Try TCGdex for unmatched
-  let fromTCGdex = 0;
-  const tcgdexSetsFetched = new Set<string>();
-
-  for (const entry of unmatched) {
-    const parsed = parseSeries(entry.product.series);
-    if (!parsed) continue;
-
-    const setId = getTCGdexSetId(parsed);
-    if (!setId) continue;
-
-    // Fetch set cards (cached)
-    if (!tcgdexCache.has(setId)) {
-      const cards = await fetchTCGdexCards(setId);
-      tcgdexCache.set(setId, cards);
-      console.log(`  Fetched TCGdex set ${setId}: ${cards.length} cards`);
-    }
-
-    const cards = tcgdexCache.get(setId)!;
-
-    // Try matching by card number (only if name also roughly matches)
-    let match = cards.find(
-      (c: any) => c.localId === parsed.cardNumber && namesMatch(c.name || "", entry.product.name)
-    );
-
-    // Try matching by name only
-    if (!match) {
-      match = cards.find((c: any) => namesMatch(c.name || "", entry.product.name));
-    }
-
-    if (match && match.image) {
-      const productId = entry.product.id;
-      const compositeKey = `${entry.product.code}|${entry.product.type}|${entry.product.series}`;
-      imageMap[productId] = fixTcgdexUrl(match.image);
-      imageMap[compositeKey] = fixTcgdexUrl(match.image);
-      fromTCGdex++;
-      console.log(`    TCGdex match: ${entry.product.name} → ${match.name} (${fixTcgdexUrl(match.image)})`);
+      // If we can't convert, use the original URL
+      imageMap[productId] = imageUrl;
+      imageMap[compositeKey] = imageUrl;
+      fromReport++;
+    } else {
+      // Use pokemontcg.io URL directly
+      imageMap[productId] = imageUrl;
+      imageMap[compositeKey] = imageUrl;
+      fromReport++;
     }
   }
 
-  console.log(`  ${fromTCGdex} images from TCGdex`);
+  console.log(`  ${fromReport} images from validation report (${convertedToPokemontcg} converted to pokemontcg.io)`);
 
-  // 6. Try TCGdex for products not in validation report at all
-  let extraFound = 0;
+  // 4. For products not in validation report or without images
+  let fromSearch = 0;
+
   for (const product of products) {
     if (imageMap[product.id]) continue;
 
     const parsed = parseSeries(product.series);
     if (!parsed) continue;
 
-    const setId = getTCGdexSetId(parsed);
-    if (!setId) continue;
+    const setId = getSetId(parsed);
+    if (setId) {
+      // Try matching by card number within the set
+      const cards = await fetchSetCards(setId);
+      const match = cards.find((c) =>
+        c.number === parsed.cardNumber && namesMatch(c.name, product.name)
+      );
 
-    if (!tcgdexCache.has(setId)) {
-      const cards = await fetchTCGdexCards(setId);
-      tcgdexCache.set(setId, cards);
+      if (match && match.images?.large) {
+        const compositeKey = `${product.code}|${product.type}|${product.series}`;
+        imageMap[product.id] = match.images.large;
+        imageMap[compositeKey] = match.images.large;
+        fromSearch++;
+      }
+    } else {
+      // Fallback: search pokemontcg.io API by name
+      const searchResults = await searchCardsByName(product.name);
+      const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+      const normName = norm(product.name);
+
+      const match =
+        searchResults.find((c) => norm(c.name) === normName) ||
+        searchResults.find((c) => {
+          const cn = norm(c.name);
+          return cn.includes(normName) || normName.includes(cn);
+        });
+
+      if (match && match.images?.large) {
+        const compositeKey = `${product.code}|${product.type}|${product.series}`;
+        imageMap[product.id] = match.images.large;
+        imageMap[compositeKey] = match.images.large;
+        fromSearch++;
+      }
     }
 
-    const cards = tcgdexCache.get(setId)!;
-    const match =
-      cards.find((c: any) => c.localId === parsed.cardNumber && namesMatch(c.name || "", product.name)) ||
-      cards.find((c: any) => namesMatch(c.name || "", product.name));
-
-    if (match && match.image) {
-      const compositeKey = `${product.code}|${product.type}|${product.series}`;
-      imageMap[product.id] = fixTcgdexUrl(match.image);
-      imageMap[compositeKey] = fixTcgdexUrl(match.image);
-      extraFound++;
-    }
+    await sleep(100);
   }
 
-  if (extraFound > 0) {
-    console.log(`  ${extraFound} extra images from TCGdex`);
+  if (fromSearch > 0) {
+    console.log(`  ${fromSearch} images from pokemontcg.io name search`);
   }
 
-  // 7. Write image map
+  // 5. Write image map
   const outputPath = path.join(rootDir, "src", "data", "image-map.json");
   fs.writeFileSync(outputPath, JSON.stringify(imageMap, null, 2), "utf-8");
 
-  // 8. Stats
+  // 6. Stats
   const totalEntries = Object.keys(imageMap).length;
   const uniqueImages = new Set(Object.values(imageMap)).size;
   const productsWithImages = products.filter((p) => imageMap[p.id]).length;
+  const pokemontcgUrls = Array.from(new Set(Object.values(imageMap))).filter(v => v.includes("pokemontcg.io")).length;
 
   console.log(`\n=== Image Map Summary ===`);
   console.log(`Total map entries: ${totalEntries} (dual-keyed)`);
   console.log(`Unique images: ${uniqueImages}`);
   console.log(`Products with images: ${productsWithImages}/${products.length}`);
   console.log(`Coverage: ${((productsWithImages / products.length) * 100).toFixed(1)}%`);
+  console.log(`pokemontcg.io URLs: ${pokemontcgUrls}/${uniqueImages} (${((pokemontcgUrls / uniqueImages) * 100).toFixed(1)}%)`);
   console.log(`\nOutput: ${outputPath}`);
 }
 
