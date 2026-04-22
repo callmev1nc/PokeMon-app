@@ -30,22 +30,16 @@ export async function GET() {
       };
     });
 
-    // Second pass: resolve missing images via TCGdex
+    // Second pass: resolve missing images via pokemontcg.io (fast, no delays)
     const missing = withId.filter((p) => !p.imageUrl);
     if (missing.length > 0) {
-      // Resolve in batches of 5 to avoid rate limits
-      for (let i = 0; i < missing.length; i += 5) {
-        const batch = missing.slice(i, i + 5);
-        await Promise.all(
-          batch.map(async (p) => {
-            const compositeKey = `${p.code}|${p.type}|${p.series}`;
-            p.imageUrl = await resolveImageUrl(compositeKey, p.name);
-          })
-        );
-        if (i + 5 < missing.length) {
-          await new Promise((r) => setTimeout(r, 200));
-        }
-      }
+      // Resolve all at once without delays - pokemontcg.io is fast
+      await Promise.all(
+        missing.map(async (p) => {
+          const compositeKey = `${p.code}|${p.type}|${p.series}`;
+          p.imageUrl = await resolveImageUrl(compositeKey, p.name);
+        })
+      );
     }
 
     cachedResponse = { data: withId, timestamp: Date.now() };

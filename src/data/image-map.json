@@ -877,8 +877,8 @@
   "PO-W-32|normal|JTG 117/159": "https://images.pokemontcg.io/sv9/117_hires.png",
   "PO-P-26-normal-fee59f": "https://images.scrydex.com/pokemon/me2pt5-96/large",
   "PO-P-26|normal|ASC EN 096/217": "https://images.scrydex.com/pokemon/me2pt5-96/large",
-  "EX-G-05-ex-c0face": "https://images.pokemontcg.io/sv4/136_hires.png",
-  "EX-G-05|ex|SVP 193": "https://images.pokemontcg.io/sv4/136_hires.png",
+  "EX-G-05-ex-c0face": "https://images.pokemontcg.io/svp/193_hires.png",
+  "EX-G-05|ex|SVP 193": "https://images.pokemontcg.io/svp/193_hires.png",
   "SPE-04-normal-2bb9da": "https://images.pokemontcg.io/rsv10pt5/86_hires.png",
   "SPE-04|normal|WHT 86/86": "https://images.pokemontcg.io/rsv10pt5/86_hires.png",
   "SPE-04-holo-5a6b16": "https://images.pokemontcg.io/rsv10pt5/86_hires.png",
@@ -1933,5 +1933,7 @@
   "PC-ENERGY-2-prize-card-ecd418": "https://images.pokemontcg.io/col1/90_hires.png",
   "PC-ENERGY-2|prize card|SVE EN 011": "https://images.pokemontcg.io/col1/90_hires.png",
   "No-type-0": "https://images.pokemontcg.io/col1/88_hires.png",
-  "No-type|type|Series": "https://images.pokemontcg.io/col1/88_hires.png"
+  "No-type|type|Series": "https://images.pokemontcg.io/col1/88_hires.png",
+  "EX-G-01-ex-dd9ec7": "https://images.pokemontcg.io/dri/023_hires.png",
+  "EX-G-01|ex|DRI 023/182": "https://images.pokemontcg.io/dri/023_hires.png"
 }
