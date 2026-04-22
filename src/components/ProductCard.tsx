@@ -14,7 +14,7 @@ function formatPrice(price: number | null): string {
   return new Intl.NumberFormat("vi-VN").format(price * 1000) + " đ";
 }
 
-export default function ProductCard({ product }: { product: Product }) {
+export default function ProductCard({ product, priority = false }: { product: Product; priority?: boolean }) {
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const addItem = useCartStore((s) => s.addItem);
@@ -50,6 +50,7 @@ export default function ProductCard({ product }: { product: Product }) {
           src={product.imageUrl}
           name={product.name}
           displayType={product.displayType}
+          priority={priority}
         />
         </a>
         <button
