@@ -75,6 +75,14 @@ const SWSH_SET_BY_TOTAL: Record<string, string> = {
 
 const TCGDEX_BASE = "https://api.tcgdex.net/v2/en";
 
+// TCGdex image URLs need /high.png suffix to return actual image (bare URL returns text/html)
+function fixTcgdexUrl(url: string): string {
+  if (url.includes("assets.tcgdex.net") && !url.endsWith(".png") && !url.endsWith(".webp")) {
+    return url + "/high.png";
+  }
+  return url;
+}
+
 function parseSeries(series: string): { setCode: string; cardNumber: string; totalCards: string } | null {
   const s = series.trim();
   if (!s) return null;
@@ -293,8 +301,8 @@ async function main() {
 
     if (match && match.image) {
       const compositeKey = `${product.code}|${product.type}|${product.series}`;
-      imageMap[product.id] = match.image;
-      imageMap[compositeKey] = match.image;
+      imageMap[product.id] = fixTcgdexUrl(match.image);
+      imageMap[compositeKey] = fixTcgdexUrl(match.image);
       overridden++;
     }
   }
@@ -340,10 +348,10 @@ async function main() {
     if (match && match.image) {
       const productId = entry.product.id;
       const compositeKey = `${entry.product.code}|${entry.product.type}|${entry.product.series}`;
-      imageMap[productId] = match.image;
-      imageMap[compositeKey] = match.image;
+      imageMap[productId] = fixTcgdexUrl(match.image);
+      imageMap[compositeKey] = fixTcgdexUrl(match.image);
       fromTCGdex++;
-      console.log(`    TCGdex match: ${entry.product.name} → ${match.name} (${match.image})`);
+      console.log(`    TCGdex match: ${entry.product.name} → ${match.name} (${fixTcgdexUrl(match.image)})`);
     }
   }
 
@@ -372,8 +380,8 @@ async function main() {
 
     if (match && match.image) {
       const compositeKey = `${product.code}|${product.type}|${product.series}`;
-      imageMap[product.id] = match.image;
-      imageMap[compositeKey] = match.image;
+      imageMap[product.id] = fixTcgdexUrl(match.image);
+      imageMap[compositeKey] = fixTcgdexUrl(match.image);
       extraFound++;
     }
   }
