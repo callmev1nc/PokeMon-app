@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { fetchProductsLive } from "@/lib/data";
-import { getImageUrl } from "@/lib/cardImageCache";
+import { getImageUrl, resolveImageUrl } from "@/lib/cardImageCache";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 60;
@@ -19,6 +19,7 @@ export async function GET() {
       console.error("fetchProductsLive returned empty. STOCK_URL:", process.env.GOOGLE_STOCK_URL ? "SET" : "MISSING");
     }
 
+    // First pass: assign cached images
     const withId = products.map((p, i) => {
       const id = p.id || `${p.code}-${p.type}-${i}`;
       const compositeKey = `${p.code}|${p.type}|${p.series}`;
@@ -28,6 +29,15 @@ export async function GET() {
         imageUrl: getImageUrl(id) || getImageUrl(compositeKey) || undefined,
       };
     });
+
+    // Second pass: resolve missing images via TCGdex (max 10 per request to avoid slowdown)
+    const missing = withId.filter((p) => !p.imageUrl).slice(0, 10);
+    await Promise.all(
+      missing.map(async (p) => {
+        const compositeKey = `${p.code}|${p.type}|${p.series}`;
+        p.imageUrl = await resolveImageUrl(compositeKey, p.name);
+      })
+    );
 
     cachedResponse = { data: withId, timestamp: Date.now() };
     return NextResponse.json(withId);

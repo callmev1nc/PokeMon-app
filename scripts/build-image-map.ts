@@ -231,16 +231,16 @@ async function main() {
 
   // Known API total cards per set (from pokemontcg.io / TCGdex English)
   const API_SET_TOTALS: Record<string, number> = {
-    me01: 132, me02: 130, "me02.5": 295, me03: 124,
+    me01: 188, me02: 130, "me02.5": 295, me03: 124,
     sv01: 198, sv02: 193, sv03: 197, "sv03.5": 165,
-    sv04: 182, "sv04.5": 245, sv05: 162, sv06: 167,
-    "sv06.5": 99, sv07: 142, sv08: 191, "sv08.5": 131,
-    sv09: 159, sv10: 183,
-    "sv10.5b": 86, "sv10.5w": 86,
+    sv04: 266, "sv04.5": 245, sv05: 162, sv06: 167,
+    "sv06.5": 99, sv07: 142, sv08: 252, "sv08.5": 180,
+    sv09: 159, sv10: 244,
+    "sv10.5b": 172, "sv10.5w": 173,
     sve: 17, svp: 200,
-    swsh1: 202, swsh2: 192, swsh3: 189, "swsh4.5": 72,
-    swsh5: 163, swsh9: 172, swsh8: 264, "swsh12.5": 160,
-    "swsh10.5": 78,
+    swsh1: 216, swsh2: 209, swsh3: 201, "swsh4.5": 195,
+    swsh5: 183, swsh9: 216, swsh8: 284, "swsh12.5": 230,
+    "swsh10.5": 88,
   };
 
   const needsOverride = products.filter((p) => {
