@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import ThemeSync from "@/components/ThemeSync";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -25,7 +26,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="vi">
-      <body className="min-h-screen bg-surface-alt antialiased">{children}</body>
+      <body className="min-h-screen bg-surface-alt antialiased">
+        <ThemeSync />
+        {children}
+      </body>
     </html>
   );
 }

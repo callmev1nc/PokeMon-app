@@ -16,10 +16,40 @@
   --foreground: #1a202c;
 }
 
+.dark {
+  --background: #0f172a;
+  --foreground: #e2e8f0;
+  --color-surface: #1e293b;
+  --color-surface-alt: #0f172a;
+  --color-surface-hover: #334155;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Dark mode overrides */
+.dark .product-card {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.dark .product-card:hover {
+  box-shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.4);
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
 }
 
 /* Custom scrollbar */
