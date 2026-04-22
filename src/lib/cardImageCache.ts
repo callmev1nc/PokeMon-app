@@ -50,10 +50,12 @@ export async function resolveImageUrl(
     if (res.ok) {
       const cards = await res.json();
       if (Array.isArray(cards)) {
-        const match = cards.find(
-          (c: any) =>
-            c.name?.toLowerCase() === productName.toLowerCase() && c.image
-        );
+        // Try exact match first, then includes match
+        const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+        const normName = norm(productName);
+        const match =
+          cards.find((c: any) => c.image && norm(c.name || "") === normName) ||
+          cards.find((c: any) => c.image && (norm(c.name || "").includes(normName) || normName.includes(norm(c.name || ""))));
         if (match) {
           const url = match.image.includes("/high.png")
             ? match.image

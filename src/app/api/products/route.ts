@@ -30,14 +30,23 @@ export async function GET() {
       };
     });
 
-    // Second pass: resolve missing images via TCGdex (max 10 per request to avoid slowdown)
-    const missing = withId.filter((p) => !p.imageUrl).slice(0, 10);
-    await Promise.all(
-      missing.map(async (p) => {
-        const compositeKey = `${p.code}|${p.type}|${p.series}`;
-        p.imageUrl = await resolveImageUrl(compositeKey, p.name);
-      })
-    );
+    // Second pass: resolve missing images via TCGdex
+    const missing = withId.filter((p) => !p.imageUrl);
+    if (missing.length > 0) {
+      // Resolve in batches of 5 to avoid rate limits
+      for (let i = 0; i < missing.length; i += 5) {
+        const batch = missing.slice(i, i + 5);
+        await Promise.all(
+          batch.map(async (p) => {
+            const compositeKey = `${p.code}|${p.type}|${p.series}`;
+            p.imageUrl = await resolveImageUrl(compositeKey, p.name);
+          })
+        );
+        if (i + 5 < missing.length) {
+          await new Promise((r) => setTimeout(r, 200));
+        }
+      }
+    }
 
     cachedResponse = { data: withId, timestamp: Date.now() };
     return NextResponse.json(withId);
