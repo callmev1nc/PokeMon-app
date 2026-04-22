@@ -215,32 +215,81 @@ async function main() {
 
   console.log(`  ${fromReport} images from validation report`);
 
-  // 3b. Override D/F/E products with correct TCGdex images
-  // (validation report mapped them to wrong sets)
+  // 3b. Override products where card numbering doesn't match English API sets.
+  // The validation report matched by card number, but Japanese sets have different numbering.
+  // Use TCGdex name-based matching for these products.
   const tcgdexCache = new Map<string, any[]>();
   let overridden = 0;
 
-  const dfEProducts = products.filter((p) => {
+  // Known API total cards per set (from pokemontcg.io / TCGdex English)
+  const API_SET_TOTALS: Record<string, number> = {
+    me01: 132, me02: 130, "me02.5": 295, me03: 124,
+    sv01: 198, sv02: 193, sv03: 197, "sv03.5": 165,
+    sv04: 182, "sv04.5": 245, sv05: 162, sv06: 167,
+    "sv06.5": 99, sv07: 142, sv08: 191, "sv08.5": 131,
+    sv09: 159, sv10: 183,
+    "sv10.5b": 86, "sv10.5w": 86,
+    sve: 17, svp: 200,
+    swsh1: 202, swsh2: 192, swsh3: 189, "swsh4.5": 72,
+    swsh5: 163, swsh9: 172, swsh8: 264, "swsh12.5": 160,
+    "swsh10.5": 78,
+  };
+
+  const needsOverride = products.filter((p) => {
     const parsed = parseSeries(p.series);
-    return parsed && ["D", "F", "E"].includes(parsed.setCode);
+    if (!parsed) return false;
+
+    // D/F/E always need override (multi-set codes)
+    if (["D", "F", "E"].includes(parsed.setCode)) return true;
+
+    // Check if card count matches API total
+    const setId = getTCGdexSetId(parsed);
+    if (!setId) return false;
+    const apiTotal = API_SET_TOTALS[setId];
+    if (!apiTotal) return false;
+    return parseInt(parsed.totalCards) !== apiTotal;
   });
 
-  for (const product of dfEProducts) {
+  console.log(`  ${needsOverride.length} products need TCGdex name-based matching`);
+
+  for (const product of needsOverride) {
     const parsed = parseSeries(product.series);
     if (!parsed) continue;
     const setId = getTCGdexSetId(parsed);
-    if (!setId) continue;
 
-    if (!tcgdexCache.has(setId)) {
-      const cards = await fetchTCGdexCards(setId);
-      tcgdexCache.set(setId, cards);
-      console.log(`  Fetched TCGdex set ${setId}: ${cards.length} cards (for D/F/E override)`);
+    let match: any = null;
+
+    // First try the mapped set
+    if (setId) {
+      if (!tcgdexCache.has(setId)) {
+        const cards = await fetchTCGdexCards(setId);
+        tcgdexCache.set(setId, cards);
+        console.log(`  Fetched TCGdex set ${setId}: ${cards.length} cards`);
+      }
+
+      const cards = tcgdexCache.get(setId)!;
+      match =
+        cards.find((c: any) => c.localId === parsed.cardNumber && namesMatch(c.name || "", product.name)) ||
+        cards.find((c: any) => namesMatch(c.name || "", product.name));
     }
 
-    const cards = tcgdexCache.get(setId)!;
-    const match =
-      cards.find((c: any) => c.localId === parsed.cardNumber && namesMatch(c.name || "", product.name)) ||
-      cards.find((c: any) => namesMatch(c.name || "", product.name));
+    // If not found in the mapped set, search TCGdex globally by name
+    if (!match || !match.image) {
+      try {
+        const searchRes = await fetch(
+          `${TCGDEX_BASE}/cards?name=${encodeURIComponent(product.name)}&pagination:page=1&pagination:itemsPerPage=5`
+        );
+        if (searchRes.ok) {
+          const searchCards = await searchRes.json();
+          const found = (Array.isArray(searchCards) ? searchCards : []).find(
+            (c: any) => namesMatch(c.name || "", product.name) && c.image
+          );
+          if (found) match = found;
+        }
+      } catch {
+        // global search failed
+      }
+    }
 
     if (match && match.image) {
       const compositeKey = `${product.code}|${product.type}|${product.series}`;
@@ -251,7 +300,7 @@ async function main() {
   }
 
   if (overridden > 0) {
-    console.log(`  Overridden ${overridden} D/F/E images with correct TCGdex data`);
+    console.log(`  Overridden ${overridden} images with correct TCGdex name-based matching`);
   }
 
   // 4. Find unmatched products
