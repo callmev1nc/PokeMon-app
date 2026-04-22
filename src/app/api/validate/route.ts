@@ -1,8 +1,47 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readFileSync } from "fs";
 import { join } from "path";
+import TCGdex from "@tcgdex/sdk";
 
-const TCG_API_BASE = "https://api.pokemontcg.io/v2";
+const tcgdex = new TCGdex("en");
+tcgdex.setCacheTTL(3600);
+
+const SET_MAP: Record<string, string> = {
+  SVI: "sv01",
+  PAL: "sv02",
+  OBF: "sv03",
+  MEW: "sv03.5",
+  PAR: "sv04",
+  PAF: "sv04.5",
+  PEL: "sv04.5",
+  TEF: "sv05",
+  TWM: "sv06",
+  SFA: "sv06.5",
+  SCR: "sv07",
+  SSP: "sv08",
+  PRE: "sv08.5",
+  JTG: "sv09",
+  DRI: "sv10",
+  BLK: "sv10.5b",
+  WHT: "sv10.5w",
+  MEG: "me01",
+  PFL: "me02",
+  FPL: "me02",
+  ASC: "me02.5",
+  POR: "me03",
+  SVE: "sve",
+  SVP: "svp",
+};
+
+function normalizeName(name: string): string {
+  return name
+    .toUpperCase()
+    .replace(/\s*-\s*/g, "-")
+    .replace(/['']/g, "")
+    .replace(/[^A-Z0-9\-\s]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
 // GET /api/validate — serve the pre-built validation report
 export async function GET() {
@@ -19,7 +58,7 @@ export async function GET() {
   }
 }
 
-// POST /api/validate — validate a single card against TCG API on demand
+// POST /api/validate — validate a single card against tcgdex.dev
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -29,46 +68,41 @@ export async function POST(req: NextRequest) {
     }
 
     let cardNumber = "";
+    let setCode = "";
     if (series) {
-      const match = String(series).match(/^(.+?)\s+(\d+)\//i);
+      const match = String(series).match(/^(.+?)\s+(\d+)/i);
       if (match) {
+        setCode = match[1].trim().toUpperCase().replace(/\s+(EN|GG|TG)$/i, "");
         cardNumber = match[2];
       }
     }
 
-    // Search TCG API by name
-    const searchRes = await fetch(
-      `${TCG_API_BASE}/cards?q=${encodeURIComponent(`name:"${name}"`)}&pageSize=10`,
-      { headers: { "Content-Type": "application/json" } }
-    );
-
-    if (!searchRes.ok) {
-      return NextResponse.json(
-        { error: `TCG API error: ${searchRes.status}` },
-        { status: 502 }
-      );
-    }
-
-    const searchData = await searchRes.json();
-    const cards: any[] = searchData.data || [];
-
-    if (cards.length === 0) {
-      const broadRes = await fetch(
-        `${TCG_API_BASE}/cards?q=${encodeURIComponent(`name:${name}`)}&pageSize=10`,
-        { headers: { "Content-Type": "application/json" } }
-      );
-      if (broadRes.ok) {
-        const broadData = await broadRes.json();
-        cards.push(...(broadData.data || []));
-      }
-    }
-
+    // Try set-based lookup first
     let bestMatch = null;
-    if (cardNumber) {
-      bestMatch = cards.find((c) => c.number === cardNumber);
-    }
-    if (!bestMatch && cards.length > 0) {
-      bestMatch = cards[0];
+    const setId = SET_MAP[setCode];
+
+    if (setId) {
+      const set = await tcgdex.set.get(setId);
+      if (set?.cards) {
+        // Match by card number
+        if (cardNumber) {
+          const padded = cardNumber.padStart(3, "0");
+          bestMatch = set.cards.find(
+            (c) => c.localId === cardNumber || c.localId === padded
+          );
+        }
+        // Fallback: match by name
+        if (!bestMatch) {
+          const norm = normalizeName(name);
+          bestMatch = set.cards.find((c) => normalizeName(c.name) === norm);
+          if (!bestMatch) {
+            bestMatch = set.cards.find((c) => {
+              const cn = normalizeName(c.name);
+              return cn.includes(norm) || norm.includes(cn);
+            });
+          }
+        }
+      }
     }
 
     if (!bestMatch) {
@@ -76,7 +110,7 @@ export async function POST(req: NextRequest) {
         found: false,
         name,
         series,
-        reason: "No matching card found in Pokémon TCG database",
+        reason: "No matching card found in tcgdex.dev database",
       });
     }
 
@@ -85,21 +119,13 @@ export async function POST(req: NextRequest) {
       card: {
         id: bestMatch.id,
         name: bestMatch.name,
-        number: bestMatch.number,
-        supertype: bestMatch.supertype,
-        subtypes: bestMatch.subtypes,
-        types: bestMatch.types || [],
-        hp: bestMatch.hp,
-        rarity: bestMatch.rarity,
-        flavorText: bestMatch.flavorText,
-        setName: bestMatch.set?.name,
-        setId: bestMatch.set?.id,
-        setSeries: bestMatch.set?.series,
-        imageSmall: bestMatch.images?.small,
-        imageLarge: bestMatch.images?.large,
+        localId: bestMatch.localId,
+        image: bestMatch.image,
+        imageHighWebp: bestMatch.getImageURL?.("high", "webp"),
+        imageHighPng: bestMatch.getImageURL?.("high", "png"),
       },
       nameMatch: normalizeName(name) === normalizeName(bestMatch.name),
-      numberMatch: cardNumber ? cardNumber === bestMatch.number : null,
+      numberMatch: cardNumber ? cardNumber === bestMatch.localId : null,
     });
   } catch {
     return NextResponse.json(
@@ -107,14 +133,4 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-function normalizeName(name: string): string {
-  return name
-    .toUpperCase()
-    .replace(/\s*-\s*/g, "-")
-    .replace(/['']/g, "")
-    .replace(/[^A-Z0-9\-\s]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
 }

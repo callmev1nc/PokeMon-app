@@ -30,7 +30,7 @@ export async function GET() {
       };
     });
 
-    // Second pass: resolve missing images via pokemontcg.io (fast, no delays)
+    // Second pass: resolve missing images via tcgdex.dev SDK (set-based lookup)
     const missing = withId.filter((p) => !p.imageUrl);
     if (missing.length > 0) {
       // Resolve all at once without delays - pokemontcg.io is fast

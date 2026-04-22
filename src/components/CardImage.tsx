@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { toRenderUrl } from "@/lib/imageUtils";
 
 interface CardImageProps {
   src?: string | null;
@@ -18,13 +19,14 @@ const TYPE_PLACEHOLDER_COLORS: Record<string, string> = {
 };
 
 export default function CardImage({ src, name, displayType }: CardImageProps) {
-  const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
 
   const gradient =
     TYPE_PLACEHOLDER_COLORS[displayType] || "from-slate-200 to-slate-300";
 
-  if (!src || error) {
+  const renderSrc = useMemo(() => (src ? toRenderUrl(src) : src), [src]);
+
+  if (!renderSrc || error) {
     return (
       <div
         className={`aspect-[2.5/3.5] bg-gradient-to-br ${gradient} rounded-xl flex flex-col items-center justify-center gap-1 p-2`}
@@ -41,19 +43,14 @@ export default function CardImage({ src, name, displayType }: CardImageProps) {
 
   return (
     <div className="aspect-[2.5/3.5] bg-slate-50 rounded-xl overflow-hidden relative">
-      {!loaded && (
-        <div className="absolute inset-0 animate-pulse bg-slate-100 rounded-xl" />
-      )}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={src}
+        src={renderSrc}
         alt={name}
         loading="lazy"
-        onLoad={() => setLoaded(true)}
+        decoding="async"
         onError={() => setError(true)}
-        className={`w-full h-full object-contain transition-opacity duration-300 ${
-          loaded ? "opacity-100" : "opacity-0"
-        }`}
+        className="w-full h-full object-contain"
       />
     </div>
   );
