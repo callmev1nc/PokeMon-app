@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import type { Order, Product } from "@/lib/types";
 import AdminNav from "@/components/AdminNav";
 import ConfirmDialog, { useConfirmDialog } from "@/components/ConfirmDialog";
@@ -21,6 +21,8 @@ interface ParsedProduct {
   name: string;
   code: string;
   group: string;
+  series: string;
+  price: number | null;
 }
 
 function codeSortKey(code: string): [string, string, number] {
@@ -31,15 +33,19 @@ function codeSortKey(code: string): [string, string, number] {
   return [seg1, seg2, seg3];
 }
 
-function parseAndSortProducts(productsStr: string, codeToGroup: Map<string, string>): ParsedProduct[] {
+function parseAndSortProducts(productsStr: string, codeToGroup: Map<string, string>, productMap: Map<string, Product>): ParsedProduct[] {
   const items: ParsedProduct[] = (productsStr || "").split(", ").map((p) => {
     const match = p.match(/^(\d+)x\s+(.+?)\s+-\s+(\S+)$/);
     if (!match) return null;
+    const code = match[3];
+    const prod = productMap.get(code);
     return {
       qty: parseInt(match[1]),
       name: match[2],
-      code: match[3],
-      group: codeToGroup.get(match[3]) || "z",
+      code,
+      group: codeToGroup.get(code) || "z",
+      series: prod?.series || "",
+      price: prod?.price ?? null,
     };
   }).filter(Boolean) as ParsedProduct[];
 
@@ -85,6 +91,14 @@ export default function AdminOrdersPage() {
 
   const codeToGroup = new Map<string, string>();
   products.forEach((p) => codeToGroup.set(p.code, p.group));
+
+  const productMap = useMemo(() => {
+    const map = new Map<string, Product>();
+    for (const p of products) {
+      map.set(p.code, p);
+    }
+    return map;
+  }, [products]);
 
   useEffect(() => {
     fetchOrders();
@@ -259,34 +273,52 @@ export default function AdminOrdersPage() {
   }
 
   function renderProductLines(productsStr: string): string {
-    const sorted = parseAndSortProducts(productsStr, codeToGroup);
-    return sorted.map((p) => `<div>${p.qty}x ${esc(p.name)} - ${esc(p.code)}</div>`).join("");
+    const sorted = parseAndSortProducts(productsStr, codeToGroup, productMap);
+    return sorted.map((p) => {
+      const seriesTag = p.series ? ` <span style="color:#e53e3e;font-weight:600;">[${p.series}]</span>` : "";
+      let priceInfo = "";
+      if (p.price !== null) {
+        const lineTotal = p.price * p.qty * 1000;
+        priceInfo = ` — ${formatPrice(p.price)} x ${p.qty} = ${new Intl.NumberFormat("vi-VN").format(lineTotal)} đ`;
+      }
+      return `<div>${p.qty}x ${esc(p.name)} (${esc(p.code)})${seriesTag}${priceInfo}</div>`;
+    }).join("");
   }
 
   function buildOrderPdfHtml(order: Order): string {
     const dateStr = getHanoiTime();
-    const sorted = parseAndSortProducts(order.products, codeToGroup);
+    const sorted = parseAndSortProducts(order.products, codeToGroup, productMap);
+
+    const productLines = sorted.map((p) => {
+      const seriesTag = p.series ? `<span style="color:#e53e3e;font-weight:600;">[${esc(p.series)}]</span> ` : "";
+      let priceInfo = "";
+      if (p.price !== null) {
+        const lineTotal = p.price * p.qty * 1000;
+        priceInfo = ` — <span style="color:#555;">${formatPrice(p.price)} x ${p.qty} = ${new Intl.NumberFormat("vi-VN").format(lineTotal)} đ</span>`;
+      }
+      return `<div style="padding:1px 0;">${p.qty}x ${esc(p.name)} <span style="color:#888;">(${esc(p.code)})</span> ${seriesTag}${priceInfo}</div>`;
+    }).join("");
 
     return `
-    <div style="font-family: 'Segoe UI', Arial, sans-serif; color: #1a202c; padding: 8mm; font-size: 11px; line-height: 1.5;">
-      <div style="text-align:center; font-size:14px; font-weight:700; margin-bottom:2px; border-bottom:2px solid #e53e3e; padding-bottom:4px;">
+    <div style="font-family: 'Segoe UI', Arial, sans-serif; color: #1a202c; padding: 8mm; font-size: 13px; line-height: 1.5;">
+      <div style="text-align:center; font-size:16px; font-weight:700; margin-bottom:2px; border-bottom:2px solid #e53e3e; padding-bottom:4px;">
         V1ncc TCG Card Shop
       </div>
-      ${order.orderCode ? `<div style="text-align:center; font-size:9px; color:#999; margin-bottom:4px;">Mã đơn: ${esc(order.orderCode)}</div>` : ""}
+      ${order.orderCode ? `<div style="text-align:center; font-size:10px; color:#999; margin-bottom:4px;">Mã đơn: ${esc(order.orderCode)}</div>` : ""}
       <div style="margin-bottom:3px;"><b>Khách hàng:</b> ${esc(order.customerName || "Khách")}</div>
       <div style="margin-bottom:3px;"><b>SĐT:</b> ${esc(order.phone || "")}</div>
       <div style="margin-bottom:3px;"><b>Ngày:</b> ${dateStr}</div>
       <div style="margin:5px 0; padding:4px; background:#f5f5f5; border-radius:3px;">
-        <div style="font-weight:700; margin-bottom:2px; font-size:11px;">Sản phẩm:</div>
-        ${sorted.map((p) => `<div style="padding:1px 0;">${p.qty}x ${esc(p.name)} <span style="color:#888;">(${esc(p.code)})</span></div>`).join("")}
+        <div style="font-weight:700; margin-bottom:2px; font-size:13px;">Sản phẩm:</div>
+        ${productLines}
       </div>
       ${order.oldAddress ? `<div style="margin-bottom:2px;"><b>Địa chỉ cũ:</b> ${esc(order.oldAddress)}</div>` : ""}
       <div style="margin-bottom:3px;"><b>Địa chỉ mới:</b> ${esc(order.address || "")}</div>
       ${order.notes ? `<div style="margin-bottom:3px;"><b>Ghi chú:</b> ${esc(order.notes)}</div>` : ""}
-      <div style="margin-top:5px; padding:4px 8px; border-radius:3px; font-weight:600; text-align:center; font-size:11px; background:${order.paymentStatus === "Đã thanh toán" ? "#d1fae5" : "#fff7ed"}; color:${order.paymentStatus === "Đã thanh toán" ? "#065f46" : "#9a3412"};">
+      <div style="margin-top:5px; padding:4px 8px; border-radius:3px; font-weight:600; text-align:center; font-size:13px; background:${order.paymentStatus === "Đã thanh toán" ? "#d1fae5" : "#fff7ed"}; color:${order.paymentStatus === "Đã thanh toán" ? "#065f46" : "#9a3412"};">
         ${order.paymentStatus === "Đã thanh toán" ? "Đã thanh toán" : "Chưa thanh toán"}
       </div>
-      <div style="font-size:14px; font-weight:700; text-align:right; margin-top:6px; padding-top:4px; border-top:1.5px solid #333;">
+      <div style="font-size:16px; font-weight:700; text-align:right; margin-top:6px; padding-top:4px; border-top:1.5px solid #333;">
         Tổng: ${formatPrice(order.sellPrice || 0)}
       </div>
     </div>`;
@@ -328,16 +360,16 @@ export default function AdminOrdersPage() {
   <style>
     @page { size: A6 portrait; margin: 0; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Arial, sans-serif; padding: 5mm; color: #1a202c; }
-    .field { margin-bottom: 4px; font-size: 12px; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; padding: 5mm; color: #1a202c; font-size: 13px; }
+    .field { margin-bottom: 4px; font-size: 13px; }
     .field strong { display: inline-block; min-width: 80px; }
-    .products { margin: 6px 0; padding: 5px; background: #f9f9f9; border-radius: 3px; font-size: 11px; line-height: 1.5; }
-    .products-title { font-weight: 700; margin-bottom: 2px; font-size: 12px; }
-    .status { margin-top: 6px; padding: 4px 8px; border-radius: 3px; font-size: 11px; font-weight: 600; text-align: center; }
+    .products { margin: 6px 0; padding: 5px; background: #f9f9f9; border-radius: 3px; font-size: 12px; line-height: 1.5; }
+    .products-title { font-weight: 700; margin-bottom: 2px; font-size: 13px; }
+    .status { margin-top: 6px; padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: 600; text-align: center; }
     .status-paid { background: #d1fae5; color: #065f46; }
     .status-unpaid { background: #fff7ed; color: #9a3412; }
-    .total { font-size: 14px; font-weight: 700; text-align: right; margin-top: 6px; }
-    .header { font-size: 15px; font-weight: 700; text-align: center; margin-bottom: 6px; border-bottom: 1.5px solid #333; padding-bottom: 4px; }
+    .total { font-size: 16px; font-weight: 700; text-align: right; margin-top: 6px; }
+    .header { font-size: 16px; font-weight: 700; text-align: center; margin-bottom: 6px; border-bottom: 1.5px solid #333; padding-bottom: 4px; }
   </style>
 </head>
 <body>
@@ -568,7 +600,7 @@ export default function AdminOrdersPage() {
 
                 <p className="text-sm text-slate-600 mb-2">
                   <span className="text-slate-400">Sản phẩm:</span>{" "}
-                  {parseAndSortProducts(order.products, codeToGroup).map((p) => `${p.qty}x ${p.name} - ${p.code}`).join(", ")}
+                  {parseAndSortProducts(order.products, codeToGroup, productMap).map((p) => `${p.qty}x ${p.name} - ${p.code}`).join(", ")}
                 </p>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
