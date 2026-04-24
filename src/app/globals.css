@@ -4,16 +4,19 @@
   --color-brand: #e53e3e;
   --color-brand-dark: #c53030;
   --color-brand-light: #fed7d7;
-  --color-accent: #2b6cb0;
-  --color-accent-dark: #2c5282;
+  --color-brand-yellow: #FFCC02;
+  --color-brand-blue: #3B4CCA;
+  --color-brand-gold: #FFD700;
+  --color-accent: #3B4CCA;
+  --color-accent-dark: #2c3ea0;
   --color-surface: #ffffff;
-  --color-surface-alt: #f7fafc;
-  --color-surface-hover: #edf2f7;
+  --color-surface-alt: #FFF8E7;
+  --color-surface-hover: #FFF3D6;
 }
 
 :root {
-  --background: #f7fafc;
-  --foreground: #1a202c;
+  --background: #FFF8E7;
+  --foreground: #1A1A2E;
 }
 
 .dark {
@@ -33,11 +36,11 @@ body {
 /* Dark mode overrides */
 .dark .product-card {
   background: #1e293b;
-  border-color: #334155;
+  border-color: #FFCC0233;
 }
 
 .dark .product-card:hover {
-  box-shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 12px 40px -12px rgba(255, 204, 2, 0.2);
 }
 
 .dark ::-webkit-scrollbar-track {
@@ -57,14 +60,14 @@ body {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #FFF3D6;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e0;
+  background: #FFCC02;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #a0aec0;
+  background: #e6b800;
 }
 
 /* Cart drawer animation */
@@ -72,24 +75,28 @@ body {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Holo shimmer */
+/* Holo shimmer - Pokemon gold shimmer */
 @keyframes shimmer {
   0% { background-position: -200% center; }
   100% { background-position: 200% center; }
 }
 .badge-holo {
-  background: linear-gradient(90deg, #dbeafe 0%, #eff6ff 25%, #93c5fd 50%, #eff6ff 75%, #dbeafe 100%);
+  background: linear-gradient(90deg, #FFF8E7 0%, #FFCC02 25%, #FFD700 50%, #FFCC02 75%, #FFF8E7 100%);
   background-size: 200% 100%;
   animation: shimmer 3s ease-in-out infinite;
+  color: #1A1A2E;
+  border: 1px solid #FFD700;
 }
 
-/* Product card */
+/* Product card - Pokemon styled */
 .product-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  border: 2px solid transparent;
 }
 .product-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 12px 40px -12px rgba(255, 204, 2, 0.3);
+  border-color: #FFCC02;
 }
 
 /* Fade in animation */
@@ -104,4 +111,11 @@ body {
 /* Button press effect */
 .btn-press:active {
   transform: scale(0.97);
+}
+
+/* Pokemon-style focus rings */
+input:focus, select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 204, 2, 0.3);
+  border-color: #FFCC02;
 }
