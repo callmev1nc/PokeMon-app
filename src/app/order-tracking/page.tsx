@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Header from "@/components/Header";
+import { useLocaleStore } from "@/store/localeStore";
+import { t } from "@/lib/i18n";
 
 interface TrackedOrder {
   orderCode: string;
@@ -40,6 +42,7 @@ function getDeliveryStyle(status: string) {
 }
 
 export default function OrderTrackingPage() {
+  const locale = useLocaleStore((s) => s.locale);
   const [searchType, setSearchType] = useState<"phone" | "code">("phone");
   const [query, setQuery] = useState("");
   const [orders, setOrders] = useState<TrackedOrder[]>([]);
@@ -76,10 +79,10 @@ export default function OrderTrackingPage() {
 
       <main className="max-w-2xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold text-slate-800 mb-2">
-          Tra cứu đơn hàng
+          {t("order.track", locale)}
         </h1>
         <p className="text-sm text-slate-500 mb-6">
-          Nhập số điện thoại hoặc mã đơn hàng để xem trạng thái
+          {t("order.trackSub", locale)}
         </p>
 
         {/* Search Form */}
@@ -93,7 +96,7 @@ export default function OrderTrackingPage() {
                   : "bg-slate-50 text-slate-500 hover:bg-slate-100"
               }`}
             >
-              Số điện thoại
+              {t("order.phone", locale)}
             </button>
             <button
               onClick={() => setSearchType("code")}
@@ -103,7 +106,7 @@ export default function OrderTrackingPage() {
                   : "bg-slate-50 text-slate-500 hover:bg-slate-100"
               }`}
             >
-              Mã đơn hàng
+              {t("order.code", locale)}
             </button>
           </div>
 
@@ -112,8 +115,8 @@ export default function OrderTrackingPage() {
               type={searchType === "phone" ? "tel" : "text"}
               placeholder={
                 searchType === "phone"
-                  ? "Nhập số điện thoại..."
-                  : "Nhập mã đơn hàng..."
+                  ? t("order.enterPhone", locale)
+                  : t("order.enterCode", locale)
               }
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -125,7 +128,7 @@ export default function OrderTrackingPage() {
               disabled={loading || !query.trim()}
               className="px-5 py-2.5 bg-brand text-white rounded-xl text-sm font-semibold hover:bg-brand-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Đang tìm..." : "Tìm kiếm"}
+              {loading ? t("order.searching", locale) : t("order.search", locale)}
             </button>
           </div>
         </div>
@@ -153,9 +156,9 @@ export default function OrderTrackingPage() {
                 d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
               />
             </svg>
-            <p className="text-lg font-medium">Không tìm thấy đơn hàng</p>
+            <p className="text-lg font-medium">{t("order.notFound", locale)}</p>
             <p className="text-sm mt-1">
-              Kiểm tra lại {searchType === "phone" ? "số điện thoại" : "mã đơn hàng"} và thử lại
+              {t("order.checkAgain", locale).replace("{type}", t(searchType === "phone" ? "order.type.phone" : "order.type.code", locale))}
             </p>
           </div>
         )}
@@ -201,10 +204,10 @@ export default function OrderTrackingPage() {
               {/* Progress Bar */}
               <div className="mb-4">
                 <div className="flex justify-between text-[10px] text-slate-400 mb-1">
-                  <span>Đặt hàng</span>
-                  <span>Thanh toán</span>
-                  <span>Đang giao</span>
-                  <span>Đã giao</span>
+                  <span>{t("order.ordered", locale)}</span>
+                  <span>{t("order.payment", locale)}</span>
+                  <span>{t("order.shipping", locale)}</span>
+                  <span>{t("order.delivered", locale)}</span>
                 </div>
                 <div className="flex gap-1">
                   {[
@@ -227,13 +230,13 @@ export default function OrderTrackingPage() {
 
               {/* Customer */}
               <p className="text-sm text-slate-600 mb-2">
-                <span className="text-slate-400">Khách hàng:</span>{" "}
+                <span className="text-slate-400">{t("order.customer", locale)}</span>{" "}
                 {order.customerName}
               </p>
 
               {/* Products */}
               <div className="border-t border-slate-50 pt-3">
-                <p className="text-xs text-slate-400 mb-1">Sản phẩm:</p>
+                <p className="text-xs text-slate-400 mb-1">{t("order.products", locale)}</p>
                 <p className="text-sm text-slate-700">
                   {order.products || "N/A"}
                 </p>

@@ -6,15 +6,12 @@ import type { Product } from "@/lib/types";
 import { TYPE_COLORS, GROUP_LABELS } from "@/lib/constants";
 import { useCartStore } from "@/store/cartStore";
 import { useWishlistStore } from "@/store/wishlistStore";
+import { useLocaleStore } from "@/store/localeStore";
+import { t } from "@/lib/i18n";
 import Header from "@/components/Header";
 import CardImage from "@/components/CardImage";
 import LowStockBadge from "@/components/LowStockBadge";
 import ProductCard from "@/components/ProductCard";
-
-function formatPrice(price: number | null): string {
-  if (price === null) return "Liên hệ";
-  return new Intl.NumberFormat("vi-VN").format(price * 1000) + " đ";
-}
 
 export default function ProductDetailPage() {
   return (
@@ -27,6 +24,7 @@ export default function ProductDetailPage() {
 function ProductDetailContent() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
+  const locale = useLocaleStore((s) => s.locale);
   const [product, setProduct] = useState<Product | null>(null);
   const [related, setRelated] = useState<Product[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
@@ -37,6 +35,11 @@ function ProductDetailContent() {
   const cartItems = useCartStore((s) => s.items);
   const toggleWish = useWishlistStore((s) => s.toggle);
   const isWished = useWishlistStore((s) => product ? s.ids.includes(product.id) : false);
+
+  function formatPrice(price: number | null): string {
+    if (price === null) return t("contact.price", locale);
+    return new Intl.NumberFormat("vi-VN").format(price * 1000) + " đ";
+  }
 
   useEffect(() => {
     fetch("/api/products")
@@ -74,9 +77,9 @@ function ProductDetailContent() {
       <>
         <Header onCartClick={() => {}} />
         <div className="max-w-4xl mx-auto px-4 py-12 text-center">
-          <p className="text-lg text-slate-400">Không tìm thấy sản phẩm</p>
+          <p className="text-lg text-slate-400">{t("product.notFound", locale)}</p>
           <a href="/" className="text-brand text-sm mt-2 inline-block hover:underline">
-            Quay lại cửa hàng
+            {t("common.backToShop", locale)}
           </a>
         </div>
       </>
@@ -106,7 +109,7 @@ function ProductDetailContent() {
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
           </svg>
-          Quay lại
+          {t("common.back", locale)}
         </a>
 
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
@@ -165,16 +168,16 @@ function ProductDetailContent() {
                   {formatPrice(product.price)}
                 </p>
                 <p className="text-sm text-slate-400 mt-1">
-                  Tồn kho: <span className="font-semibold text-slate-600">{product.stock}</span>
+                  {t("product.stock", locale)} <span className="font-semibold text-slate-600">{product.stock}</span>
                   {inCart > 0 && (
-                    <span className="text-brand ml-2 font-medium">(Trong giỏ: {inCart})</span>
+                    <span className="text-brand ml-2 font-medium">({t("product.inCart", locale)}: {inCart})</span>
                   )}
                 </p>
               </div>
 
               {/* Code */}
               <p className="text-xs text-slate-400">
-                Mã sản phẩm: <span className="font-mono font-semibold text-slate-500">{product.code}</span>
+                {t("product.code", locale)} <span className="font-mono font-semibold text-slate-500">{product.code}</span>
               </p>
 
               {/* Add to cart */}
@@ -208,18 +211,18 @@ function ProductDetailContent() {
                         : "bg-brand text-white hover:bg-brand-dark shadow-red-200 shadow-md hover:shadow-lg"
                     }`}
                   >
-                    {added ? "Đã thêm vào giỏ!" : "Thêm vào giỏ"}
+                    {added ? t("cart.addedLong", locale) : t("cart.add", locale)}
                   </button>
                 </div>
               )}
               {isOutOfStock && (
                 <button disabled className="w-full py-3 rounded-xl text-sm font-semibold bg-slate-50 text-slate-300 cursor-not-allowed">
-                  Hết hàng
+                  {t("product.outOfStock", locale)}
                 </button>
               )}
               {noPrice && !isOutOfStock && (
                 <button disabled className="w-full py-3 rounded-xl text-sm font-semibold bg-slate-50 text-slate-300 cursor-not-allowed">
-                  Liên hệ để mua
+                  {t("product.contact", locale)}
                 </button>
               )}
             </div>
@@ -229,7 +232,7 @@ function ProductDetailContent() {
         {/* Related Products */}
         {related.length > 0 && (
           <section className="mt-10">
-            <h2 className="text-lg font-bold text-slate-800 mb-4">Sản phẩm liên quan</h2>
+            <h2 className="text-lg font-bold text-slate-800 mb-4">{t("product.related", locale)}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {related.map((p) => (
                 <ProductCard key={p.id} product={p} />

@@ -2,15 +2,18 @@
 
 import { useState } from "react";
 import Header from "@/components/Header";
+import { useLocaleStore } from "@/store/localeStore";
+import { t } from "@/lib/i18n";
 
-function validatePhone(phone: string): string | null {
-  if (!phone) return "Vui lòng nhập số điện thoại";
-  if (phone.length < 9) return "Số điện thoại quá ngắn";
-  if (!/^(0[3-9]\d{8,9})$/.test(phone)) return "Số điện thoại không hợp lệ";
+function validatePhone(phone: string, locale: string): string | null {
+  if (!phone) return t("customer.phoneError", locale);
+  if (phone.length < 9) return t("customer.phoneShort", locale);
+  if (!/^(0[3-9]\d{8,9})$/.test(phone)) return t("customer.phoneInvalid", locale);
   return null;
 }
 
 export default function CustomerInfoPage() {
+  const locale = useLocaleStore((s) => s.locale);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [newAddress, setNewAddress] = useState("");
@@ -22,15 +25,15 @@ export default function CustomerInfoPage() {
 
   const validateField = (field: string, value: string) => {
     const errs = { ...fieldErrors };
-    if (field === "name" && !value.trim()) errs.name = "Vui lòng nhập họ tên";
+    if (field === "name" && !value.trim()) errs.name = t("customer.nameError", locale);
     else if (field === "name") delete errs.name;
 
     if (field === "phone") {
-      const e = validatePhone(value);
+      const e = validatePhone(value, locale);
       if (e) errs.phone = e; else delete errs.phone;
     }
 
-    if (field === "oldAddress" && !value.trim()) errs.oldAddress = "Vui lòng nhập địa chỉ";
+    if (field === "oldAddress" && !value.trim()) errs.oldAddress = t("customer.oldAddressError", locale);
     else if (field === "oldAddress") delete errs.oldAddress;
 
     setFieldErrors(errs);
@@ -48,10 +51,10 @@ export default function CustomerInfoPage() {
 
     // Validate all
     const errs: Record<string, string> = {};
-    if (!name.trim()) errs.name = "Vui lòng nhập họ tên";
-    const phoneErr = validatePhone(phone);
+    if (!name.trim()) errs.name = t("customer.nameError", locale);
+    const phoneErr = validatePhone(phone, locale);
     if (phoneErr) errs.phone = phoneErr;
-    if (!oldAddress.trim()) errs.oldAddress = "Vui lòng nhập địa chỉ";
+    if (!oldAddress.trim()) errs.oldAddress = t("customer.oldAddressError", locale);
     setFieldErrors(errs);
     setTouched({ name: true, phone: true, oldAddress: true });
 
@@ -71,7 +74,7 @@ export default function CustomerInfoPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Lỗi lưu thông tin");
+        setError(data.error || t("customer.error", locale));
         return;
       }
 
@@ -82,7 +85,7 @@ export default function CustomerInfoPage() {
 
       window.location.href = "/checkout";
     } catch {
-      setError("Lỗi kết nối");
+      setError(t("customer.connectionError", locale));
     } finally {
       setLoading(false);
     }
@@ -99,17 +102,17 @@ export default function CustomerInfoPage() {
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-slate-800">
-            Thông tin giao hàng
+            {t("customer.title", locale)}
           </h1>
           <p className="text-sm text-slate-400 mt-1">
-            Vui lòng điền thông tin trước khi thanh toán
+            {t("customer.subtitle", locale)}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
           <div>
             <label htmlFor="name" className="block text-sm font-semibold text-slate-700 mb-1.5">
-              Tên <span className="text-brand">*</span>
+              {t("customer.name", locale)} <span className="text-brand">*</span>
             </label>
             <input
               id="name"
@@ -121,7 +124,7 @@ export default function CustomerInfoPage() {
               className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors ${
                 touched.name && fieldErrors.name ? "border-red-300 bg-red-50/50" : "border-slate-200"
               }`}
-              placeholder="Họ và tên"
+              placeholder={t("customer.namePlaceholder", locale)}
             />
             {touched.name && fieldErrors.name && (
               <p className="text-xs text-red-500 mt-1">{fieldErrors.name}</p>
@@ -130,7 +133,7 @@ export default function CustomerInfoPage() {
 
           <div>
             <label htmlFor="phone" className="block text-sm font-semibold text-slate-700 mb-1.5">
-              Số Điện Thoại <span className="text-brand">*</span>
+              {t("customer.phone", locale)} <span className="text-brand">*</span>
             </label>
             <input
               id="phone"
@@ -155,7 +158,7 @@ export default function CustomerInfoPage() {
 
           <div>
             <label htmlFor="newAddress" className="block text-sm font-semibold text-slate-700 mb-1.5">
-              Địa Chỉ Mới
+              {t("customer.newAddress", locale)}
             </label>
             <input
               id="newAddress"
@@ -163,13 +166,13 @@ export default function CustomerInfoPage() {
               value={newAddress}
               onChange={(e) => setNewAddress(e.target.value)}
               className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
-              placeholder="Địa chỉ nhận hàng"
+              placeholder={t("customer.newAddressPlaceholder", locale)}
             />
           </div>
 
           <div>
             <label htmlFor="oldAddress" className="block text-sm font-semibold text-slate-700 mb-1.5">
-              Địa chỉ cũ <span className="text-brand">*</span>
+              {t("customer.oldAddress", locale)} <span className="text-brand">*</span>
             </label>
             <input
               id="oldAddress"
@@ -181,7 +184,7 @@ export default function CustomerInfoPage() {
               className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors ${
                 touched.oldAddress && fieldErrors.oldAddress ? "border-red-300 bg-red-50/50" : "border-slate-200"
               }`}
-              placeholder="Địa chỉ cũ"
+              placeholder={t("customer.oldAddressPlaceholder", locale)}
             />
             {touched.oldAddress && fieldErrors.oldAddress && (
               <p className="text-xs text-red-500 mt-1">{fieldErrors.oldAddress}</p>
@@ -199,7 +202,7 @@ export default function CustomerInfoPage() {
             disabled={loading}
             className="btn-press w-full py-3 bg-brand text-white rounded-xl text-sm font-semibold hover:bg-brand-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md shadow-red-200"
           >
-            {loading ? "Đang lưu..." : "Tiếp tục thanh toán"}
+            {loading ? t("customer.saving", locale) : t("customer.continue", locale)}
           </button>
         </form>
 
@@ -208,7 +211,7 @@ export default function CustomerInfoPage() {
             href="/"
             className="text-sm text-slate-400 hover:text-slate-600 transition-colors"
           >
-            &larr; Tiếp tục mua sắm
+            &larr; {t("checkout.continueShopping", locale)}
           </a>
         </div>
       </main>

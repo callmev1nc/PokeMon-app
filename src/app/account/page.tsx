@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Header from "@/components/Header";
+import { useLocaleStore } from "@/store/localeStore";
+import { t } from "@/lib/i18n";
 
 interface CustomerOrder {
   orderCode: string;
@@ -40,6 +42,7 @@ function getDeliveryStyle(status: string) {
 }
 
 export default function AccountPage() {
+  const locale = useLocaleStore((s) => s.locale);
   const [phone, setPhone] = useState("");
   const [orders, setOrders] = useState<CustomerOrder[]>([]);
   const [loading, setLoading] = useState(false);
@@ -88,21 +91,21 @@ export default function AccountPage() {
 
       <main className="max-w-2xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold text-slate-800 mb-2">
-          Tài khoản khách hàng
+          {t("account.title", locale)}
         </h1>
         <p className="text-sm text-slate-500 mb-6">
-          Nhập số điện thoại để xem thông tin và lịch sử đơn hàng
+          {t("account.subtitle", locale)}
         </p>
 
         {/* Phone Input */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 mb-6">
           <label className="text-sm font-semibold text-slate-600 block mb-2">
-            Số điện thoại
+            {t("account.phoneLabel", locale)}
           </label>
           <div className="flex gap-2">
             <input
               type="tel"
-              placeholder="Nhập số điện thoại..."
+              placeholder={t("order.enterPhone", locale)}
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -113,7 +116,7 @@ export default function AccountPage() {
               disabled={loading || !phone.trim()}
               className="px-5 py-2.5 bg-brand text-white rounded-xl text-sm font-semibold hover:bg-brand-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Đang tìm..." : "Tra cứu"}
+              {loading ? t("order.searching", locale) : t("account.lookup", locale)}
             </button>
           </div>
         </div>
@@ -142,9 +145,9 @@ export default function AccountPage() {
                 d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
               />
             </svg>
-            <p className="text-lg font-medium">Không tìm thấy đơn hàng</p>
+            <p className="text-lg font-medium">{t("order.notFound", locale)}</p>
             <p className="text-sm mt-1">
-              Kiểm tra lại số điện thoại và thử lại
+              {t("order.checkAgain", locale).replace("{type}", t("order.type.phone", locale))}
             </p>
           </div>
         )}
@@ -178,19 +181,19 @@ export default function AccountPage() {
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <p className="text-xs text-slate-400">Tổng đơn hàng</p>
+                  <p className="text-xs text-slate-400">{t("account.totalOrders", locale)}</p>
                   <p className="text-lg font-bold text-slate-800">
                     {orders.length}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-400">Đã thanh toán</p>
+                  <p className="text-xs text-slate-400">{t("account.paid", locale)}</p>
                   <p className="text-lg font-bold text-green-600">
                     {paidCount}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-400">Tổng chi tiêu</p>
+                  <p className="text-xs text-slate-400">{t("account.totalSpent", locale)}</p>
                   <p className="text-lg font-bold text-brand">
                     {formatVND(totalSpent)}
                   </p>
@@ -200,7 +203,7 @@ export default function AccountPage() {
 
             {/* Order History */}
             <h2 className="text-lg font-bold text-slate-800 mb-3">
-              Lịch sử đơn hàng
+              {t("account.orderHistory", locale)}
             </h2>
 
             {orders.map((order) => (
@@ -243,10 +246,10 @@ export default function AccountPage() {
                 {/* Progress Bar */}
                 <div className="mb-4">
                   <div className="flex justify-between text-[10px] text-slate-400 mb-1">
-                    <span>Đặt hàng</span>
-                    <span>Thanh toán</span>
-                    <span>Đang giao</span>
-                    <span>Đã giao</span>
+                    <span>{t("order.ordered", locale)}</span>
+                    <span>{t("order.payment", locale)}</span>
+                    <span>{t("order.shipping", locale)}</span>
+                    <span>{t("order.delivered", locale)}</span>
                   </div>
                   <div className="flex gap-1">
                     {[
@@ -269,7 +272,7 @@ export default function AccountPage() {
 
                 {/* Products */}
                 <div className="border-t border-slate-50 pt-3">
-                  <p className="text-xs text-slate-400 mb-1">Sản phẩm:</p>
+                  <p className="text-xs text-slate-400 mb-1">{t("order.products", locale)}</p>
                   <p className="text-sm text-slate-700">
                     {order.products || "N/A"}
                   </p>
@@ -299,7 +302,7 @@ export default function AccountPage() {
                 d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
               />
             </svg>
-            Về cửa hàng
+            {t("account.backToShop", locale)}
           </a>
         </div>
       </main>

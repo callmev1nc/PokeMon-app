@@ -5,11 +5,14 @@ import Header from "@/components/Header";
 import CheckoutSummary from "@/components/CheckoutSummary";
 import QRCodeSection from "@/components/QRCodeSection";
 import { useCartStore, getCartTotal } from "@/store/cartStore";
+import { useLocaleStore } from "@/store/localeStore";
+import { t } from "@/lib/i18n";
 
 export default function CheckoutPage() {
   const items = useCartStore((s) => s.items);
   const total = getCartTotal(items);
   const clearCart = useCartStore((s) => s.clearCart);
+  const locale = useLocaleStore((s) => s.locale);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
@@ -54,7 +57,7 @@ export default function CheckoutPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Lỗi gửi đơn hàng");
+        setError(data.error || t("checkout.error", locale));
         return;
       }
 
@@ -62,7 +65,7 @@ export default function CheckoutPage() {
       clearCart();
       sessionStorage.removeItem("customerInfo");
     } catch {
-      setError("Lỗi kết nối");
+      setError(t("checkout.connectionError", locale));
     } finally {
       setSubmitting(false);
     }
@@ -73,12 +76,12 @@ export default function CheckoutPage() {
       <Header onCartClick={() => {}} />
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-6 animate-fade-in">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-slate-800">Thanh toán</h2>
+          <h2 className="text-2xl font-bold text-slate-800">{t("checkout.title", locale)}</h2>
           <a
             href="/"
             className="text-sm text-slate-400 hover:text-slate-600 transition-colors"
           >
-            &larr; Tiếp tục mua sắm
+            &larr; {t("checkout.continueShopping", locale)}
           </a>
         </div>
 
@@ -90,7 +93,7 @@ export default function CheckoutPage() {
             disabled={submitting || items.length === 0}
             className="btn-press w-full py-3.5 bg-brand text-white rounded-xl font-semibold hover:bg-brand-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md shadow-red-200"
           >
-            {submitting ? "Đang gửi đơn hàng..." : "Xác nhận đặt hàng"}
+            {submitting ? t("checkout.submitting", locale) : t("checkout.submit", locale)}
           </button>
         ) : (
           <div className="bg-green-50 border border-green-100 rounded-2xl p-5 text-center">
@@ -100,10 +103,10 @@ export default function CheckoutPage() {
               </svg>
             </div>
             <p className="text-green-800 font-semibold">
-              Đơn hàng đã được gửi thành công!
+              {t("checkout.success", locale)}
             </p>
             <p className="text-sm text-green-600 mt-1">
-              Vui lòng thanh toán qua QR code bên dưới
+              {t("checkout.successSub", locale)}
             </p>
           </div>
         )}

@@ -3,13 +3,16 @@
 import { useState, useEffect } from "react";
 import type { Product } from "@/lib/types";
 import { useComparisonStore } from "@/store/comparisonStore";
+import { useLocaleStore } from "@/store/localeStore";
+import { t } from "@/lib/i18n";
 
-function formatPrice(price: number | null): string {
-  if (price === null) return "Liên hệ";
+function formatPrice(price: number | null, locale: string): string {
+  if (price === null) return t("contact.price", locale);
   return new Intl.NumberFormat("vi-VN").format(price * 1000) + " đ";
 }
 
 export default function ComparePage() {
+  const locale = useLocaleStore((s) => s.locale);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const ids = useComparisonStore((s) => s.ids);
@@ -29,46 +32,46 @@ export default function ComparePage() {
   const compareProducts = products.filter((p) => ids.includes(p.id));
 
   const fields: { key: keyof Product; label: string; render: (p: Product) => string }[] = [
-    { key: "name", label: "Tên sản phẩm", render: (p) => p.name },
-    { key: "price", label: "Giá", render: (p) => formatPrice(p.price) },
-    { key: "stock", label: "Tồn kho", render: (p) => String(p.stock) },
-    { key: "type", label: "Loại", render: (p) => p.type },
-    { key: "group", label: "Nhóm", render: (p) => p.group },
-    { key: "series", label: "Series", render: (p) => p.series || "-" },
+    { key: "name", label: t("compare.name", locale), render: (p) => p.name },
+    { key: "price", label: t("compare.price", locale), render: (p) => formatPrice(p.price, locale) },
+    { key: "stock", label: t("compare.stockField", locale), render: (p) => String(p.stock) },
+    { key: "type", label: t("compare.type", locale), render: (p) => p.type },
+    { key: "group", label: t("compare.group", locale), render: (p) => p.group },
+    { key: "series", label: t("compare.series", locale), render: (p) => p.series || "-" },
   ];
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-800">So sánh sản phẩm</h1>
+        <h1 className="text-2xl font-bold text-slate-800">{t("compare.title", locale)}</h1>
         {compareProducts.length > 0 && (
           <button
             onClick={clear}
             className="px-4 py-2 bg-red-50 text-red-600 rounded-xl text-sm font-semibold hover:bg-red-100 transition-colors"
           >
-            Xóa tất cả
+            {t("cart.clearAll", locale)}
           </button>
         )}
       </div>
 
       {loading ? (
         <div className="text-center py-12">
-          <p className="text-slate-500">Đang tải...</p>
+          <p className="text-slate-500">{t("common.loading", locale)}</p>
         </div>
       ) : compareProducts.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-2xl border border-slate-100">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 text-slate-300 mx-auto mb-4">
             <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
           </svg>
-          <p className="text-slate-400 text-lg font-medium">Chưa chọn sản phẩm nào</p>
+          <p className="text-slate-400 text-lg font-medium">{t("compare.empty", locale)}</p>
           <p className="text-slate-300 text-sm mt-1">
-            Thêm sản phẩm vào danh sách so sánh từ trang cửa hàng
+            {t("compare.emptySub", locale)}
           </p>
           <a
             href="/"
             className="inline-block mt-4 px-5 py-2 bg-brand text-white rounded-xl text-sm font-semibold hover:bg-brand-dark transition-colors"
           >
-            Xem sản phẩm
+            {t("compare.viewProducts", locale)}
           </a>
         </div>
       ) : (
@@ -77,7 +80,7 @@ export default function ComparePage() {
             <thead>
               <tr className="border-b border-slate-100">
                 <th className="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider w-32">
-                  Thuộc tính
+                  {t("compare.attribute", locale)}
                 </th>
                 {compareProducts.map((p) => (
                   <th key={p.id} className="px-4 py-3 text-center">
@@ -93,7 +96,7 @@ export default function ComparePage() {
                         onClick={() => remove(p.id)}
                         className="text-xs px-3 py-1 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 font-semibold transition-colors"
                       >
-                        Xóa
+                        {t("common.delete", locale)}
                       </button>
                     </div>
                   </th>
@@ -123,7 +126,7 @@ export default function ComparePage() {
 
       <div className="mt-8">
         <a href="/" className="text-sm text-blue-600 hover:underline">
-          &larr; Quay lại cửa hàng
+          &larr; {t("common.backToShop", locale)}
         </a>
       </div>
     </div>
