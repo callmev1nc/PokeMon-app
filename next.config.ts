@@ -6,18 +6,15 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
+    minimumCacheTTL: 3600,
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "images.pokemontcg.io",
-      },
       {
         protocol: "https",
         hostname: "assets.tcgdex.net",
       },
       {
         protocol: "https",
-        hostname: "images.scrydex.com",
+        hostname: "images.pokemontcg.io",
       },
     ],
   },

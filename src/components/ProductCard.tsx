@@ -11,7 +11,16 @@ import { t } from "@/lib/i18n";
 import LowStockBadge from "./LowStockBadge";
 import CardImage from "./CardImage";
 
+<<<<<<< HEAD
 export default function ProductCard({ product }: { product: Product }) {
+=======
+function formatPrice(price: number | null): string {
+  if (price === null) return "Liên hệ";
+  return new Intl.NumberFormat("vi-VN").format(price * 1000) + " đ";
+}
+
+export default function ProductCard({ product, priority = false }: { product: Product; priority?: boolean }) {
+>>>>>>> 5e4ccf27b5855a23e39fb3ee2a9594d28b15d474
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const addItem = useCartStore((s) => s.addItem);
@@ -53,6 +62,7 @@ export default function ProductCard({ product }: { product: Product }) {
           src={product.imageUrl}
           name={product.name}
           displayType={product.displayType}
+          priority={priority}
         />
         </a>
         <button
