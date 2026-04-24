@@ -2,15 +2,18 @@
 
 import type { CartItem as CartItemType } from "@/lib/types";
 import { useCartStore } from "@/store/cartStore";
-
-function formatPrice(price: number | null): string {
-  if (price === null) return "Liên hệ";
-  return new Intl.NumberFormat("vi-VN").format(price * 1000) + " đ";
-}
+import { useLocaleStore } from "@/store/localeStore";
+import { t } from "@/lib/i18n";
 
 export default function CartItem({ item }: { item: CartItemType }) {
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
+  const locale = useLocaleStore((s) => s.locale);
+
+  const formatPrice = (price: number | null): string => {
+    if (price === null) return t("contact.price", locale);
+    return new Intl.NumberFormat("vi-VN").format(price * 1000) + " đ";
+  };
 
   const lineTotal =
     item.product.price !== null
@@ -27,7 +30,7 @@ export default function CartItem({ item }: { item: CartItemType }) {
           {item.product.displayType} · {item.product.series}
         </p>
         <p className="text-xs text-slate-500 mt-0.5">
-          {formatPrice(item.product.price)} / thẻ
+          {formatPrice(item.product.price)} {t("cart.perCard", locale)}
         </p>
       </div>
       <div className="flex items-center gap-2">

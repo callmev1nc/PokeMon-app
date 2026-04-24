@@ -8,6 +8,8 @@ import {
   GROUP_LABELS,
   GROUP_COLORS,
 } from "@/lib/constants";
+import { useLocaleStore } from "@/store/localeStore";
+import { t } from "@/lib/i18n";
 
 interface FilterBarProps {
   selectedTypes: DisplayType[];
@@ -34,6 +36,8 @@ export default function FilterBar({
   filteredTotal,
   filteredStock,
 }: FilterBarProps) {
+  const locale = useLocaleStore((s) => s.locale);
+
   return (
     <div className="flex flex-col gap-3 mb-6">
       {/* Search */}
@@ -54,10 +58,10 @@ export default function FilterBar({
         </svg>
         <input
           type="text"
-          placeholder="Tìm kiếm theo tên..."
+          placeholder={t("filter.search", locale)}
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow/50 focus:border-brand-yellow"
         />
       </div>
 
@@ -108,17 +112,17 @@ export default function FilterBar({
         <select
           value={sort}
           onChange={(e) => onSortChange(e.target.value as SortOption)}
-          className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-yellow/50 focus:border-brand-yellow"
         >
-          <option value="name-asc">Tên A-Z</option>
-          <option value="price-asc">Giá tăng dần</option>
-          <option value="price-desc">Giá giảm dần</option>
-          <option value="stock-asc">Tồn kho thấp nhất</option>
+          <option value="name-asc">{t("sort.name", locale)}</option>
+          <option value="price-asc">{t("sort.priceAsc", locale)}</option>
+          <option value="price-desc">{t("sort.priceDesc", locale)}</option>
+          <option value="stock-asc">{t("sort.stock", locale)}</option>
         </select>
 
         {/* Count */}
         <span className="text-sm text-slate-500 ml-auto">
-          {filteredTotal} sản phẩm · {filteredStock} thẻ còn lại
+          {t("filter.count", locale).replace("{total}", String(filteredTotal)).replace("{stock}", String(filteredStock))}
         </span>
       </div>
     </div>

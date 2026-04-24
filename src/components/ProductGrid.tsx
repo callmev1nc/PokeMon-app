@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import type { Product, DisplayType, SortOption, GroupCategory } from "@/lib/types";
 import { DISPLAY_TYPES } from "@/lib/constants";
+import { useLocaleStore } from "@/store/localeStore";
+import { t } from "@/lib/i18n";
 import ProductCard from "./ProductCard";
 import FilterBar from "./FilterBar";
 
@@ -21,6 +23,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortOption>("name-asc");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const locale = useLocaleStore((s) => s.locale);
 
   const toggleType = (type: DisplayType) => {
     setSelectedTypes((prev) =>
@@ -95,8 +98,8 @@ export default function ProductGrid({ products }: { products: Product[] }) {
 
       {filtered.length === 0 ? (
         <div className="text-center py-12 text-slate-400">
-          <p className="text-lg">Không tìm thấy sản phẩm nào</p>
-          <p className="text-sm mt-1">Thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
+          <p className="text-lg">{t("filter.noResults", locale)}</p>
+          <p className="text-sm mt-1">{t("filter.noResultsSub", locale)}</p>
         </div>
       ) : (
         <>
@@ -112,14 +115,14 @@ export default function ProductGrid({ products }: { products: Product[] }) {
                 onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
                 className="px-8 py-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
               >
-                Xem thêm ({filtered.length - visibleCount} sản phẩm)
+                {t("filter.loadMore", locale).replace("{count}", String(filtered.length - visibleCount))}
               </button>
             </div>
           )}
 
           {!hasMore && filtered.length > PAGE_SIZE && (
             <p className="text-center text-xs text-slate-400 mt-6">
-              Đã hiển thị tất cả {filtered.length} sản phẩm
+              {t("filter.allShown", locale).replace("{count}", String(filtered.length))}
             </p>
           )}
         </>

@@ -1,12 +1,9 @@
 "use client";
 
 import { useRecentlyViewedStore } from "@/store/recentlyViewedStore";
+import { useLocaleStore } from "@/store/localeStore";
+import { t } from "@/lib/i18n";
 import type { Product } from "@/lib/types";
-
-function formatPrice(price: number | null): string {
-  if (price === null) return "Liên hệ";
-  return new Intl.NumberFormat("vi-VN").format(price * 1000) + " đ";
-}
 
 export default function RecentlyViewedBar({
   products,
@@ -14,6 +11,12 @@ export default function RecentlyViewedBar({
   products: Product[];
 }) {
   const viewedIds = useRecentlyViewedStore((s) => s.ids);
+  const locale = useLocaleStore((s) => s.locale);
+
+  const formatPrice = (price: number | null): string => {
+    if (price === null) return t("contact.price", locale);
+    return new Intl.NumberFormat("vi-VN").format(price * 1000) + " đ";
+  };
 
   // Filter products to only those recently viewed, preserving viewed order
   const viewedProducts = viewedIds
@@ -25,7 +28,7 @@ export default function RecentlyViewedBar({
   return (
     <section className="py-4">
       <h3 className="text-sm font-semibold text-slate-700 mb-3">
-        Đã xem gần đây
+        {t("recent.title", locale)}
       </h3>
       <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
         {viewedProducts.map((product) => (

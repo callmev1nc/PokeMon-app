@@ -6,13 +6,10 @@ import { TYPE_COLORS } from "@/lib/constants";
 import { useCartStore } from "@/store/cartStore";
 import { useWishlistStore } from "@/store/wishlistStore";
 import { useRecentlyViewedStore } from "@/store/recentlyViewedStore";
+import { useLocaleStore } from "@/store/localeStore";
+import { t } from "@/lib/i18n";
 import LowStockBadge from "./LowStockBadge";
 import CardImage from "./CardImage";
-
-function formatPrice(price: number | null): string {
-  if (price === null) return "Liên hệ";
-  return new Intl.NumberFormat("vi-VN").format(price * 1000) + " đ";
-}
 
 export default function ProductCard({ product }: { product: Product }) {
   const [qty, setQty] = useState(1);
@@ -22,6 +19,7 @@ export default function ProductCard({ product }: { product: Product }) {
   const toggleWish = useWishlistStore((s) => s.toggle);
   const isWished = useWishlistStore((s) => s.ids.includes(product.id));
   const addViewed = useRecentlyViewedStore((s) => s.addViewed);
+  const locale = useLocaleStore((s) => s.locale);
 
   useEffect(() => {
     addViewed(product.id);
@@ -32,6 +30,11 @@ export default function ProductCard({ product }: { product: Product }) {
   const maxQty = product.stock - inCart;
   const isOutOfStock = product.stock === 0;
   const noPrice = product.price === null;
+
+  const formatPrice = (price: number | null): string => {
+    if (price === null) return t("contact.price", locale);
+    return new Intl.NumberFormat("vi-VN").format(price * 1000) + " đ";
+  };
 
   const handleAdd = () => {
     if (maxQty <= 0 || noPrice) return;
@@ -97,10 +100,10 @@ export default function ProductCard({ product }: { product: Product }) {
             {formatPrice(product.price)}
           </p>
           <p className="text-xs text-slate-400 mt-0.5">
-            Còn lại: <span className="font-semibold text-slate-600">{product.stock}</span>
+            {t("product.remaining", locale)} <span className="font-semibold text-slate-600">{product.stock}</span>
             {inCart > 0 && (
               <span className="text-brand ml-1 font-medium">
-                (Trong giỏ: {inCart})
+                ({t("product.inCart", locale)} {inCart})
               </span>
             )}
           </p>
@@ -138,7 +141,7 @@ export default function ProductCard({ product }: { product: Product }) {
                   : "bg-brand text-white hover:bg-brand-dark shadow-red-200 shadow-md hover:shadow-lg"
               }`}
             >
-              {added ? "Đã thêm" : "Thêm vào giỏ"}
+              {added ? t("cart.added", locale) : t("cart.add", locale)}
             </button>
           </>
         )}
@@ -147,7 +150,7 @@ export default function ProductCard({ product }: { product: Product }) {
             disabled
             className="w-full py-2 px-3 rounded-xl text-sm font-semibold bg-slate-50 text-slate-300 cursor-not-allowed"
           >
-            Hết hàng
+            {t("product.outOfStock", locale)}
           </button>
         )}
         {noPrice && !isOutOfStock && (
@@ -155,7 +158,7 @@ export default function ProductCard({ product }: { product: Product }) {
             disabled
             className="w-full py-2 px-3 rounded-xl text-sm font-semibold bg-slate-50 text-slate-300 cursor-not-allowed"
           >
-            Liên hệ để mua
+            {t("product.contact", locale)}
           </button>
         )}
       </div>

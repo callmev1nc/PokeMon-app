@@ -1,25 +1,28 @@
 "use client";
 
 import { useCartStore, getCartTotal } from "@/store/cartStore";
-
-function formatPrice(price: number | null): string {
-  if (price === null) return "Liên hệ";
-  return new Intl.NumberFormat("vi-VN").format(price * 1000) + " đ";
-}
+import { useLocaleStore } from "@/store/localeStore";
+import { t } from "@/lib/i18n";
 
 export default function CheckoutSummary() {
   const items = useCartStore((s) => s.items);
   const total = getCartTotal(items);
+  const locale = useLocaleStore((s) => s.locale);
+
+  const formatPrice = (price: number | null): string => {
+    if (price === null) return t("contact.price", locale);
+    return new Intl.NumberFormat("vi-VN").format(price * 1000) + " đ";
+  };
 
   if (items.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-slate-400">Giỏ hàng trống</p>
+        <p className="text-slate-400">{t("cart.empty", locale)}</p>
         <a
           href="/"
           className="inline-block mt-4 text-brand hover:underline text-sm font-medium"
         >
-          Quay lại cửa hàng
+          {t("common.backToShop", locale)}
         </a>
       </div>
     );
@@ -29,7 +32,7 @@ export default function CheckoutSummary() {
     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
       <div className="px-5 py-4 bg-slate-50/50 border-b border-slate-100">
         <h3 className="font-bold text-slate-800">
-          Chi tiết đơn hàng <span className="text-slate-400 font-normal">({items.length} sản phẩm)</span>
+          {t("checkout.orderDetail", locale)} <span className="text-slate-400 font-normal">({t("cart.itemCount", locale).replace("{count}", String(items.length))})</span>
         </h3>
       </div>
       <div className="divide-y divide-slate-50">
@@ -60,7 +63,7 @@ export default function CheckoutSummary() {
       </div>
       <div className="px-5 py-4 bg-slate-50/50 border-t border-slate-100">
         <div className="flex items-center justify-between">
-          <span className="font-semibold text-slate-600">Tổng cộng:</span>
+          <span className="font-semibold text-slate-600">{t("cart.total", locale)}</span>
           <span className="text-2xl font-bold text-brand">
             {new Intl.NumberFormat("vi-VN").format(total * 1000)} đ
           </span>
