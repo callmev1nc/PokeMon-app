@@ -30,7 +30,7 @@ export default function CheckoutSummary() {
 
   return (
     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-      <div className="px-5 py-4 bg-slate-50/50 border-b border-slate-100">
+      <div className="px-5 py-4 bg-brand-yellow/5 border-b border-brand-yellow/20">
         <h3 className="font-bold text-slate-800">
           {t("checkout.orderDetail", locale)} <span className="text-slate-400 font-normal">({t("cart.itemCount", locale).replace("{count}", String(items.length))})</span>
         </h3>
@@ -61,7 +61,7 @@ export default function CheckoutSummary() {
           </div>
         ))}
       </div>
-      <div className="px-5 py-4 bg-slate-50/50 border-t border-slate-100">
+      <div className="px-5 py-4 bg-brand-yellow/5 border-t border-brand-yellow/20">
         <div className="flex items-center justify-between">
           <span className="font-semibold text-slate-600">{t("cart.total", locale)}</span>
           <span className="text-2xl font-bold text-brand">

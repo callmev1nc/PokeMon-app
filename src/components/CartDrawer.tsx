@@ -35,7 +35,7 @@ export default function CartDrawer({
         }`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+        <div className="flex items-center justify-between px-5 py-4 border-b-2 border-brand-yellow/30">
           <div>
             <h2 className="text-lg font-bold text-slate-800">
               {t("cart.title", locale)}
@@ -96,16 +96,16 @@ export default function CartDrawer({
 
         {/* Footer */}
         {items.length > 0 && (
-          <div className="border-t border-slate-100 p-5 space-y-3 bg-slate-50/50">
+          <div className="border-t border-slate-100 p-5 space-y-3 bg-brand-yellow/5">
             <div className="flex items-center justify-between">
               <span className="text-sm text-slate-500">{t("cart.total", locale)}</span>
-              <span className="text-2xl font-bold text-slate-900">
+              <span className="text-2xl font-bold text-brand">
                 {new Intl.NumberFormat("vi-VN").format(total * 1000)} đ
               </span>
             </div>
             <a
               href="/customer-info"
-              className="btn-press block w-full py-3 bg-brand text-white text-center rounded-xl font-semibold shadow-md shadow-red-200 hover:bg-brand-dark transition-colors"
+              className="btn-press block w-full py-3 bg-brand text-white text-center rounded-xl font-semibold shadow-md shadow-brand-yellow/30 hover:bg-brand-dark transition-colors"
             >
               {t("cart.checkout", locale)}
             </a>

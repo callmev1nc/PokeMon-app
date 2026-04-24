@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import type { Product } from "@/lib/types";
 import { SHOP_NAME, SHOP_DESCRIPTION } from "@/lib/constants";
+import { useLocaleStore } from "@/store/localeStore";
+import { t } from "@/lib/i18n";
 import Header from "@/components/Header";
 import ProductGrid from "@/components/ProductGrid";
 import CartDrawer from "@/components/CartDrawer";
@@ -11,6 +13,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import ProductCardSkeleton from "@/components/ProductCardSkeleton";
 
 export default function HomePage() {
+  const locale = useLocaleStore((s) => s.locale);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [cartOpen, setCartOpen] = useState(false);
@@ -30,7 +33,7 @@ export default function HomePage() {
       <Header onCartClick={() => setCartOpen(true)} />
 
       {/* Hero banner */}
-      <div className="bg-gradient-to-r from-red-600 via-red-500 to-orange-500 text-white">
+      <div className="bg-gradient-to-r from-brand-yellow via-brand to-orange-500 text-white">
         <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
           <div className="flex items-center gap-6">
             <div className="flex-1">
@@ -41,17 +44,17 @@ export default function HomePage() {
                 {SHOP_DESCRIPTION}
               </p>
               <div className="flex gap-3 mt-4">
-                <span className="inline-flex items-center gap-1.5 text-xs bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                <span className="inline-flex items-center gap-1.5 text-xs bg-brand/20 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/30">
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                   </svg>
-                  Hàng chính hãng
+                  {t("hero.authentic", locale)}
                 </span>
-                <span className="inline-flex items-center gap-1.5 text-xs bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                <span className="inline-flex items-center gap-1.5 text-xs bg-brand/20 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/30">
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0H6.375c-.621 0-1.125-.504-1.125-1.125V14.25m17.25 4.5V6.375c0-.621-.504-1.125-1.125-1.125H4.125c-.621 0-1.125.504-1.125 1.125v8.25" />
                   </svg>
-                  Giao hàng toàn quốc
+                  {t("hero.shipping", locale)}
                 </span>
               </div>
             </div>
@@ -84,13 +87,13 @@ export default function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-100 mt-12">
-        <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+      <footer className="border-t-2 border-brand-yellow/30 mt-12">
+        <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-brand-yellow/70">
           <div className="flex items-center gap-2">
             <img src="/logo.png" alt="" className="h-6 w-auto" />
             <span>V1ncc TCG Card Shop</span>
           </div>
-          <p>Thẻ bài Pokémon chất lượng, giá tốt</p>
+          <p>{t("shop.footer", locale)}</p>
         </div>
       </footer>
 

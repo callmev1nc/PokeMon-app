@@ -45,7 +45,7 @@ export default function ProductCard({ product }: { product: Product }) {
   };
 
   return (
-    <div className="product-card bg-white rounded-2xl border border-slate-100 overflow-hidden flex flex-col shadow-sm">
+    <div className="product-card bg-white rounded-2xl border border-brand-yellow/20 overflow-hidden flex flex-col shadow-sm">
       {/* Card Image */}
       <div className="p-3 pb-0 relative">
         <a href={`/product?id=${encodeURIComponent(product.id)}`}>
@@ -91,10 +91,10 @@ export default function ProductCard({ product }: { product: Product }) {
           </span>
         </div>
 
-        <div className="mt-auto pt-3 border-t border-slate-50">
+        <div className="mt-auto pt-3 border-t border-brand-yellow/20">
           <p
             className={`text-xl font-bold ${
-              noPrice ? "text-slate-300" : "text-slate-900"
+              noPrice ? "text-slate-300" : "text-brand"
             }`}
           >
             {formatPrice(product.price)}
@@ -138,7 +138,7 @@ export default function ProductCard({ product }: { product: Product }) {
                   ? "bg-green-500 text-white shadow-green-200 shadow-md"
                   : maxQty <= 0
                   ? "bg-slate-50 text-slate-300 cursor-not-allowed"
-                  : "bg-brand text-white hover:bg-brand-dark shadow-red-200 shadow-md hover:shadow-lg"
+                  : "bg-brand text-white hover:bg-brand-dark shadow-brand-yellow/30 shadow-md hover:shadow-lg"
               }`}
             >
               {added ? t("cart.added", locale) : t("cart.add", locale)}
