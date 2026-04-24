@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Product } from "@/lib/types";
-import { SHOP_NAME, SHOP_DESCRIPTION } from "@/lib/constants";
+import { SHOP_NAME, SHOP_DESCRIPTION, FACEBOOK_URL } from "@/lib/constants";
 import { useLocaleStore } from "@/store/localeStore";
 import { t } from "@/lib/i18n";
 import Header from "@/components/Header";
@@ -32,26 +32,34 @@ export default function HomePage() {
     <>
       <Header onCartClick={() => setCartOpen(true)} />
 
-      {/* Hero banner */}
-      <div className="bg-gradient-to-r from-brand-yellow via-brand to-orange-500 text-white">
-        <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
-          <div className="flex items-center gap-6">
-            <div className="flex-1">
-              <h2 className="text-2xl md:text-4xl font-bold mb-2">
+      {/* Hero */}
+      <section className="hero-gradient text-white relative">
+        <div className="pokeball-deco top-[-80px] right-[-100px] opacity-50" />
+        <div className="max-w-7xl mx-auto px-4 py-10 md:py-16 relative z-10">
+          <div className="flex items-center gap-8">
+            <div className="flex-1 animate-fade-in">
+              <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/20 text-xs font-medium mb-4">
+                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                {t("hero.newStock", locale)}
+              </div>
+              <h2
+                className="text-3xl md:text-5xl font-bold mb-3 leading-tight"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
                 {SHOP_NAME}
               </h2>
-              <p className="text-red-100 text-sm md:text-base max-w-lg">
+              <p className="text-white/80 text-sm md:text-base max-w-lg leading-relaxed">
                 {SHOP_DESCRIPTION}
               </p>
-              <div className="flex gap-3 mt-4">
-                <span className="inline-flex items-center gap-1.5 text-xs bg-brand/20 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/30">
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <div className="flex flex-wrap gap-3 mt-6">
+                <span className="inline-flex items-center gap-2 text-xs bg-white/15 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20 font-medium">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                   </svg>
                   {t("hero.authentic", locale)}
                 </span>
-                <span className="inline-flex items-center gap-1.5 text-xs bg-brand/20 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/30">
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <span className="inline-flex items-center gap-2 text-xs bg-white/15 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20 font-medium">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0H6.375c-.621 0-1.125-.504-1.125-1.125V14.25m17.25 4.5V6.375c0-.621-.504-1.125-1.125-1.125H4.125c-.621 0-1.125.504-1.125 1.125v8.25" />
                   </svg>
                   {t("hero.shipping", locale)}
@@ -61,18 +69,23 @@ export default function HomePage() {
             <img
               src="/logo.png"
               alt="Pokemon"
-              className="hidden md:block h-28 w-auto rounded-2xl shadow-lg bg-white/10 backdrop-blur-sm p-2"
+              className="hidden md:block h-32 w-auto rounded-2xl shadow-xl bg-white/10 backdrop-blur-sm p-3 animate-float"
             />
           </div>
         </div>
-      </div>
+        {/* Bottom wave */}
+        <div className="absolute bottom-0 left-0 right-0">
+          <svg viewBox="0 0 1440 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
+            <path d="M0 40V20C240 0 480 0 720 20C960 40 1200 40 1440 20V40H0Z" fill="var(--background)" />
+          </svg>
+        </div>
+      </section>
 
+      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-6">
-        {!loading && (
-          <RecentlyViewedBar products={products} />
-        )}
+        {!loading && <RecentlyViewedBar products={products} />}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {Array.from({ length: 8 }).map((_, i) => (
               <ProductCardSkeleton key={i} />
             ))}
@@ -87,13 +100,70 @@ export default function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t-2 border-brand-yellow/30 mt-12">
-        <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-brand-yellow/70">
-          <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="" className="h-6 w-auto" />
-            <span>V1ncc TCG Card Shop</span>
+      <footer className="mt-16 border-t border-brand-yellow/20 bg-surface">
+        <div className="max-w-7xl mx-auto px-4 py-10">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+            {/* Brand */}
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <img src="/logo.png" alt="" className="h-8 w-auto" />
+                <span className="font-bold text-slate-800" style={{ fontFamily: "var(--font-display)" }}>
+                  V1ncc TCG
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                {t("shop.footer", locale)}
+              </p>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h4 className="text-xs font-bold text-slate-700 uppercase tracking-widest mb-3">
+                {t("footer.links", locale)}
+              </h4>
+              <div className="flex flex-col gap-2">
+                <a href="/" className="text-xs text-slate-400 hover:text-brand transition-colors">
+                  {t("shop.name", locale)}
+                </a>
+                <a href="/order-tracking" className="text-xs text-slate-400 hover:text-brand transition-colors">
+                  {t("order.track", locale)}
+                </a>
+                <a href={FACEBOOK_URL} target="_blank" rel="noopener noreferrer" className="text-xs text-slate-400 hover:text-brand transition-colors">
+                  Facebook
+                </a>
+              </div>
+            </div>
+
+            {/* Trust */}
+            <div>
+              <h4 className="text-xs font-bold text-slate-700 uppercase tracking-widest mb-3">
+                {t("footer.trust", locale)}
+              </h4>
+              <div className="flex flex-col gap-2">
+                <span className="inline-flex items-center gap-2 text-xs text-slate-400">
+                  <svg className="w-3.5 h-3.5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                  </svg>
+                  {t("hero.authentic", locale)}
+                </span>
+                <span className="inline-flex items-center gap-2 text-xs text-slate-400">
+                  <svg className="w-3.5 h-3.5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                  </svg>
+                  {t("hero.shipping", locale)}
+                </span>
+              </div>
+            </div>
           </div>
-          <p>{t("shop.footer", locale)}</p>
+
+          <div className="mt-8 pt-6 border-t border-brand-yellow/10 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <p className="text-[11px] text-slate-300">
+              &copy; {new Date().getFullYear()} V1ncc TCG Card Shop
+            </p>
+            <p className="text-[11px] text-slate-300">
+              Pokemon &amp; Pokemon card names are trademarks of Nintendo/Game Freak
+            </p>
+          </div>
         </div>
       </footer>
 

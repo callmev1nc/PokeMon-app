@@ -11,6 +11,11 @@ const translations: Record<Locale, Record<string, string>> = {
     // Hero
     "hero.authentic": "Hàng chính hãng",
     "hero.shipping": "Giao hàng toàn quốc",
+    "hero.newStock": "Hàng mới cập nhật!",
+
+    // Footer
+    "footer.links": "Liên kết",
+    "footer.trust": "Cam kết",
 
     // Cart
     "cart.empty": "Giỏ hàng trống",
@@ -34,6 +39,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "product.code": "Mã sản phẩm:",
     "product.related": "Sản phẩm liên quan",
     "product.notFound": "Không tìm thấy sản phẩm",
+    "product.lowStock": "Còn ít!",
 
     // Order
     "order.track": "Tra cứu đơn hàng",
@@ -128,6 +134,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "filter.loadMore": "Xem thêm ({count} sản phẩm)",
     "filter.allShown": "Đã hiển thị tất cả {count} sản phẩm",
     "filter.count": "{total} sản phẩm · {stock} thẻ còn lại",
+    "filter.countShort": "sản phẩm",
     "sort.name": "Tên A-Z",
     "sort.priceAsc": "Giá tăng dần",
     "sort.priceDesc": "Giá giảm dần",
@@ -146,6 +153,12 @@ const translations: Record<Locale, Record<string, string>> = {
     "common.edit": "Sửa",
     "common.close": "Đóng",
     "common.manage": "Quản lý",
+    "common.account": "Tài khoản",
+
+    // Steps
+    "step.info": "Thông tin",
+    "step.payment": "Thanh toán",
+    "step.done": "Hoàn tất",
 
     // Contact
     "contact.price": "Liên hệ",
@@ -160,6 +173,11 @@ const translations: Record<Locale, Record<string, string>> = {
     // Hero
     "hero.authentic": "Authentic products",
     "hero.shipping": "Nationwide shipping",
+    "hero.newStock": "New stock updated!",
+
+    // Footer
+    "footer.links": "Quick Links",
+    "footer.trust": "Our Promise",
 
     // Cart
     "cart.empty": "Cart is empty",
@@ -183,6 +201,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "product.code": "Product code:",
     "product.related": "Related Products",
     "product.notFound": "Product not found",
+    "product.lowStock": "Low stock!",
 
     // Order
     "order.track": "Track Order",
@@ -277,6 +296,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "filter.loadMore": "Load more ({count} products)",
     "filter.allShown": "Showing all {count} products",
     "filter.count": "{total} products · {stock} cards left",
+    "filter.countShort": "products",
     "sort.name": "Name A-Z",
     "sort.priceAsc": "Price low to high",
     "sort.priceDesc": "Price high to low",
@@ -295,6 +315,12 @@ const translations: Record<Locale, Record<string, string>> = {
     "common.edit": "Edit",
     "common.close": "Close",
     "common.manage": "Manage",
+    "common.account": "Account",
+
+    // Steps
+    "step.info": "Info",
+    "step.payment": "Payment",
+    "step.done": "Done",
 
     // Contact
     "contact.price": "Contact",

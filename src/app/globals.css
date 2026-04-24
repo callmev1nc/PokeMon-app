@@ -1,121 +1,357 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand: #e53e3e;
-  --color-brand-dark: #c53030;
-  --color-brand-light: #fed7d7;
+  --color-brand: #DC2626;
+  --color-brand-dark: #B91C1C;
+  --color-brand-light: #FEE2E2;
   --color-brand-yellow: #FFCC02;
   --color-brand-blue: #3B4CCA;
   --color-brand-gold: #FFD700;
   --color-accent: #3B4CCA;
   --color-accent-dark: #2c3ea0;
   --color-surface: #ffffff;
-  --color-surface-alt: #FFF8E7;
-  --color-surface-hover: #FFF3D6;
+  --color-surface-alt: #FFFBEB;
+  --color-surface-hover: #FEF3C7;
+  --color-surface-sunken: #F1F5F9;
 }
 
 :root {
-  --background: #FFF8E7;
-  --foreground: #1A1A2E;
+  --background: #FFFBEB;
+  --foreground: #0F172A;
+
+  --font-display: 'Lilita One', 'Segoe UI', sans-serif;
+  --font-body: 'Sora', 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+
+  --shadow-card: 0 1px 3px rgba(15,23,42,0.04), 0 2px 8px rgba(15,23,42,0.06);
+  --shadow-card-hover: 0 8px 30px rgba(255,204,2,0.18), 0 2px 8px rgba(15,23,42,0.08);
+  --shadow-float: 0 20px 60px rgba(15,23,42,0.12), 0 4px 12px rgba(15,23,42,0.06);
+  --shadow-inner-glow: inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -1px 0 rgba(0,0,0,0.05);
+
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
 }
 
 .dark {
-  --background: #0f172a;
-  --foreground: #e2e8f0;
-  --color-surface: #1e293b;
-  --color-surface-alt: #0f172a;
-  --color-surface-hover: #334155;
+  --background: #0C0F1A;
+  --foreground: #E2E8F0;
+  --color-surface: #161B2E;
+  --color-surface-alt: #0C0F1A;
+  --color-surface-hover: #1E2440;
+
+  --shadow-card: 0 2px 8px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-card-hover: 0 12px 40px rgba(255,204,2,0.12), 0 4px 12px rgba(0,0,0,0.3);
+  --shadow-float: 0 24px 64px rgba(0,0,0,0.4);
+  --shadow-inner-glow: inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(0,0,0,0.2);
 }
 
+/* ─── Base ─────────────────────────────────────────── */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Dark mode overrides */
-.dark .product-card {
-  background: #1e293b;
-  border-color: #FFCC0233;
+/* Subtle background texture */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.018;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  pointer-events: none;
+}
+.dark body::before {
+  opacity: 0.04;
 }
 
-.dark .product-card:hover {
-  box-shadow: 0 12px 40px -12px rgba(255, 204, 2, 0.2);
-}
-
-.dark ::-webkit-scrollbar-track {
-  background: #1e293b;
-}
-
-.dark ::-webkit-scrollbar-thumb {
-  background: #475569;
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #FFF3D6;
-}
+/* ─── Scrollbar ────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: #FFCC02;
+  background: var(--color-brand-yellow);
   border-radius: 3px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #e6b800;
+::-webkit-scrollbar-thumb:hover { background: #e6b800; }
+.dark ::-webkit-scrollbar-thumb { background: #334155; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+/* ─── Typography ───────────────────────────────────── */
+h1, h2, h3 {
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
 }
 
-/* Cart drawer animation */
-.cart-drawer {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* ─── Focus ────────────────────────────────────────── */
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 204, 2, 0.35);
+  border-color: var(--color-brand-yellow) !important;
 }
 
-/* Holo shimmer - Pokemon gold shimmer */
+/* ─── Product Card ─────────────────────────────────── */
+.product-card {
+  transition: transform 0.35s var(--ease-spring),
+              box-shadow 0.35s var(--ease-smooth),
+              border-color 0.3s ease;
+  border: 2px solid transparent;
+  box-shadow: var(--shadow-card);
+  will-change: transform;
+  position: relative;
+}
+.product-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 50%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.product-card:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: var(--shadow-card-hover);
+  border-color: var(--color-brand-yellow);
+}
+.product-card:hover::after {
+  opacity: 1;
+}
+
+/* Card tilt on hover (3D effect) */
+.product-card-3d {
+  transform-style: preserve-3d;
+  perspective: 800px;
+}
+
+/* ─── Holo Shimmer ─────────────────────────────────── */
 @keyframes shimmer {
   0% { background-position: -200% center; }
   100% { background-position: 200% center; }
 }
 .badge-holo {
-  background: linear-gradient(90deg, #FFF8E7 0%, #FFCC02 25%, #FFD700 50%, #FFCC02 75%, #FFF8E7 100%);
+  background: linear-gradient(
+    90deg,
+    #FFFBEB 0%,
+    #FFCC02 20%,
+    #FFD700 40%,
+    #FFF8DC 50%,
+    #FFD700 60%,
+    #FFCC02 80%,
+    #FFFBEB 100%
+  );
   background-size: 200% 100%;
   animation: shimmer 3s ease-in-out infinite;
   color: #1A1A2E;
   border: 1px solid #FFD700;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.4);
 }
 
-/* Product card - Pokemon styled */
-.product-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-  border: 2px solid transparent;
-}
-.product-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px -12px rgba(255, 204, 2, 0.3);
-  border-color: #FFCC02;
-}
-
-/* Fade in animation */
+/* ─── Animations ───────────────────────────────────── */
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(100%); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 204, 2, 0); }
+  50% { box-shadow: 0 0 20px 4px rgba(255, 204, 2, 0.3); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 .animate-fade-in {
-  animation: fadeInUp 0.4s ease-out;
+  animation: fadeInUp 0.5s var(--ease-smooth) both;
+}
+.animate-fade-in-delayed {
+  animation: fadeInUp 0.5s var(--ease-smooth) 0.1s both;
+}
+.animate-slide-in {
+  animation: slideInRight 0.4s var(--ease-smooth) both;
+}
+.animate-float {
+  animation: float 4s ease-in-out infinite;
 }
 
-/* Button press effect */
+/* Staggered card reveals */
+.stagger-1 { animation-delay: 0.03s; }
+.stagger-2 { animation-delay: 0.06s; }
+.stagger-3 { animation-delay: 0.09s; }
+.stagger-4 { animation-delay: 0.12s; }
+.stagger-5 { animation-delay: 0.15s; }
+.stagger-6 { animation-delay: 0.18s; }
+.stagger-7 { animation-delay: 0.21s; }
+.stagger-8 { animation-delay: 0.24s; }
+
+/* ─── Buttons ──────────────────────────────────────── */
 .btn-press:active {
-  transform: scale(0.97);
+  transform: scale(0.96);
 }
 
-/* Pokemon-style focus rings */
-input:focus, select:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(255, 204, 2, 0.3);
-  border-color: #FFCC02;
+.btn-primary {
+  background: var(--color-brand);
+  color: white;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  transition: all 0.2s var(--ease-smooth);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25);
+}
+.btn-primary:hover {
+  background: var(--color-brand-dark);
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.3);
+  transform: translateY(-1px);
+}
+
+/* ─── Cart Drawer ──────────────────────────────────── */
+.cart-drawer {
+  transition: transform 0.4s var(--ease-spring);
+}
+
+/* ─── Hero ─────────────────────────────────────────── */
+.hero-gradient {
+  background:
+    linear-gradient(135deg,
+      var(--color-brand) 0%,
+      #F97316 40%,
+      var(--color-brand-yellow) 100%
+    );
+  position: relative;
+  overflow: hidden;
+}
+.hero-gradient::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+  animation: float 6s ease-in-out infinite;
+  pointer-events: none;
+}
+.hero-gradient::after {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  left: -10%;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,204,2,0.15) 0%, transparent 70%);
+  animation: float 8s ease-in-out 2s infinite;
+  pointer-events: none;
+}
+
+/* Decorative pokeball */
+.pokeball-deco {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  border: 6px solid rgba(255,255,255,0.08);
+  pointer-events: none;
+  animation: spin-slow 30s linear infinite;
+}
+.pokeball-deco::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -6px;
+  right: -6px;
+  height: 6px;
+  background: rgba(255,255,255,0.08);
+  transform: translateY(-50%);
+}
+.pokeball-deco::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 6px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.04);
+  transform: translate(-50%, -50%);
+}
+
+/* ─── Glass surfaces ───────────────────────────────── */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.dark .glass {
+  background: rgba(22, 27, 46, 0.8);
+}
+
+/* ─── Filter chip active glow ──────────────────────── */
+.filter-chip-active {
+  box-shadow: var(--shadow-inner-glow), 0 1px 4px rgba(0,0,0,0.06);
+}
+
+/* ─── Dark mode overrides ──────────────────────────── */
+.dark .product-card {
+  background: var(--color-surface);
+  border-color: transparent;
+}
+.dark .product-card:hover {
+  border-color: rgba(255, 204, 2, 0.4);
+}
+
+/* ─── Skeleton loading ─────────────────────────────── */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-sunken) 25%,
+    #E2E8F0 37%,
+    var(--color-surface-sunken) 63%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+.dark .skeleton {
+  background: linear-gradient(
+    90deg,
+    #1E2440 25%,
+    #2A3152 37%,
+    #1E2440 63%
+  );
+  background-size: 200% 100%;
+}
+
+/* ─── Badge variants ───────────────────────────────── */
+.badge-stock-low {
+  animation: pulse-glow 2s ease-in-out infinite;
 }

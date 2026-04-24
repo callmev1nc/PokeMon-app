@@ -49,7 +49,6 @@ export default function CustomerInfoPage() {
     e.preventDefault();
     setError("");
 
-    // Validate all
     const errs: Record<string, string> = {};
     if (!name.trim()) errs.name = t("customer.nameError", locale);
     const phoneErr = validatePhone(phone, locale);
@@ -95,13 +94,31 @@ export default function CustomerInfoPage() {
     <>
       <Header onCartClick={() => {}} />
       <main className="max-w-lg mx-auto px-4 py-10 animate-fade-in">
+        {/* Progress Steps */}
+        <div className="flex items-center justify-center gap-2 mb-8">
+          <div className="flex items-center gap-1.5">
+            <span className="w-7 h-7 rounded-full bg-brand text-white text-xs font-bold flex items-center justify-center">1</span>
+            <span className="text-xs font-semibold text-brand">{t("step.info", locale)}</span>
+          </div>
+          <div className="w-8 h-px bg-slate-200" />
+          <div className="flex items-center gap-1.5">
+            <span className="w-7 h-7 rounded-full bg-slate-100 text-slate-400 text-xs font-bold flex items-center justify-center">2</span>
+            <span className="text-xs font-medium text-slate-400">{t("step.payment", locale)}</span>
+          </div>
+          <div className="w-8 h-px bg-slate-200" />
+          <div className="flex items-center gap-1.5">
+            <span className="w-7 h-7 rounded-full bg-slate-100 text-slate-400 text-xs font-bold flex items-center justify-center">3</span>
+            <span className="text-xs font-medium text-slate-400">{t("step.done", locale)}</span>
+          </div>
+        </div>
+
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-brand/10 rounded-2xl mb-3">
+          <div className="inline-flex items-center justify-center w-14 h-14 bg-brand/5 rounded-2xl mb-3 border border-brand/10">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-brand">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Zm6-10.125a1.875 1.875 0 1 1-3.75 0 1.875 1.875 0 0 1 3.75 0Zm1.294 6.336a6.721 6.721 0 0 1-3.17.789 6.721 6.721 0 0 1-3.168-.789 3.376 3.376 0 0 1 6.338 0Z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-slate-800">
+          <h1 className="text-2xl font-bold text-slate-800" style={{ fontFamily: "var(--font-display)" }}>
             {t("customer.title", locale)}
           </h1>
           <p className="text-sm text-slate-400 mt-1">
@@ -111,7 +128,7 @@ export default function CustomerInfoPage() {
 
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
           <div>
-            <label htmlFor="name" className="block text-sm font-semibold text-slate-700 mb-1.5">
+            <label htmlFor="name" className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wide">
               {t("customer.name", locale)} <span className="text-brand">*</span>
             </label>
             <input
@@ -121,18 +138,20 @@ export default function CustomerInfoPage() {
               onChange={(e) => setName(e.target.value)}
               onBlur={() => handleBlur("name")}
               required
-              className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors ${
-                touched.name && fieldErrors.name ? "border-red-300 bg-red-50/50" : "border-slate-200"
+              className={`w-full px-4 py-3 border rounded-xl text-sm transition-all ${
+                touched.name && fieldErrors.name
+                  ? "border-red-300 bg-red-50/50 focus:ring-red-200"
+                  : "border-slate-200 hover:border-slate-300"
               }`}
               placeholder={t("customer.namePlaceholder", locale)}
             />
             {touched.name && fieldErrors.name && (
-              <p className="text-xs text-red-500 mt-1">{fieldErrors.name}</p>
+              <p className="text-xs text-red-500 mt-1 font-medium">{fieldErrors.name}</p>
             )}
           </div>
 
           <div>
-            <label htmlFor="phone" className="block text-sm font-semibold text-slate-700 mb-1.5">
+            <label htmlFor="phone" className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wide">
               {t("customer.phone", locale)} <span className="text-brand">*</span>
             </label>
             <input
@@ -146,18 +165,20 @@ export default function CustomerInfoPage() {
               onBlur={() => handleBlur("phone")}
               required
               maxLength={11}
-              className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors ${
-                touched.phone && fieldErrors.phone ? "border-red-300 bg-red-50/50" : "border-slate-200"
+              className={`w-full px-4 py-3 border rounded-xl text-sm transition-all ${
+                touched.phone && fieldErrors.phone
+                  ? "border-red-300 bg-red-50/50 focus:ring-red-200"
+                  : "border-slate-200 hover:border-slate-300"
               }`}
               placeholder="0xxx xxx xxx"
             />
             {touched.phone && fieldErrors.phone && (
-              <p className="text-xs text-red-500 mt-1">{fieldErrors.phone}</p>
+              <p className="text-xs text-red-500 mt-1 font-medium">{fieldErrors.phone}</p>
             )}
           </div>
 
           <div>
-            <label htmlFor="newAddress" className="block text-sm font-semibold text-slate-700 mb-1.5">
+            <label htmlFor="newAddress" className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wide">
               {t("customer.newAddress", locale)}
             </label>
             <input
@@ -165,13 +186,13 @@ export default function CustomerInfoPage() {
               type="text"
               value={newAddress}
               onChange={(e) => setNewAddress(e.target.value)}
-              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
+              className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm transition-all hover:border-slate-300"
               placeholder={t("customer.newAddressPlaceholder", locale)}
             />
           </div>
 
           <div>
-            <label htmlFor="oldAddress" className="block text-sm font-semibold text-slate-700 mb-1.5">
+            <label htmlFor="oldAddress" className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wide">
               {t("customer.oldAddress", locale)} <span className="text-brand">*</span>
             </label>
             <input
@@ -181,35 +202,37 @@ export default function CustomerInfoPage() {
               onChange={(e) => setOldAddress(e.target.value)}
               onBlur={() => handleBlur("oldAddress")}
               required
-              className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors ${
-                touched.oldAddress && fieldErrors.oldAddress ? "border-red-300 bg-red-50/50" : "border-slate-200"
+              className={`w-full px-4 py-3 border rounded-xl text-sm transition-all ${
+                touched.oldAddress && fieldErrors.oldAddress
+                  ? "border-red-300 bg-red-50/50 focus:ring-red-200"
+                  : "border-slate-200 hover:border-slate-300"
               }`}
               placeholder={t("customer.oldAddressPlaceholder", locale)}
             />
             {touched.oldAddress && fieldErrors.oldAddress && (
-              <p className="text-xs text-red-500 mt-1">{fieldErrors.oldAddress}</p>
+              <p className="text-xs text-red-500 mt-1 font-medium">{fieldErrors.oldAddress}</p>
             )}
           </div>
 
           {error && (
-            <p className="text-sm text-red-600 bg-red-50 px-4 py-2.5 rounded-xl border border-red-100">
+            <div className="text-sm text-red-600 bg-red-50 px-4 py-3 rounded-xl border border-red-100 font-medium">
               {error}
-            </p>
+            </div>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="btn-press w-full py-3 bg-brand text-white rounded-xl text-sm font-semibold hover:bg-brand-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md shadow-red-200"
+            className="btn-primary btn-press w-full py-3.5 rounded-xl text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? t("customer.saving", locale) : t("customer.continue", locale)}
           </button>
         </form>
 
-        <div className="text-center mt-4">
+        <div className="text-center mt-5">
           <a
             href="/"
-            className="text-sm text-slate-400 hover:text-slate-600 transition-colors"
+            className="text-xs text-slate-400 hover:text-slate-600 transition-colors font-medium"
           >
             &larr; {t("checkout.continueShopping", locale)}
           </a>

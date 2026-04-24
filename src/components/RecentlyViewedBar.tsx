@@ -19,8 +19,8 @@ function ThumbnailImage({ product }: { product: Product }) {
 
   if (!src || error) {
     return (
-      <div className="w-full h-full bg-gradient-to-br from-red-200 to-orange-300 flex items-center justify-center">
-        <span className="text-lg font-bold text-white/80">
+      <div className="w-full h-full bg-gradient-to-br from-red-100 to-orange-200 flex items-center justify-center">
+        <span className="text-sm font-bold text-white/80">
           {product.name.charAt(0)}
         </span>
       </div>
@@ -30,7 +30,6 @@ function ThumbnailImage({ product }: { product: Product }) {
   return (
     <div className="w-full h-full relative bg-slate-50">
       {lowSrc && !loaded && (
-        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={lowSrc}
           alt=""
@@ -38,7 +37,6 @@ function ThumbnailImage({ product }: { product: Product }) {
           className="absolute inset-0 w-full h-full object-contain blur-sm scale-105"
         />
       )}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}
         alt={product.name}
@@ -53,7 +51,6 @@ function ThumbnailImage({ product }: { product: Product }) {
     </div>
   );
 }
-
 
 export default function RecentlyViewedBar({
   products,
@@ -75,8 +72,8 @@ export default function RecentlyViewedBar({
   if (viewedProducts.length === 0) return null;
 
   return (
-    <section className="py-4">
-      <h3 className="text-sm font-semibold text-slate-700 mb-3">
+    <section className="py-4 animate-fade-in">
+      <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3" style={{ fontFamily: "var(--font-body)" }}>
         {t("recent.title", locale)}
       </h3>
       <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
@@ -84,16 +81,16 @@ export default function RecentlyViewedBar({
           <a
             key={product.id}
             href={`/product?id=${encodeURIComponent(product.id)}`}
-            className="flex-shrink-0 flex items-center gap-3 bg-white border border-slate-100 rounded-xl p-2 pr-4 shadow-sm hover:shadow-md hover:border-slate-200 transition-all min-w-[220px] max-w-[280px]"
+            className="flex-shrink-0 flex items-center gap-3 bg-white border border-slate-100 rounded-xl p-2 pr-4 shadow-sm hover:shadow-md hover:border-brand-yellow/30 transition-all duration-300 min-w-[200px] max-w-[260px] group"
           >
-            <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0">
+            <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-slate-50">
               <ThumbnailImage product={product} />
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-medium text-slate-800 line-clamp-1 leading-tight">
+              <p className="text-xs font-semibold text-slate-700 line-clamp-1 leading-tight group-hover:text-brand transition-colors">
                 {product.name}
               </p>
-              <p className="text-xs font-semibold text-brand mt-0.5">
+              <p className="text-xs font-bold text-brand mt-0.5">
                 {formatPrice(product.price)}
               </p>
             </div>
