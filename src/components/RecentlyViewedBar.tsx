@@ -2,19 +2,10 @@
 
 import { useState } from "react";
 import { useRecentlyViewedStore } from "@/store/recentlyViewedStore";
-<<<<<<< HEAD
 import { useLocaleStore } from "@/store/localeStore";
 import { t } from "@/lib/i18n";
-import type { Product } from "@/lib/types";
-
-=======
 import { toRenderUrl, toPlaceholderUrl, isTcgdexUrl } from "@/lib/imageUtils";
 import type { Product } from "@/lib/types";
-
-function formatPrice(price: number | null): string {
-  if (price === null) return "Liên hệ";
-  return new Intl.NumberFormat("vi-VN").format(price * 1000) + " đ";
-}
 
 function ThumbnailImage({ product }: { product: Product }) {
   const [loaded, setLoaded] = useState(false);
@@ -63,7 +54,7 @@ function ThumbnailImage({ product }: { product: Product }) {
   );
 }
 
->>>>>>> 5e4ccf27b5855a23e39fb3ee2a9594d28b15d474
+
 export default function RecentlyViewedBar({
   products,
 }: {

@@ -125,43 +125,6 @@ export async function resolveImageUrl(
     return runtimeCache.get(key) || undefined;
   }
 
-<<<<<<< HEAD
-  // Search TCGdex by name — try original name, then with common replacements
-  // TCGdex requires accented chars for matching (e.g. "Poké Pad" not "POKE PAD")
-  const nameVariants = [
-    productName,
-    productName.replace(/POKE/gi, "Poké").replace(/POKEMON/gi, "Pokémon"),
-    productName.replace(/POKE/gi, "Poke").replace(/POKEMON/gi, "Pokemon"),
-    // Title case variant for better TCGdex matching
-    productName.replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.substring(1).toLowerCase()),
-    productName
-      .replace(/POKE/gi, "Poké").replace(/POKEMON/gi, "Pokémon")
-      .replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.substring(1).toLowerCase()),
-  ];
-  // Deduplicate
-  const uniqueNames = [...new Set(nameVariants.filter((n) => n))];
-
-  for (const searchName of uniqueNames) {
-    try {
-      const res = await fetch(
-        `${TCGDEX_BASE}/cards?name=${encodeURIComponent(searchName)}&pagination:page=1&pagination:itemsPerPage=5`
-      );
-      if (!res.ok) continue;
-      const cards = await res.json();
-      if (!Array.isArray(cards)) continue;
-
-      const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
-      const normName = norm(productName);
-      const match =
-        cards.find((c: any) => c.image && norm(c.name || "") === normName) ||
-        cards.find((c: any) => c.image && (norm(c.name || "").includes(normName) || normName.includes(norm(c.name || ""))));
-      if (match) {
-        const url = match.image.includes("/high.png")
-          ? match.image
-          : match.image + "/high.png";
-        runtimeCache.set(key, url);
-        return url;
-=======
   // Try to extract composite key parts for direct URL construction
   const parts = key.split("|");
   if (parts.length >= 3) {
@@ -191,10 +154,7 @@ export async function resolveImageUrl(
         } catch {
           // Fallback below
         }
->>>>>>> 5e4ccf27b5855a23e39fb3ee2a9594d28b15d474
       }
-    } catch {
-      // TCGdex lookup failed
     }
   }
 
