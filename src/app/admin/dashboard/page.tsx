@@ -185,7 +185,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <AdminNav active="products" />
+        <AdminNav active="dashboard" />
         <div className="flex justify-center py-20">
           <div className="w-8 h-8 border-3 border-brand border-t-transparent rounded-full animate-spin" />
         </div>

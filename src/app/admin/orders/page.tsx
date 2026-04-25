@@ -82,12 +82,27 @@ export default function AdminOrdersPage() {
     "all" | "pending" | "paid" | "delivered" | "undelivered"
   >("all");
   const [editValues, setEditValues] = useState<
-    Record<number, { buyPrice: string; shippingCost: string }>
+    Record<number, { buyPrice: string; shippingCost: string; notes: string }>
   >({});
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [selectMode, setSelectMode] = useState(false);
   const pdfGenerating = useRef(false);
   const { dialogProps, confirm: confirmAction } = useConfirmDialog();
+
+  const [showNewOrder, setShowNewOrder] = useState(false);
+  const [submittingOrder, setSubmittingOrder] = useState(false);
+  const [newOrder, setNewOrder] = useState({
+    customerName: "",
+    phone: "",
+    address: "",
+    oldAddress: "",
+    products: "",
+    sellPrice: "",
+    buyPrice: "",
+    shippingCost: "",
+    notes: "",
+    paymentStatus: "Chưa thanh toán" as "Chưa thanh toán" | "Đã chuyển khoản" | "Đã thanh toán",
+  });
 
   const codeToGroup = new Map<string, string>();
   products.forEach((p) => codeToGroup.set(p.code, p.group));
@@ -118,11 +133,12 @@ export default function AdminOrdersPage() {
       }));
       fetched.reverse();
       setOrders(fetched);
-      const vals: Record<number, { buyPrice: string; shippingCost: string }> = {};
+      const vals: Record<number, { buyPrice: string; shippingCost: string; notes: string }> = {};
       fetched.forEach((o: Order, i: number) => {
         vals[i] = {
           buyPrice: o.buyPrice ? String(o.buyPrice) : "",
           shippingCost: o.shippingCost ? String(o.shippingCost) : "",
+          notes: o.notes || "",
         };
       });
       setEditValues(vals);
@@ -242,6 +258,71 @@ export default function AdminOrdersPage() {
     else setSelected(new Set(filtered.map((_, i) => i)));
   }
 
+  async function handleSubmitNewOrder() {
+    if (!newOrder.customerName.trim()) { setMessage("Vui lòng nhập tên khách hàng"); return; }
+    setSubmittingOrder(true);
+    setMessage("");
+    try {
+      const res = await fetch("/api/sheets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "addOrder",
+          order: {
+            timestamp: new Date().toISOString(),
+            orderDate: new Date().toLocaleDateString("vi-VN"),
+            orderCode: "",
+            products: newOrder.products,
+            customerName: newOrder.customerName,
+            phone: newOrder.phone,
+            address: newOrder.address,
+            oldAddress: newOrder.oldAddress,
+            notes: newOrder.notes,
+            sellPrice: Number(newOrder.sellPrice) || 0,
+            buyPrice: Number(newOrder.buyPrice) || 0,
+            shippingCost: Number(newOrder.shippingCost) || 0,
+            profit: 0,
+            paymentStatus: newOrder.paymentStatus,
+          },
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMessage("Đã tạo đơn hàng mới");
+        setShowNewOrder(false);
+        setNewOrder({
+          customerName: "", phone: "", address: "", oldAddress: "",
+          products: "", sellPrice: "", buyPrice: "", shippingCost: "",
+          notes: "", paymentStatus: "Chưa thanh toán",
+        });
+        await fetchOrders();
+      } else {
+        setMessage("Lỗi: " + (data.error || "Không thể tạo đơn hàng"));
+      }
+    } catch {
+      setMessage("Lỗi kết nối");
+    } finally {
+      setSubmittingOrder(false);
+    }
+  }
+
+  function handleCopyOrder(order: Order) {
+    setNewOrder({
+      customerName: order.customerName || "",
+      phone: order.phone || "",
+      address: order.address || "",
+      oldAddress: order.oldAddress || "",
+      products: order.products || "",
+      sellPrice: String(order.sellPrice || ""),
+      buyPrice: String(order.buyPrice || ""),
+      shippingCost: String(order.shippingCost || ""),
+      notes: order.notes || "",
+      paymentStatus: "Chưa thanh toán",
+    });
+    setShowNewOrder(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   const updateOrderField = useCallback(
     async (orderIndex: number, field: "buyPrice" | "shippingCost" | "notes" | "orderCode", value: string | number) => {
       try {
@@ -318,8 +399,8 @@ export default function AdminOrdersPage() {
       <div style="margin-top:5px; padding:4px 8px; border-radius:3px; font-weight:600; text-align:center; font-size:13px; background:${order.paymentStatus === "Đã thanh toán" ? "#d1fae5" : "#fff7ed"}; color:${order.paymentStatus === "Đã thanh toán" ? "#065f46" : "#9a3412"};">
         ${order.paymentStatus === "Đã thanh toán" ? "Đã thanh toán" : "Chưa thanh toán"}
       </div>
-      <div style="font-size:16px; font-weight:700; text-align:right; margin-top:6px; padding-top:4px; border-top:1.5px solid #333;">
-        Tổng: ${formatPrice(order.sellPrice || 0)}
+      <div style="font-size:14px; font-weight:700; text-align:right; margin-top:6px; padding-top:4px; border-top:1.5px solid #333;">
+        Tổng: ${formatPrice(Number(order.sellPrice) || 0)}
       </div>
     </div>`;
   }
@@ -383,10 +464,11 @@ export default function AdminOrdersPage() {
   </div>
   ${order.oldAddress ? `<div class="field"><strong>Địa chỉ cũ:</strong> ${esc(order.oldAddress)}</div>` : ""}
   <div class="field"><strong>Địa chỉ mới:</strong> ${esc(order.address || "")}</div>
+  ${order.notes ? `<div class="field"><strong>Ghi chú:</strong> ${esc(order.notes)}</div>` : ""}
   <div class="status ${order.paymentStatus === "Đã thanh toán" ? "status-paid" : "status-unpaid"}">
     ${order.paymentStatus === "Đã thanh toán" ? "Đã thanh toán" : "Chưa thanh toán"}
   </div>
-  <div class="total">${formatPrice(order.sellPrice || 0)}</div>
+  <div class="total">Tổng: ${formatPrice(Number(order.sellPrice) || 0)}</div>
 </body>
 </html>`;
     const printWindow = window.open("", "_blank");
@@ -400,7 +482,9 @@ export default function AdminOrdersPage() {
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
     const ordersToPrint = filtered;
-    const totalRevenue = ordersToPrint.filter((o) => o.paymentStatus === "Đã thanh toán").reduce((sum, o) => sum + (o.sellPrice || 0), 0);
+    const totalAll = ordersToPrint.reduce((sum, o) => sum + (Number(o.sellPrice) || 0), 0);
+    const totalPaid = ordersToPrint.filter((o) => o.paymentStatus === "Đã thanh toán" || o.paymentStatus === "Đã chuyển khoản").reduce((sum, o) => sum + (Number(o.sellPrice) || 0), 0);
+    const paidCount = ordersToPrint.filter((o) => o.paymentStatus === "Đã thanh toán" || o.paymentStatus === "Đã chuyển khoản").length;
     const orderCards = ordersToPrint.map((o) => {
       const productLines = renderProductLines(o.products);
       return `
@@ -412,10 +496,11 @@ export default function AdminOrdersPage() {
         <div class="products"><div class="products-title">Products:</div>${productLines}</div>
         ${o.oldAddress ? `<div class="field"><strong>Địa chỉ cũ:</strong> ${esc(o.oldAddress)}</div>` : ""}
         <div class="field"><strong>Địa chỉ mới:</strong> ${esc(o.address || "")}</div>
+        ${o.notes ? `<div class="field"><strong>Ghi chú:</strong> ${esc(o.notes)}</div>` : ""}
         <div class="status ${o.paymentStatus === "Đã thanh toán" ? "status-paid" : "status-unpaid"}">
           ${o.paymentStatus === "Đã thanh toán" ? "Đã thanh toán" : "Chưa thanh toán"}
         </div>
-        <div class="total">${formatPrice(o.sellPrice || 0)}</div>
+        <div class="total">Tổng: ${formatPrice(Number(o.sellPrice) || 0)}</div>
       </div>`;
     }).join("");
     printWindow.document.write(`<!DOCTYPE html>
@@ -442,7 +527,10 @@ export default function AdminOrdersPage() {
   </style>
 </head>
 <body>
-  <div class="summary">Tổng: ${ordersToPrint.length} đơn | Đã TT: ${ordersToPrint.filter((o) => o.paymentStatus === "Đã thanh toán").length} | Doanh thu: ${formatPrice(totalRevenue)}</div>
+  <div class="summary">
+    <div>Tổng: ${ordersToPrint.length} đơn | Đã TT: ${paidCount}/${ordersToPrint.length}</div>
+    <div>Tổng tiền: ${formatPrice(totalAll)} | Đã thanh toán: ${formatPrice(totalPaid)}</div>
+  </div>
   ${orderCards}
 </body>
 </html>`);
@@ -460,7 +548,7 @@ export default function AdminOrdersPage() {
     return true;
   });
 
-  const totalRevenue = orders.filter(isPaid).reduce((sum, o) => sum + (o.sellPrice || 0), 0);
+  const totalRevenue = orders.filter(isPaid).reduce((sum, o) => sum + (Number(o.sellPrice) || 0), 0);
   const pendingCount = orders.filter((o) => o.paymentStatus === "Chưa thanh toán").length;
   const deliveredCount = orders.filter((o) => o.deliveryStatus === "Đã giao").length;
 
@@ -497,6 +585,13 @@ export default function AdminOrdersPage() {
           </button>
         ))}
         <div className="ml-auto flex items-center gap-2">
+          <button onClick={() => { setShowNewOrder(!showNewOrder); setNewOrder({ customerName: "", phone: "", address: "", oldAddress: "", products: "", sellPrice: "", buyPrice: "", shippingCost: "", notes: "", paymentStatus: "Chưa thanh toán" }); }}
+            className="px-4 py-1.5 rounded-lg text-sm font-medium bg-green-600 text-white hover:bg-green-700 transition-colors flex items-center gap-1.5">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            Đơn mới
+          </button>
           <button onClick={() => { setSelectMode(!selectMode); setSelected(new Set()); }}
             className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${selectMode ? "bg-amber-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
             {selectMode ? "Hủy chọn" : "Chọn xóa"}
@@ -526,7 +621,70 @@ export default function AdminOrdersPage() {
         </div>
       )}
 
-      {message && <p className="text-sm text-green-600 bg-green-50 px-3 py-2 rounded-lg mb-4">{message}</p>}
+      {message && <p className={`text-sm px-3 py-2 rounded-lg mb-4 ${message.startsWith("Lỗi") ? "text-red-600 bg-red-50" : "text-green-600 bg-green-50"}`}>{message}</p>}
+
+      {/* New Order Form */}
+      {showNewOrder && (
+        <div className="bg-white rounded-2xl border border-green-100 shadow-sm p-5 mb-4 animate-fade-in">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-bold text-slate-700">Tạo đơn hàng mới</h3>
+            <button onClick={() => setShowNewOrder(false)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <input type="text" placeholder="Tên khách hàng *" value={newOrder.customerName}
+              onChange={(e) => setNewOrder((p) => ({ ...p, customerName: e.target.value }))}
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400/30 focus:border-green-400" />
+            <input type="tel" placeholder="Số điện thoại" value={newOrder.phone}
+              onChange={(e) => setNewOrder((p) => ({ ...p, phone: e.target.value }))}
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400/30 focus:border-green-400" />
+            <input type="text" placeholder="Địa chỉ mới" value={newOrder.address}
+              onChange={(e) => setNewOrder((p) => ({ ...p, address: e.target.value }))}
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400/30 focus:border-green-400" />
+            <input type="text" placeholder="Địa chỉ cũ" value={newOrder.oldAddress}
+              onChange={(e) => setNewOrder((p) => ({ ...p, oldAddress: e.target.value }))}
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400/30 focus:border-green-400" />
+            <div className="sm:col-span-2">
+              <textarea placeholder="Sản phẩm (VD: 1x Pikachu - PC-PO-025, 2x Charizard - PC-PO-006)" value={newOrder.products}
+                onChange={(e) => setNewOrder((p) => ({ ...p, products: e.target.value }))}
+                rows={2}
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400/30 focus:border-green-400 resize-none" />
+            </div>
+            <input type="number" placeholder="Giá bán" value={newOrder.sellPrice}
+              onChange={(e) => setNewOrder((p) => ({ ...p, sellPrice: e.target.value }))}
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400/30 focus:border-green-400" />
+            <input type="number" placeholder="Giá mua" value={newOrder.buyPrice}
+              onChange={(e) => setNewOrder((p) => ({ ...p, buyPrice: e.target.value }))}
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400/30 focus:border-green-400" />
+            <input type="number" placeholder="Ship + Đóng gói" value={newOrder.shippingCost}
+              onChange={(e) => setNewOrder((p) => ({ ...p, shippingCost: e.target.value }))}
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400/30 focus:border-green-400" />
+            <input type="text" placeholder="Ghi chú" value={newOrder.notes}
+              onChange={(e) => setNewOrder((p) => ({ ...p, notes: e.target.value }))}
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400/30 focus:border-green-400" />
+            <select value={newOrder.paymentStatus}
+              onChange={(e) => setNewOrder((p) => ({ ...p, paymentStatus: e.target.value as "Chưa thanh toán" | "Đã chuyển khoản" | "Đã thanh toán" }))}
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400/30 focus:border-green-400">
+              <option value="Chưa thanh toán">Chưa thanh toán</option>
+              <option value="Đã chuyển khoản">Đã chuyển khoản</option>
+              <option value="Đã thanh toán">Đã thanh toán</option>
+            </select>
+          </div>
+          <div className="flex gap-2 mt-4">
+            <button onClick={handleSubmitNewOrder} disabled={submittingOrder}
+              className="px-5 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 disabled:opacity-50 transition-colors">
+              {submittingOrder ? "Đang tạo..." : "Tạo đơn hàng"}
+            </button>
+            <button onClick={() => setShowNewOrder(false)}
+              className="px-5 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-semibold hover:bg-slate-200 transition-colors">
+              Hủy
+            </button>
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <div className="text-center py-12"><p className="text-slate-500">Đang tải đơn hàng...</p></div>
@@ -581,6 +739,12 @@ export default function AdminOrdersPage() {
                       <option value="Đang giao">Đang giao</option>
                       <option value="Đã giao">Đã giao</option>
                     </select>
+                    <button onClick={() => handleCopyOrder(order)} className="text-xs px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 font-semibold transition-colors flex items-center gap-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
+                      </svg>
+                      Copy
+                    </button>
                     <button onClick={() => handleRefundOrder(order)} className="text-xs px-3 py-1.5 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100 font-semibold transition-colors">Hoàn hàng</button>
                     <button onClick={() => handleDeleteOrder(order)} className="text-xs px-3 py-1.5 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 font-semibold transition-colors">Xóa</button>
                     <button onClick={() => handlePrintSingle(order)} className="text-xs px-3 py-1.5 bg-slate-800 text-white rounded-lg hover:bg-slate-700 font-semibold transition-colors flex items-center gap-1">
@@ -611,14 +775,14 @@ export default function AdminOrdersPage() {
                   <div>
                     <span className="text-slate-400 text-xs">GIÁ MUA</span>
                     <input type="number" value={editValues[orderIdx]?.buyPrice ?? ""} placeholder="0"
-                      onChange={(e) => setEditValues((prev) => ({ ...prev, [orderIdx]: { buyPrice: e.target.value, shippingCost: prev[orderIdx]?.shippingCost ?? "" } }))}
+                      onChange={(e) => setEditValues((prev) => ({ ...prev, [orderIdx]: { buyPrice: e.target.value, shippingCost: prev[orderIdx]?.shippingCost ?? "", notes: prev[orderIdx]?.notes ?? "" } }))}
                       onBlur={(e) => updateOrderField(orderIdx, "buyPrice", Number(e.target.value) || 0)}
                       className="w-full px-2 py-1 border border-slate-200 rounded text-sm" />
                   </div>
                   <div>
                     <span className="text-slate-400 text-xs">SHIP + ĐÓNG GÓI</span>
                     <input type="number" value={editValues[orderIdx]?.shippingCost ?? ""} placeholder="0"
-                      onChange={(e) => setEditValues((prev) => ({ ...prev, [orderIdx]: { buyPrice: prev[orderIdx]?.buyPrice ?? "", shippingCost: e.target.value } }))}
+                      onChange={(e) => setEditValues((prev) => ({ ...prev, [orderIdx]: { buyPrice: prev[orderIdx]?.buyPrice ?? "", shippingCost: e.target.value, notes: prev[orderIdx]?.notes ?? "" } }))}
                       onBlur={(e) => updateOrderField(orderIdx, "shippingCost", Number(e.target.value) || 0)}
                       className="w-full px-2 py-1 border border-slate-200 rounded text-sm" />
                   </div>
@@ -632,7 +796,13 @@ export default function AdminOrdersPage() {
 
                 {order.address && <p className="text-xs text-slate-400 mt-2">Địa chỉ mới: {order.address}</p>}
                 {order.oldAddress && <p className="text-xs text-slate-400 mt-1">Địa chỉ cũ: {order.oldAddress}</p>}
-                {order.notes && <p className="text-xs text-slate-400 mt-1">Ghi chú: {order.notes}</p>}
+                <div className="mt-2">
+                  <span className="text-slate-400 text-xs">GHI CHÚ</span>
+                  <input type="text" value={editValues[orderIdx]?.notes ?? ""} placeholder="Thêm ghi chú..."
+                    onChange={(e) => setEditValues((prev) => ({ ...prev, [orderIdx]: { buyPrice: prev[orderIdx]?.buyPrice ?? "", shippingCost: prev[orderIdx]?.shippingCost ?? "", notes: e.target.value } }))}
+                    onBlur={(e) => updateOrderField(orderIdx, "notes", e.target.value)}
+                    className="w-full px-2 py-1 border border-slate-200 rounded text-sm mt-0.5" />
+                </div>
               </div>
             );
           })}
