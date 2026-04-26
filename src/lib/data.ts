@@ -345,6 +345,56 @@ export function deleteOrder(
   return { success: true };
 }
 
+/**
+ * Edit order products: add/remove cards with stock adjustment.
+ * Adjusts stock only if the order is already paid.
+ */
+export function editOrderProducts(
+  index: number,
+  newProducts: string,
+  removedItems: string,
+  addedItems: string,
+  isPaid: boolean,
+): { success: boolean } {
+  const orders = fetchOrders();
+  const order = (index >= 0 && index < orders.length) ? orders[index] : null;
+  if (!order) return { success: false };
+
+  order.products = newProducts;
+
+  // Recalculate sellPrice from new products + current prices
+  const allProducts = fetchProducts();
+  const pMap = new Map(allProducts.map((p) => [p.code, p]));
+  const newTotal = (newProducts || "").split(", ").reduce((sum, item) => {
+    const match = item.match(/^(\d+)x\s+(.+?)\s+-\s+(\S+)$/);
+    if (!match) return sum;
+    const qty = parseInt(match[1]);
+    const code = match[3];
+    const prod = pMap.get(code);
+    if (!prod || prod.price === null) return sum;
+    return sum + prod.price * qty * 1000;
+  }, 0);
+  order.sellPrice = newTotal;
+
+  // Adjust stock for paid orders
+  if (isPaid) {
+    if (removedItems) adjustInventory(removedItems, 1);
+    if (addedItems) adjustInventory(addedItems, -1);
+  }
+
+  writeJson("orders.json", orders);
+
+  if (BUSINESS_URL) {
+    postSheet(BUSINESS_URL, {
+      action: "updateOrder",
+      row: order._row || index + 2,
+      data: { products: newProducts, sellPrice: newTotal },
+    }).catch(() => {});
+  }
+
+  return { success: true };
+}
+
 // === Customers ===
 export function fetchCustomers(): Customer[] {
   if (customersStore.length === 0) {

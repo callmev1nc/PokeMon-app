@@ -10,6 +10,7 @@ import {
   updateOrder,
   confirmOrder,
   deleteOrder,
+  editOrderProducts,
   updateProducts,
   addCustomer,
   updateCustomer,
@@ -243,6 +244,18 @@ export async function POST(req: NextRequest) {
           );
         }
         return NextResponse.json(updateOrder(row, data));
+      }
+      case "editOrderProducts": {
+        const row = Number(body.row);
+        const newProducts = sanitize(String(body.newProducts || "")).slice(0, 5000);
+        const removedItems = sanitize(String(body.removedItems || "")).slice(0, 5000);
+        const addedItems = sanitize(String(body.addedItems || "")).slice(0, 5000);
+        const isPaid = Boolean(body.isPaid);
+        if (isNaN(row)) {
+          return NextResponse.json({ error: "Invalid data" }, { status: 400 });
+        }
+        logAction("editOrderProducts", "admin", `Row ${row}: products updated`);
+        return NextResponse.json(editOrderProducts(row, newProducts, removedItems, addedItems, isPaid));
       }
       case "updateProducts": {
         const products = body.products as unknown[];

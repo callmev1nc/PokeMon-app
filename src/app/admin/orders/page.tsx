@@ -86,6 +86,8 @@ export default function AdminOrdersPage() {
   >({});
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [selectMode, setSelectMode] = useState(false);
+  const [productSearch, setProductSearch] = useState<Record<number, string>>({});
+  const [showProductSearch, setShowProductSearch] = useState<Record<number, boolean>>({});
   const pdfGenerating = useRef(false);
   const { dialogProps, confirm: confirmAction } = useConfirmDialog();
 
@@ -323,6 +325,55 @@ export default function AdminOrdersPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  async function handleRemoveProduct(order: Order, product: ParsedProduct) {
+    const orderIdx = orders.indexOf(order);
+    if (orderIdx === -1) return;
+    const items = parseAndSortProducts(order.products, codeToGroup, productMap);
+    const remaining = items.filter((p) => !(p.code === product.code && p.name === product.name));
+    const newProducts = remaining.map((p) => `${p.qty}x ${p.name} - ${p.code}`).join(", ");
+    const removedStr = `${product.qty}x ${product.name} - ${product.code}`;
+    const isPaid = order.paymentStatus === "Đã thanh toán" || order.paymentStatus === "Đã chuyển khoản";
+    try {
+      const res = await fetch("/api/sheets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "editOrderProducts", row: orderIdx, newProducts, removedItems: removedStr, addedItems: "", isPaid }),
+      });
+      const data = await res.json();
+      if (data.success) { setMessage(`Đã xóa ${product.name}`); await fetchOrders(); }
+      else setMessage("Lỗi cập nhật");
+    } catch { setMessage("Lỗi kết nối"); }
+  }
+
+  async function handleAddProduct(order: Order, product: Product, qty: number) {
+    const orderIdx = orders.indexOf(order);
+    if (orderIdx === -1) return;
+    const items = parseAndSortProducts(order.products, codeToGroup, productMap);
+    const existing = items.find((p) => p.code === product.code);
+    if (existing) {
+      existing.qty += qty;
+    } else {
+      items.push({ qty, name: product.name, code: product.code, group: product.group || "", series: product.series || "", price: product.price });
+    }
+    const newProducts = items.map((p) => `${p.qty}x ${p.name} - ${p.code}`).join(", ");
+    const addedStr = `${qty}x ${product.name} - ${product.code}`;
+    const isPaid = order.paymentStatus === "Đã thanh toán" || order.paymentStatus === "Đã chuyển khoản";
+    try {
+      const res = await fetch("/api/sheets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "editOrderProducts", row: orderIdx, newProducts, removedItems: "", addedItems: addedStr, isPaid }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMessage(`Đã thêm ${product.name}`);
+        setProductSearch((prev) => { const next = { ...prev }; delete next[orderIdx]; return next; });
+        setShowProductSearch((prev) => ({ ...prev, [orderIdx]: false }));
+        await fetchOrders();
+      } else { setMessage("Lỗi cập nhật"); }
+    } catch { setMessage("Lỗi kết nối"); }
+  }
+
   const updateOrderField = useCallback(
     async (orderIndex: number, field: "buyPrice" | "shippingCost" | "notes" | "orderCode", value: string | number) => {
       try {
@@ -342,7 +393,7 @@ export default function AdminOrdersPage() {
   function getProfit(order: Order, idx: number): number {
     const buy = Number(editValues[idx]?.buyPrice) || order.buyPrice || 0;
     const ship = Number(editValues[idx]?.shippingCost) || order.shippingCost || 0;
-    return (order.sellPrice || 0) - buy - ship;
+    return calcProductsTotal(order.products) - buy - ship;
   }
 
   const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
@@ -366,9 +417,18 @@ export default function AdminOrdersPage() {
     }).join("");
   }
 
+  function calcProductsTotal(productsStr: string): number {
+    const sorted = parseAndSortProducts(productsStr, codeToGroup, productMap);
+    return sorted.reduce((sum, p) => {
+      if (p.price === null) return sum;
+      return sum + p.price * p.qty * 1000;
+    }, 0);
+  }
+
   function buildOrderPdfHtml(order: Order): string {
     const dateStr = getHanoiTime();
     const sorted = parseAndSortProducts(order.products, codeToGroup, productMap);
+    const receiptTotal = calcProductsTotal(order.products);
 
     const productLines = sorted.map((p) => {
       const seriesTag = p.series ? `<span style="color:#e53e3e;font-weight:600;">[${esc(p.series)}]</span> ` : "";
@@ -400,7 +460,7 @@ export default function AdminOrdersPage() {
         ${order.paymentStatus === "Đã thanh toán" ? "Đã thanh toán" : "Chưa thanh toán"}
       </div>
       <div style="font-size:14px; font-weight:700; text-align:right; margin-top:6px; padding-top:4px; border-top:1.5px solid #333;">
-        Tổng: ${formatPrice(Number(order.sellPrice) || 0)}
+        Tổng: ${formatPrice(receiptTotal)}
       </div>
     </div>`;
   }
@@ -433,6 +493,7 @@ export default function AdminOrdersPage() {
   function handlePrintSingle(order: Order) {
     const dateStr = getHanoiTime();
     const productLines = renderProductLines(order.products);
+    const receiptTotal = calcProductsTotal(order.products);
     const html = `<!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -468,7 +529,7 @@ export default function AdminOrdersPage() {
   <div class="status ${order.paymentStatus === "Đã thanh toán" ? "status-paid" : "status-unpaid"}">
     ${order.paymentStatus === "Đã thanh toán" ? "Đã thanh toán" : "Chưa thanh toán"}
   </div>
-  <div class="total">Tổng: ${formatPrice(Number(order.sellPrice) || 0)}</div>
+  <div class="total">Tổng: ${formatPrice(receiptTotal)}</div>
 </body>
 </html>`;
     const printWindow = window.open("", "_blank");
@@ -482,11 +543,12 @@ export default function AdminOrdersPage() {
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
     const ordersToPrint = filtered;
-    const totalAll = ordersToPrint.reduce((sum, o) => sum + (Number(o.sellPrice) || 0), 0);
-    const totalPaid = ordersToPrint.filter((o) => o.paymentStatus === "Đã thanh toán" || o.paymentStatus === "Đã chuyển khoản").reduce((sum, o) => sum + (Number(o.sellPrice) || 0), 0);
+    const totalAll = ordersToPrint.reduce((sum, o) => sum + calcProductsTotal(o.products), 0);
+    const totalPaid = ordersToPrint.filter((o) => o.paymentStatus === "Đã thanh toán" || o.paymentStatus === "Đã chuyển khoản").reduce((sum, o) => sum + calcProductsTotal(o.products), 0);
     const paidCount = ordersToPrint.filter((o) => o.paymentStatus === "Đã thanh toán" || o.paymentStatus === "Đã chuyển khoản").length;
     const orderCards = ordersToPrint.map((o) => {
       const productLines = renderProductLines(o.products);
+      const receiptTotal = calcProductsTotal(o.products);
       return `
       <div class="order-card">
         <div class="header">V1ncc TCG Card Shop</div>
@@ -500,7 +562,7 @@ export default function AdminOrdersPage() {
         <div class="status ${o.paymentStatus === "Đã thanh toán" ? "status-paid" : "status-unpaid"}">
           ${o.paymentStatus === "Đã thanh toán" ? "Đã thanh toán" : "Chưa thanh toán"}
         </div>
-        <div class="total">Tổng: ${formatPrice(Number(o.sellPrice) || 0)}</div>
+        <div class="total">Tổng: ${formatPrice(receiptTotal)}</div>
       </div>`;
     }).join("");
     printWindow.document.write(`<!DOCTYPE html>
@@ -548,7 +610,7 @@ export default function AdminOrdersPage() {
     return true;
   });
 
-  const totalRevenue = orders.filter(isPaid).reduce((sum, o) => sum + (Number(o.sellPrice) || 0), 0);
+  const totalRevenue = orders.filter(isPaid).reduce((sum, o) => sum + calcProductsTotal(o.products), 0);
   const pendingCount = orders.filter((o) => o.paymentStatus === "Chưa thanh toán").length;
   const deliveredCount = orders.filter((o) => o.deliveryStatus === "Đã giao").length;
 
@@ -762,15 +824,95 @@ export default function AdminOrdersPage() {
                   </div>
                 </div>
 
-                <p className="text-sm text-slate-600 mb-2">
-                  <span className="text-slate-400">Sản phẩm:</span>{" "}
-                  {parseAndSortProducts(order.products, codeToGroup, productMap).map((p) => `${p.qty}x ${p.name} - ${p.code}`).join(", ")}
-                </p>
+                <div className="mb-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-slate-400 text-xs uppercase tracking-wide">Sản phẩm</span>
+                    <button
+                      onClick={() => setShowProductSearch((prev) => ({ ...prev, [idx]: !prev[idx] }))}
+                      className="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-500 hover:bg-slate-200 font-medium transition-colors"
+                    >
+                      {showProductSearch[idx] ? "Đóng" : "+ Thêm thẻ"}
+                    </button>
+                  </div>
+                  <div className="space-y-1">
+                    {parseAndSortProducts(order.products, codeToGroup, productMap).map((p, pi) => (
+                      <div key={pi} className="flex items-center gap-2 text-sm bg-slate-50 rounded-lg px-2.5 py-1.5 group">
+                        <span className="flex-1 min-w-0">
+                          <span className="font-medium text-slate-700">{p.qty}x</span>{" "}
+                          <span className="text-slate-800">{p.name}</span>{" "}
+                          <span className="text-slate-400 font-mono text-xs">({p.code})</span>
+                          {p.price !== null && (
+                            <span className="text-slate-500 text-xs ml-1">
+                              — {formatPrice(p.price)} × {p.qty} = {new Intl.NumberFormat("vi-VN").format(p.price * p.qty * 1000)} đ
+                            </span>
+                          )}
+                        </span>
+                        <button
+                          onClick={() => handleRemoveProduct(order, p)}
+                          className="text-red-300 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                          title="Xóa thẻ này"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                    {parseAndSortProducts(order.products, codeToGroup, productMap).length === 0 && (
+                      <p className="text-xs text-slate-400 italic">Chưa có sản phẩm</p>
+                    )}
+                  </div>
+                  {showProductSearch[idx] && (
+                    <div className="mt-2 relative">
+                      <input
+                        type="text"
+                        placeholder="Tìm thẻ theo tên hoặc mã..."
+                        value={productSearch[idx] || ""}
+                        onChange={(e) => setProductSearch((prev) => ({ ...prev, [idx]: e.target.value }))}
+                        className="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400"
+                        autoFocus
+                      />
+                      {(productSearch[idx] || "").length > 0 && (
+                        <div className="absolute z-20 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                          {products
+                            .filter((p) => {
+                              const q = (productSearch[idx] || "").toLowerCase();
+                              return p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q);
+                            })
+                            .slice(0, 12)
+                            .map((p) => (
+                              <button
+                                key={p.id}
+                                onClick={() => handleAddProduct(order, p, 1)}
+                                className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 transition-colors flex items-center justify-between gap-2"
+                              >
+                                <span>
+                                  <span className="font-medium text-slate-800">{p.name}</span>{" "}
+                                  <span className="text-slate-400 font-mono text-xs">({p.code})</span>
+                                </span>
+                                <span className="text-xs text-slate-500 shrink-0">
+                                  {p.price !== null ? formatPrice(p.price) : "Liên hệ"}
+                                  {p.stock > 0 && <span className="text-green-600 ml-1">({p.stock} có sẵn)</span>}
+                                </span>
+                              </button>
+                            ))
+                          }
+                          {products.filter((p) => {
+                            const q = (productSearch[idx] || "").toLowerCase();
+                            return p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q);
+                          }).length === 0 && (
+                            <p className="px-3 py-2 text-xs text-slate-400">Không tìm thấy thẻ</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
                   <div>
                     <span className="text-slate-400 text-xs">GIÁ BÁN</span>
-                    <p className="font-medium text-slate-800">{formatPrice(order.sellPrice || 0)}</p>
+                    <p className="font-medium text-slate-800">{formatPrice(calcProductsTotal(order.products))}</p>
                   </div>
                   <div>
                     <span className="text-slate-400 text-xs">GIÁ MUA</span>
