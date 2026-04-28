@@ -840,11 +840,6 @@ export default function AdminOrdersPage() {
                   <div className="space-y-1">
                     {parseAndSortProducts(order.products, codeToGroup, productMap).map((p, pi) => (
                       <div key={pi} className="flex items-center gap-2 text-sm bg-slate-50 rounded-lg px-2.5 py-1.5 group">
-                        {p.imageUrl ? (
-                          <img src={p.imageUrl} alt={p.name} className="w-9 h-12 object-contain rounded bg-white shrink-0" />
-                        ) : (
-                          <div className="w-9 h-12 bg-slate-200 rounded flex items-center justify-center text-slate-400 text-xs shrink-0">?</div>
-                        )}
                         <span className="flex-1 min-w-0">
                           <span className="font-medium text-slate-700">{p.qty}x</span>{" "}
                           <span className="text-slate-800">{p.name}</span>{" "}
