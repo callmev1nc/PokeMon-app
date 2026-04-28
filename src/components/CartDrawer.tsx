@@ -3,6 +3,7 @@
 import { useCartStore, getCartTotal, getCartItemCount } from "@/store/cartStore";
 import { useLocaleStore } from "@/store/localeStore";
 import { t } from "@/lib/i18n";
+import { formatNumber } from "@/lib/format";
 import CartItem from "./CartItem";
 
 export default function CartDrawer({
@@ -82,7 +83,7 @@ export default function CartDrawer({
             <div className="flex items-center justify-between">
               <span className="text-sm text-slate-500 font-medium">{t("cart.total", locale)}</span>
               <span className="text-2xl font-bold text-slate-900" style={{ fontFamily: "var(--font-display)" }}>
-                {new Intl.NumberFormat("vi-VN").format(total * 1000)} đ
+                {formatNumber(total * 1000)} đ
               </span>
             </div>
             <a

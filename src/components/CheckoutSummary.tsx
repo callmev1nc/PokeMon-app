@@ -3,15 +3,16 @@
 import { useCartStore, getCartTotal } from "@/store/cartStore";
 import { useLocaleStore } from "@/store/localeStore";
 import { t } from "@/lib/i18n";
+import { formatPrice, formatNumber } from "@/lib/format";
 
 export default function CheckoutSummary() {
   const items = useCartStore((s) => s.items);
   const total = getCartTotal(items);
   const locale = useLocaleStore((s) => s.locale);
 
-  const formatPrice = (price: number | null): string => {
+  const displayPrice = (price: number | null): string => {
     if (price === null) return t("contact.price", locale);
-    return new Intl.NumberFormat("vi-VN").format(price * 1000) + " đ";
+    return formatPrice(price);
   };
 
   if (items.length === 0) {
@@ -55,11 +56,11 @@ export default function CheckoutSummary() {
             </div>
             <div className="text-right">
               <p className="text-xs text-slate-400">
-                {item.quantity} x {formatPrice(item.product.price)}
+                {item.quantity} x {displayPrice(item.product.price)}
               </p>
               <p className="text-sm font-bold text-slate-800">
                 {item.product.price !== null
-                  ? new Intl.NumberFormat("vi-VN").format(item.product.price * item.quantity * 1000) + " đ"
+                  ? formatNumber(item.product.price * item.quantity * 1000) + " đ"
                   : "—"}
               </p>
             </div>
@@ -70,7 +71,7 @@ export default function CheckoutSummary() {
         <div className="flex items-center justify-between">
           <span className="text-sm font-semibold text-slate-600">{t("cart.total", locale)}</span>
           <span className="text-2xl font-bold text-slate-900" style={{ fontFamily: "var(--font-display)" }}>
-            {new Intl.NumberFormat("vi-VN").format(total * 1000)} đ
+            {formatNumber(total * 1000)} đ
           </span>
         </div>
       </div>

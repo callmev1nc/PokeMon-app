@@ -2,7 +2,14 @@ import crypto from "crypto";
 import { findAdmin, getAdmins, type AdminRole } from "./adminAccounts";
 
 const SESSION_SECRET =
-  process.env.SESSION_SECRET || "42ebae182eac29e02cc5f9fdba6fd1d8b809f5f1af7b3c77e5192d3cc031cb8e";
+  process.env.SESSION_SECRET || (() => {
+    if (process.env.NODE_ENV === "production") {
+      console.error("\x1b[31mSECURITY WARNING: SESSION_SECRET not set! Generating random secret — sessions will not persist across restarts.\x1b[0m");
+    } else {
+      console.warn("\x1b[33mWARNING: Using auto-generated SESSION_SECRET. Set SESSION_SECRET env var for persistent sessions.\x1b[0m");
+    }
+    return crypto.randomBytes(32).toString("hex");
+  })();
 const COOKIE_NAME = "admin-session";
 const SESSION_MAX_AGE = 60 * 60 * 24; // 24 hours
 

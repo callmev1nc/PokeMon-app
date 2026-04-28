@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import type { Order, Product } from "@/lib/types";
+import { formatPrice as formatPriceUtil, formatNumber } from "@/lib/format";
 import AdminNav from "@/components/AdminNav";
 import ConfirmDialog, { useConfirmDialog } from "@/components/ConfirmDialog";
 
@@ -107,15 +108,14 @@ export default function AdminOrdersPage() {
     paymentStatus: "Chưa thanh toán" as "Chưa thanh toán" | "Đã chuyển khoản" | "Đã thanh toán",
   });
 
-  const codeToGroup = new Map<string, string>();
-  products.forEach((p) => codeToGroup.set(p.code, p.group));
-
-  const productMap = useMemo(() => {
-    const map = new Map<string, Product>();
+  const { productMap, codeToGroup } = useMemo(() => {
+    const pm = new Map<string, Product>();
+    const cg = new Map<string, string>();
     for (const p of products) {
-      map.set(p.code, p);
+      pm.set(p.code, p);
+      cg.set(p.code, p.group);
     }
-    return map;
+    return { productMap: pm, codeToGroup: cg };
   }, [products]);
 
   useEffect(() => {
@@ -388,7 +388,7 @@ export default function AdminOrdersPage() {
   );
 
   function formatPrice(val: number): string {
-    return new Intl.NumberFormat("vi-VN").format(val) + " đ";
+    return formatNumber(val) + " đ";
   }
 
   function getProfit(order: Order, idx: number): number {
@@ -408,11 +408,11 @@ export default function AdminOrdersPage() {
   function renderProductLines(productsStr: string): string {
     const sorted = parseAndSortProducts(productsStr, codeToGroup, productMap);
     return sorted.map((p) => {
-      const seriesTag = p.series ? ` <span style="color:#e53e3e;font-weight:600;">[${p.series}]</span>` : "";
+      const seriesTag = p.series ? ` <span style="color:#e53e3e;font-weight:600;">[${esc(p.series)}]</span>` : "";
       let priceInfo = "";
       if (p.price !== null) {
         const lineTotal = p.price * p.qty * 1000;
-        priceInfo = ` — ${formatPrice(p.price)} x ${p.qty} = ${new Intl.NumberFormat("vi-VN").format(lineTotal)} đ`;
+        priceInfo = ` — ${formatPrice(p.price)} x ${p.qty} = ${formatNumber(lineTotal)} đ`;
       }
       return `<div>${p.qty}x ${esc(p.name)} (${esc(p.code)})${seriesTag}${priceInfo}</div>`;
     }).join("");
@@ -436,7 +436,7 @@ export default function AdminOrdersPage() {
       let priceInfo = "";
       if (p.price !== null) {
         const lineTotal = p.price * p.qty * 1000;
-        priceInfo = ` — <span style="color:#555;">${formatPrice(p.price)} x ${p.qty} = ${new Intl.NumberFormat("vi-VN").format(lineTotal)} đ</span>`;
+        priceInfo = ` — <span style="color:#555;">${formatPrice(p.price)} x ${p.qty} = ${formatNumber(lineTotal)} đ</span>`;
       }
       return `<div style="padding:1px 0;">${p.qty}x ${esc(p.name)} <span style="color:#888;">(${esc(p.code)})</span> ${seriesTag}${priceInfo}</div>`;
     }).join("");
@@ -844,7 +844,7 @@ export default function AdminOrdersPage() {
                           <span className="text-slate-400 font-mono text-xs">({p.code})</span>
                           {p.price !== null && (
                             <span className="text-slate-500 text-xs ml-1">
-                              — {formatPrice(p.price)} × {p.qty} = {new Intl.NumberFormat("vi-VN").format(p.price * p.qty * 1000)} đ
+                              — {formatPrice(p.price)} × {p.qty} = {formatNumber(p.price * p.qty * 1000)} đ
                             </span>
                           )}
                         </span>

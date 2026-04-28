@@ -4,7 +4,7 @@ import { addProductLocal, fetchProducts } from "@/lib/data";
 
 export async function POST(req: NextRequest) {
   const token = req.cookies.get(COOKIE_NAME)?.value;
-  if (!token || !verifySession(token)) {
+  if (!token || !(await verifySession(token))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

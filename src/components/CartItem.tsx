@@ -4,15 +4,16 @@ import type { CartItem as CartItemType } from "@/lib/types";
 import { useCartStore } from "@/store/cartStore";
 import { useLocaleStore } from "@/store/localeStore";
 import { t } from "@/lib/i18n";
+import { formatPrice, formatNumber } from "@/lib/format";
 
 export default function CartItem({ item }: { item: CartItemType }) {
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
   const locale = useLocaleStore((s) => s.locale);
 
-  const formatPrice = (price: number | null): string => {
+  const displayPrice = (price: number | null): string => {
     if (price === null) return t("contact.price", locale);
-    return new Intl.NumberFormat("vi-VN").format(price * 1000) + " đ";
+    return formatPrice(price);
   };
 
   const lineTotal =
@@ -30,7 +31,7 @@ export default function CartItem({ item }: { item: CartItemType }) {
           {item.product.displayType} &middot; {item.product.series}
         </p>
         <p className="text-xs text-slate-500 mt-1 font-medium">
-          {formatPrice(item.product.price)} <span className="text-slate-300 font-normal">{t("cart.perCard", locale)}</span>
+          {displayPrice(item.product.price)} <span className="text-slate-300 font-normal">{t("cart.perCard", locale)}</span>
         </p>
       </div>
       <div className="flex items-center gap-2">
@@ -54,7 +55,7 @@ export default function CartItem({ item }: { item: CartItemType }) {
         <div className="text-right min-w-[70px]">
           <p className="text-sm font-bold text-slate-800">
             {lineTotal !== null
-              ? new Intl.NumberFormat("vi-VN").format(lineTotal * 1000) + " đ"
+              ? formatNumber(lineTotal * 1000) + " đ"
               : "—"}
           </p>
         </div>

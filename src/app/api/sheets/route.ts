@@ -34,8 +34,58 @@ function sanitize(str: string): string {
     .replace(/>/g, "")
     .replace(/"/g, "")
     .replace(/'/g, "")
+    .replace(/`/g, "")
+    .replace(/\0/g, "")
     .trim()
     .slice(0, 1000);
+}
+
+// Simple in-memory rate limiter for public endpoints
+const publicRateLimits = new Map<string, { count: number; lastAttempt: number }>();
+const PUBLIC_MAX_REQUESTS = 10;
+const PUBLIC_WINDOW_MS = 60 * 1000;
+
+function checkPublicRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const record = publicRateLimits.get(ip);
+  if (record) {
+    if (now - record.lastAttempt > PUBLIC_WINDOW_MS) record.count = 0;
+    if (record.count >= PUBLIC_MAX_REQUESTS) return false;
+    record.count++;
+    record.lastAttempt = now;
+  } else {
+    publicRateLimits.set(ip, { count: 1, lastAttempt: now });
+  }
+  // Periodic cleanup
+  if (publicRateLimits.size > 500) {
+    for (const [key, val] of publicRateLimits) {
+      if (now - val.lastAttempt > PUBLIC_WINDOW_MS) publicRateLimits.delete(key);
+    }
+  }
+  return true;
+}
+
+// Validate origin for admin POST requests (CSRF protection)
+function validateOrigin(req: NextRequest): boolean {
+  const origin = req.headers.get("origin");
+  if (!origin) return true;
+  const host = req.headers.get("host");
+  if (!host) return false;
+  try {
+    return new URL(origin).host === host;
+  } catch {
+    return false;
+  }
+}
+
+// Whitelist allowed fields for order/customer updates
+const ORDER_UPDATABLE_FIELDS = ["paymentStatus", "deliveryStatus", "shippingCost", "buyPrice", "notes", "orderCode", "products", "sellPrice"];
+const CUSTOMER_UPDATABLE_FIELDS = ["name", "phone", "newAddress", "oldAddress"];
+
+function filterFields(data: Record<string, unknown>, allowed: string[]): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(data).filter(([key]) => allowed.includes(key))
+  );
 }
 
 export async function GET(req: NextRequest) {
@@ -103,6 +153,11 @@ export async function POST(req: NextRequest) {
 
   // Public: submit order + customer info
   if (action === "addOrder") {
+    const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+    if (!checkPublicRateLimit(ip)) {
+      return NextResponse.json({ error: "Quá nhiều yêu cầu. Vui lòng thử lại sau." }, { status: 429 });
+    }
+
     const order = body.order as Record<string, unknown> | undefined;
     if (!order || typeof order !== "object") {
       return NextResponse.json(
@@ -138,6 +193,11 @@ export async function POST(req: NextRequest) {
   }
 
   if (action === "addCustomer") {
+    const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+    if (!checkPublicRateLimit(ip)) {
+      return NextResponse.json({ error: "Quá nhiều yêu cầu. Vui lòng thử lại sau." }, { status: 429 });
+    }
+
     const customer = body.customer as Record<string, unknown> | undefined;
     if (!customer || typeof customer !== "object") {
       return NextResponse.json(
@@ -164,6 +224,11 @@ export async function POST(req: NextRequest) {
   // Admin-only: update operations
   if (!(await isAdmin(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // CSRF: validate origin on admin POST requests
+  if (!validateOrigin(req)) {
+    return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
   }
 
   try {
@@ -243,7 +308,7 @@ export async function POST(req: NextRequest) {
             { status: 400 }
           );
         }
-        return NextResponse.json(updateOrder(row, data));
+        return NextResponse.json(updateOrder(row, filterFields(data, ORDER_UPDATABLE_FIELDS)));
       }
       case "editOrderProducts": {
         const row = Number(body.row);
@@ -279,7 +344,7 @@ export async function POST(req: NextRequest) {
             { status: 400 }
           );
         }
-        return NextResponse.json(updateCustomer(row, data));
+        return NextResponse.json(updateCustomer(row, filterFields(data, CUSTOMER_UPDATABLE_FIELDS)));
       }
       default:
         return NextResponse.json({ error: "Bad request" }, { status: 400 });

@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import type { Product } from "@/lib/types";
 import { TYPE_COLORS } from "@/lib/constants";
 import { useCartStore } from "@/store/cartStore";
 import { useWishlistStore } from "@/store/wishlistStore";
-import { useRecentlyViewedStore } from "@/store/recentlyViewedStore";
 import { useLocaleStore } from "@/store/localeStore";
 import { t } from "@/lib/i18n";
+import { formatPrice } from "@/lib/format";
 import LowStockBadge from "./LowStockBadge";
 import CardImage from "./CardImage";
 
@@ -21,25 +21,22 @@ export default function ProductCard({
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const addItem = useCartStore((s) => s.addItem);
-  const cartItems = useCartStore((s) => s.items);
+  const inCart = useCartStore(
+    useCallback((s) => {
+      const item = s.items.find((i) => i.product.id === product.id);
+      return item?.quantity ?? 0;
+    }, [product.id])
+  );
   const toggleWish = useWishlistStore((s) => s.toggle);
   const isWished = useWishlistStore((s) => s.ids.includes(product.id));
-  const addViewed = useRecentlyViewedStore((s) => s.addViewed);
   const locale = useLocaleStore((s) => s.locale);
-
-  useEffect(() => {
-    addViewed(product.id);
-  }, [product.id, addViewed]);
-
-  const cartItem = cartItems.find((i) => i.product.id === product.id);
-  const inCart = cartItem?.quantity ?? 0;
   const maxQty = product.stock - inCart;
   const isOutOfStock = product.stock === 0;
   const noPrice = product.price === null;
 
-  const formatPrice = (price: number | null): string => {
+  const displayPrice = (price: number | null): string => {
     if (price === null) return t("contact.price", locale);
-    return new Intl.NumberFormat("vi-VN").format(price * 1000) + " đ";
+    return formatPrice(price);
   };
 
   const handleAdd = () => {
@@ -113,7 +110,7 @@ export default function ProductCard({
         {/* Price + Stock */}
         <div className="mt-auto pt-3 border-t border-slate-100/80">
           <p className={`text-xl font-bold tracking-tight ${noPrice ? "text-slate-300" : "text-slate-900"}`} style={{ fontFamily: "var(--font-display)" }}>
-            {formatPrice(product.price)}
+            {displayPrice(product.price)}
           </p>
           <p className="text-[11px] text-slate-400 mt-0.5">
             {t("product.remaining", locale)}{" "}

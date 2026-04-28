@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRecentlyViewedStore } from "@/store/recentlyViewedStore";
 import { useLocaleStore } from "@/store/localeStore";
 import { t } from "@/lib/i18n";
+import { formatPrice } from "@/lib/format";
 import { toRenderUrl, toPlaceholderUrl, isTcgdexUrl } from "@/lib/imageUtils";
 import type { Product } from "@/lib/types";
 
@@ -60,14 +61,19 @@ export default function RecentlyViewedBar({
   const viewedIds = useRecentlyViewedStore((s) => s.ids);
   const locale = useLocaleStore((s) => s.locale);
 
-  const formatPrice = (price: number | null): string => {
-    if (price === null) return t("contact.price", locale);
-    return new Intl.NumberFormat("vi-VN").format(price * 1000) + " đ";
-  };
+  const productMap = useMemo(
+    () => new Map(products.map((p) => [p.id, p])),
+    [products]
+  );
 
   const viewedProducts = viewedIds
-    .map((id) => products.find((p) => p.id === id))
+    .map((id) => productMap.get(id))
     .filter((p): p is Product => p !== undefined);
+
+  const displayPrice = (price: number | null): string => {
+    if (price === null) return t("contact.price", locale);
+    return formatPrice(price);
+  };
 
   if (viewedProducts.length === 0) return null;
 
@@ -91,7 +97,7 @@ export default function RecentlyViewedBar({
                 {product.name}
               </p>
               <p className="text-xs font-bold text-brand mt-0.5">
-                {formatPrice(product.price)}
+                {displayPrice(product.price)}
               </p>
             </div>
           </a>

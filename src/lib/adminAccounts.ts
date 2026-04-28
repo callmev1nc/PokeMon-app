@@ -13,16 +13,28 @@ export interface AdminAccount {
 
 const DATA_FILE = path.join(process.cwd(), "src", "data", "admins.json");
 
-const DEFAULT_ADMINS: AdminAccount[] = [
-  {
-    username: process.env.ADMIN_USERNAME || "chausieudethuong",
-    passwordHash:
-      process.env.ADMIN_PASSWORD_HASH ||
-      "$2b$10$Am2Ue30uKNWF9uXLMGlauOXdFcKtbzAGzt5PIF3AikmPbHKixPOnO",
-    role: "admin",
-    displayName: "Admin",
-  },
-];
+function getDefaultAdmins(): AdminAccount[] {
+  const username = process.env.ADMIN_USERNAME;
+  const passwordHash = process.env.ADMIN_PASSWORD_HASH;
+  if (username && passwordHash) {
+    return [{ username, passwordHash, role: "admin", displayName: "Admin" }];
+  }
+  if (process.env.NODE_ENV === "production") {
+    console.error("\x1b[31mSECURITY WARNING: Admin credentials not configured. Set ADMIN_USERNAME and ADMIN_PASSWORD_HASH env vars.\x1b[0m");
+  } else {
+    console.warn("\x1b[33mWARNING: Using default dev admin (admin/admin123). Set ADMIN_USERNAME and ADMIN_PASSWORD_HASH env vars.\x1b[0m");
+  }
+  // Generate a random admin password for unconfigured environments
+  const randomPassword = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+  return [
+    {
+      username: "admin",
+      passwordHash: bcrypt.hashSync(randomPassword, 10),
+      role: "admin",
+      displayName: "Admin",
+    },
+  ];
+}
 
 let cache: AdminAccount[] | null = null;
 
@@ -32,7 +44,7 @@ export function getAdmins(): AdminAccount[] {
     const raw = fs.readFileSync(DATA_FILE, "utf-8");
     cache = JSON.parse(raw);
   } catch {
-    cache = [...DEFAULT_ADMINS];
+    cache = getDefaultAdmins();
   }
   return cache!;
 }
