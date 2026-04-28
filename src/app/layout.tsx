@@ -49,6 +49,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="vi" className={`${bebas.variable} ${outfit.variable}`}>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <meta name="theme-color" content="#050816" media="(prefers-color-scheme: dark)" />
+        <meta name="theme-color" content="#F8F6F1" media="(prefers-color-scheme: light)" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+      </head>
       <body className="min-h-screen bg-surface-alt antialiased">
         <ThemeSync />
         {children}

@@ -68,10 +68,10 @@ export default function ProductCard({
             e.stopPropagation();
             toggleWish(product.id);
           }}
-          className={`absolute top-5 right-5 p-2 rounded-full shadow-md transition-all duration-300 z-10 ${
+          className={`absolute top-5 right-5 p-2.5 rounded-full shadow-md transition-all duration-300 z-10 ${
             isWished
               ? "bg-red-500/10 text-red-400 scale-110"
-              : "bg-slate-100 dark:bg-slate-800/50 backdrop-blur-sm text-slate-400 dark:text-slate-500 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100"
+              : "bg-slate-100 dark:bg-slate-800/50 backdrop-blur-sm text-slate-400 dark:text-slate-500 hover:text-red-400 hover:bg-red-500/10 sm:opacity-0 sm:group-hover:opacity-100"
           }`}
           aria-label={isWished ? "Bỏ yêu thích" : "Yêu thích"}
         >
@@ -133,16 +133,16 @@ export default function ProductCard({
             <div className="flex items-center bg-slate-100 dark:bg-slate-800/50 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700/50">
               <button
                 onClick={() => setQty(Math.max(1, qty - 1))}
-                className="px-2.5 py-2 text-slate-400 hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700/50 text-sm font-bold transition-colors"
+                className="px-3 py-2.5 text-slate-400 hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700/50 text-sm font-bold transition-colors min-w-[36px]"
               >
                 -
               </button>
-              <span className="px-2 py-2 text-sm font-semibold min-w-[32px] text-center text-slate-600 dark:text-slate-300">
+              <span className="px-2 py-2.5 text-sm font-semibold min-w-[36px] text-center text-slate-600 dark:text-slate-300">
                 {qty}
               </span>
               <button
                 onClick={() => setQty(Math.min(maxQty, qty + 1))}
-                className="px-2.5 py-2 text-slate-400 hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700/50 text-sm font-bold transition-colors"
+                className="px-3 py-2.5 text-slate-400 hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700/50 text-sm font-bold transition-colors min-w-[36px]"
               >
                 +
               </button>

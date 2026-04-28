@@ -79,7 +79,7 @@ export default function CartDrawer({
 
         {/* Footer */}
         {items.length > 0 && (
-          <div className="border-t border-amber-500/10 p-5 space-y-3 bg-[var(--bg-sunken)]">
+          <div className="border-t border-amber-500/10 p-5 pb-6 space-y-3 bg-[var(--bg-sunken)] safe-bottom">
             <div className="flex items-center justify-between">
               <span className="text-sm text-slate-400 dark:text-slate-500 font-medium">{t("cart.total", locale)}</span>
               <span className="text-2xl font-bold text-amber-400" style={{ fontFamily: "var(--font-display)", letterSpacing: "0.05em" }}>

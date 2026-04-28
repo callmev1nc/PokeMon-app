@@ -116,7 +116,7 @@ function ProductDetailContent() {
     <>
       <Header onCartClick={() => {}} />
 
-      <main className="max-w-5xl mx-auto px-4 py-6 animate-fade-in">
+      <main className="max-w-5xl mx-auto px-4 py-4 md:py-6 pb-20 sm:pb-6 animate-fade-in">
         {/* Breadcrumb */}
         <a href="/" className="text-xs text-slate-400 dark:text-slate-500 hover:text-amber-400 transition-colors mb-5 inline-flex items-center gap-1 font-medium">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
@@ -128,8 +128,8 @@ function ProductDetailContent() {
         <div className="vault-card overflow-hidden">
           <div className="md:flex">
             {/* Image */}
-            <div className="md:w-2/5 p-6 md:p-8 flex items-center justify-center bg-[var(--bg-sunken)] relative">
-              <div className="w-full max-w-[300px] relative card-glow">
+            <div className="md:w-2/5 p-4 md:p-6 md:md:p-8 flex items-center justify-center bg-[var(--bg-sunken)] relative">
+              <div className="w-full max-w-[280px] md:max-w-[300px] relative card-glow">
                 <CardImage
                   src={product.imageUrl}
                   name={product.name}
@@ -140,10 +140,10 @@ function ProductDetailContent() {
             </div>
 
             {/* Details */}
-            <div className="md:w-3/5 p-6 md:p-8 flex flex-col gap-4">
+            <div className="md:w-3/5 p-4 md:p-6 md:md:p-8 flex flex-col gap-3 md:gap-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h1 className="text-3xl md:text-4xl font-bold text-slate-800 dark:text-slate-100 leading-tight tracking-wider" style={{ fontFamily: "var(--font-display)" }}>
+                  <h1 className="text-2xl md:text-4xl font-bold text-slate-800 dark:text-slate-100 leading-tight tracking-wider" style={{ fontFamily: "var(--font-display)" }}>
                     {product.name}
                   </h1>
                   {product.series && (
@@ -178,7 +178,7 @@ function ProductDetailContent() {
 
               {/* Price */}
               <div className="py-5 border-t border-b border-slate-200 dark:border-slate-700/50">
-                <p className={`text-4xl md:text-5xl font-bold tracking-wider ${noPrice ? "text-slate-400" : "text-amber-400"}`} style={{ fontFamily: "var(--font-display)" }}>
+                <p className={`text-3xl md:text-5xl font-bold tracking-wider ${noPrice ? "text-slate-400" : "text-amber-400"}`} style={{ fontFamily: "var(--font-display)" }}>
                   {displayPrice(product.price)}
                 </p>
                 <p className="text-sm text-slate-400 dark:text-slate-500 mt-1.5">

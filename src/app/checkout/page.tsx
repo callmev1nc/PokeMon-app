@@ -77,7 +77,7 @@ export default function CheckoutPage() {
   return (
     <>
       <Header onCartClick={() => {}} />
-      <main className="max-w-3xl mx-auto px-4 py-8 space-y-6 animate-fade-in">
+      <main className="max-w-3xl mx-auto px-4 py-8 pb-20 sm:pb-8 space-y-6 animate-fade-in">
         {/* Progress Steps */}
         <div className="flex items-center justify-center gap-2 mb-2">
           <div className="flex items-center gap-1.5">
@@ -101,7 +101,7 @@ export default function CheckoutPage() {
         </div>
 
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-slate-800" style={{ fontFamily: "var(--font-display)" }}>
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100" style={{ fontFamily: "var(--font-display)" }}>
             {t("checkout.title", locale)}
           </h2>
           <a

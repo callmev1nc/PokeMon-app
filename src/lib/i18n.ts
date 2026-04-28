@@ -154,9 +154,8 @@ const translations: Record<Locale, Record<string, string>> = {
     "common.close": "Đóng",
     "common.manage": "Quản lý",
     "common.account": "Tài khoản",
-
-    // Steps
-    "step.info": "Thông tin",
+    "common.home": "Trang chủ",
+    "common.wishlist": "Yêu thích",
     "step.payment": "Thanh toán",
     "step.done": "Hoàn tất",
 
@@ -316,9 +315,8 @@ const translations: Record<Locale, Record<string, string>> = {
     "common.close": "Close",
     "common.manage": "Manage",
     "common.account": "Account",
-
-    // Steps
-    "step.info": "Info",
+    "common.home": "Home",
+    "common.wishlist": "Wishlist",
     "step.payment": "Payment",
     "step.done": "Done",
 

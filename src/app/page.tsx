@@ -11,6 +11,7 @@ import CartDrawer from "@/components/CartDrawer";
 import RecentlyViewedBar from "@/components/RecentlyViewedBar";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ProductCardSkeleton from "@/components/ProductCardSkeleton";
+import MobileNav from "@/components/MobileNav";
 
 export default function HomePage() {
   const locale = useLocaleStore((s) => s.locale);
@@ -82,7 +83,7 @@ export default function HomePage() {
       </section>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-6">
+      <main className="max-w-7xl mx-auto px-4 py-6 pb-20 sm:pb-6">
         {!loading && <RecentlyViewedBar products={products} />}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
@@ -168,6 +169,7 @@ export default function HomePage() {
       </footer>
 
       <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} />
+      <MobileNav onCartClick={() => setCartOpen(true)} />
     </>
   );
 }
