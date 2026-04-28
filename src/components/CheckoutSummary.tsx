@@ -36,10 +36,10 @@ export default function CheckoutSummary() {
 
   return (
     <div className="vault-card overflow-hidden">
-      <div className="px-5 py-4 border-b border-amber-500/10 bg-gradient-to-r from-amber-500/5 to-transparent">
-        <h3 className="text-amber-400 tracking-wider text-lg" style={{ fontFamily: "var(--font-display)" }}>
+      <div className="px-5 py-4 border-b border-slate-200 dark:border-amber-500/10 bg-gradient-to-r from-amber-500/5 to-transparent">
+        <h3 className="text-amber-600 dark:text-amber-400 tracking-wider text-lg" style={{ fontFamily: "var(--font-display)" }}>
           {t("checkout.orderDetail", locale)}{" "}
-          <span className="text-slate-400 dark:text-slate-500 font-body text-sm font-normal" style={{ fontFamily: "var(--font-body)" }}>
+          <span className="text-slate-500 dark:text-slate-500 font-body text-sm font-normal" style={{ fontFamily: "var(--font-body)" }}>
             ({t("cart.itemCount", locale).replace("{count}", String(items.length))})
           </span>
         </h3>
@@ -48,7 +48,7 @@ export default function CheckoutSummary() {
         {items.map((item) => (
           <div key={item.product.id} className="px-5 py-3.5 flex items-center gap-3">
             {item.product.imageUrl ? (
-              <img src={item.product.imageUrl} alt={item.product.name} className="w-10 h-14 object-contain rounded-lg bg-white shrink-0" />
+              <img src={item.product.imageUrl} alt={item.product.name} className="w-10 h-14 object-contain rounded-lg bg-slate-50 dark:bg-slate-800/50 shrink-0" />
             ) : (
               <div className="w-10 h-14 bg-slate-100 dark:bg-slate-800/50 rounded-lg flex items-center justify-center shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-slate-300 dark:text-slate-600">
@@ -58,16 +58,16 @@ export default function CheckoutSummary() {
             )}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">{item.product.name}</p>
-              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+              <p className="text-[11px] text-slate-500 dark:text-slate-500 mt-0.5">
                 {item.product.displayType} &middot; {item.product.series} &middot;{" "}
                 <span className="font-mono">{item.product.code}</span>
               </p>
             </div>
             <div className="text-right">
-              <p className="text-xs text-slate-400 dark:text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-500">
                 {item.quantity} x {displayPrice(item.product.price)}
               </p>
-              <p className="text-sm font-bold text-amber-400">
+              <p className="text-sm font-bold text-amber-600 dark:text-amber-400">
                 {item.product.price !== null
                   ? formatNumber(item.product.price * item.quantity * 1000) + " đ"
                   : "—"}
@@ -76,10 +76,10 @@ export default function CheckoutSummary() {
           </div>
         ))}
       </div>
-      <div className="px-5 py-4 bg-gradient-to-r from-amber-500/5 to-transparent border-t border-amber-500/10">
+      <div className="px-5 py-4 bg-gradient-to-r from-amber-500/5 to-transparent border-t border-slate-200 dark:border-amber-500/10">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-semibold text-slate-400">{t("cart.total", locale)}</span>
-          <span className="text-2xl font-bold text-amber-400" style={{ fontFamily: "var(--font-display)", letterSpacing: "0.05em" }}>
+          <span className="text-sm font-semibold text-slate-600 dark:text-slate-400">{t("cart.total", locale)}</span>
+          <span className="text-2xl font-bold text-amber-600 dark:text-amber-400" style={{ fontFamily: "var(--font-display)", letterSpacing: "0.05em" }}>
             {formatNumber(total * 1000)} đ
           </span>
         </div>

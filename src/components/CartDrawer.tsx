@@ -36,18 +36,18 @@ export default function CartDrawer({
         }`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-amber-500/10">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-amber-500/10">
           <div>
-            <h2 className="text-xl text-amber-400 tracking-wider" style={{ fontFamily: "var(--font-display)" }}>
+            <h2 className="text-xl text-amber-600 dark:text-amber-400 tracking-wider" style={{ fontFamily: "var(--font-display)" }}>
               {t("cart.title", locale)}
             </h2>
-            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-500 dark:text-slate-500 mt-0.5">
               {t("cart.itemCount", locale).replace("{count}", String(count))}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-amber-400 transition-colors"
+            className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-500 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
             aria-label="Close"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
@@ -79,10 +79,10 @@ export default function CartDrawer({
 
         {/* Footer */}
         {items.length > 0 && (
-          <div className="border-t border-amber-500/10 p-5 pb-6 space-y-3 bg-[var(--bg-sunken)] safe-bottom">
+          <div className="border-t border-slate-200 dark:border-amber-500/10 p-5 pb-6 space-y-3 bg-[var(--bg-sunken)] safe-bottom">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-400 dark:text-slate-500 font-medium">{t("cart.total", locale)}</span>
-              <span className="text-2xl font-bold text-amber-400" style={{ fontFamily: "var(--font-display)", letterSpacing: "0.05em" }}>
+              <span className="text-sm text-slate-600 dark:text-slate-500 font-medium">{t("cart.total", locale)}</span>
+              <span className="text-2xl font-bold text-amber-600 dark:text-amber-400" style={{ fontFamily: "var(--font-display)", letterSpacing: "0.05em" }}>
                 {formatNumber(total * 1000)} đ
               </span>
             </div>
@@ -94,7 +94,7 @@ export default function CartDrawer({
             </a>
             <button
               onClick={clearCart}
-              className="w-full py-2 text-xs text-slate-400 dark:text-slate-600 hover:text-red-400 transition-colors font-medium"
+              className="w-full py-2 text-xs text-slate-500 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors font-medium"
             >
               {t("cart.clearAll", locale)}
             </button>

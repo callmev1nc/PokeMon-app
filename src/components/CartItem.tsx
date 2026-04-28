@@ -24,7 +24,7 @@ export default function CartItem({ item }: { item: CartItemType }) {
   return (
     <div className="flex items-start gap-3 py-3 border-b border-slate-200 dark:border-slate-800/50 last:border-0 group">
       {item.product.imageUrl ? (
-        <img src={item.product.imageUrl} alt={item.product.name} className="w-10 h-14 object-contain rounded-lg bg-white shrink-0" />
+        <img src={item.product.imageUrl} alt={item.product.name} className="w-10 h-14 object-contain rounded-lg bg-slate-50 dark:bg-slate-800/50 shrink-0" />
       ) : (
         <div className="w-10 h-14 bg-slate-100 dark:bg-slate-800/50 rounded-lg flex items-center justify-center shrink-0">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-slate-300 dark:text-slate-600">
@@ -64,7 +64,7 @@ export default function CartItem({ item }: { item: CartItemType }) {
           </button>
         </div>
         <div className="text-right min-w-[70px]">
-          <p className="text-sm font-bold text-amber-400">
+          <p className="text-sm font-bold text-amber-600 dark:text-amber-400">
             {lineTotal !== null
               ? formatNumber(lineTotal * 1000) + " đ"
               : "—"}
