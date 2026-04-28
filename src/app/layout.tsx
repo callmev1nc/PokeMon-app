@@ -11,7 +11,7 @@ const bebas = Bebas_Neue({
 });
 
 const outfit = Outfit({
-  subsets: ["latin", "vietnamese"],
+  subsets: ["latin", "latin-ext"],
   variable: "--font-body",
   display: "swap",
 });

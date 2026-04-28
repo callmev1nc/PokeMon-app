@@ -1,16 +1,31 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { fetchProductsLive } from "@/lib/data";
 import { getImageUrl, resolveImageUrl } from "@/lib/cardImageCache";
+import { createRateLimiter } from "@/lib/rateLimit";
+
+const rateLimiter = createRateLimiter({ maxRequests: 30, windowMs: 60_000 });
 
 export const revalidate = 30;
 
 let cachedResponse: { data: unknown; timestamp: number } | null = null;
 const CACHE_TTL = 30_000;
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+  const { allowed, remaining } = rateLimiter(ip);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      { status: 429, headers: { "Retry-After": "60" } }
+    );
+  }
+
   if (cachedResponse && Date.now() - cachedResponse.timestamp < CACHE_TTL) {
     return NextResponse.json(cachedResponse.data, {
-      headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" },
+      headers: {
+        "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
+        "X-RateLimit-Remaining": String(remaining),
+      },
     });
   }
 
@@ -45,7 +60,10 @@ export async function GET() {
 
     cachedResponse = { data: withId, timestamp: Date.now() };
     return NextResponse.json(withId, {
-      headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" },
+      headers: {
+        "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
+        "X-RateLimit-Remaining": String(remaining),
+      },
     });
   } catch (err) {
     console.error("Failed to fetch products:", err);

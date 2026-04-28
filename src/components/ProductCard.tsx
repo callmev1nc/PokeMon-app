@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import type { Product } from "@/lib/types";
 import { TYPE_COLORS } from "@/lib/constants";
 import { useCartStore } from "@/store/cartStore";
@@ -11,6 +11,29 @@ import { formatPrice } from "@/lib/format";
 import LowStockBadge from "./LowStockBadge";
 import CardImage from "./CardImage";
 
+function useFadeIn() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "100px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return { ref, visible };
+}
+
 export default function ProductCard({
   product,
   priority = false,
@@ -20,6 +43,7 @@ export default function ProductCard({
 }) {
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
+  const { ref: fadeRef, visible } = useFadeIn();
   const addItem = useCartStore((s) => s.addItem);
   const inCart = useCartStore(
     useCallback((s) => {
@@ -48,7 +72,12 @@ export default function ProductCard({
   };
 
   return (
-    <div className="product-card rounded-2xl border border-transparent overflow-hidden flex flex-col text-slate-700 dark:text-slate-200">
+    <div
+      ref={fadeRef}
+      className={`product-card rounded-2xl border border-transparent overflow-hidden flex flex-col text-slate-700 dark:text-slate-200 transition-all duration-500 ${
+        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+      }`}
+    >
       {/* Image */}
       <div className="p-3 pb-0 relative group">
         <a href={`/product?id=${encodeURIComponent(product.id)}`}>

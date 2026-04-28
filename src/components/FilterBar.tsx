@@ -1,6 +1,7 @@
 "use client";
 
-import type { DisplayType, SortOption, GroupCategory } from "@/lib/types";
+import { useRef, useEffect, useState } from "react";
+import type { DisplayType, SortOption, GroupCategory, Product } from "@/lib/types";
 import {
   DISPLAY_TYPES,
   TYPE_COLORS,
@@ -22,6 +23,7 @@ interface FilterBarProps {
   onSortChange: (value: SortOption) => void;
   filteredTotal: number;
   filteredStock: number;
+  suggestions?: Product[];
 }
 
 export default function FilterBar({
@@ -35,13 +37,31 @@ export default function FilterBar({
   onSortChange,
   filteredTotal,
   filteredStock,
+  suggestions = [],
 }: FilterBarProps) {
   const locale = useLocaleStore((s) => s.locale);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!search.trim()) { setShowDropdown(false); return; }
+    setShowDropdown(true);
+  }, [suggestions, search]);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <div className="flex flex-col gap-3 mb-6 sticky top-16 z-20 py-3 -mx-4 px-4 bg-[var(--background)]/90 backdrop-blur-md">
       {/* Search */}
-      <div className="relative group">
+      <div className="relative group" ref={wrapperRef}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -57,17 +77,54 @@ export default function FilterBar({
           placeholder={t("filter.search", locale)}
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
+          onFocus={() => { if (search.trim() && suggestions.length > 0) setShowDropdown(true); }}
+          onKeyDown={(e) => { if (e.key === "Escape") setShowDropdown(false); }}
           className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/50 rounded-xl text-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:border-brand-yellow transition-all"
         />
         {search && (
           <button
-            onClick={() => onSearchChange("")}
+            onClick={() => { onSearchChange(""); setShowDropdown(false); }}
             className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded-full bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-colors"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
               <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
             </svg>
           </button>
+        )}
+
+        {/* Autocomplete dropdown */}
+        {showDropdown && suggestions.length > 0 && (
+          <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 rounded-xl shadow-lg overflow-hidden z-50 max-h-80 overflow-y-auto">
+            {suggestions.map((product) => (
+              <a
+                key={product.id}
+                href={`/product?id=${encodeURIComponent(product.id)}`}
+                onMouseDown={(e) => { e.preventDefault(); setShowDropdown(false); }}
+                className="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border-b border-slate-100 dark:border-slate-700/30 last:border-b-0"
+              >
+                {product.imageUrl ? (
+                  <img src={product.imageUrl} alt="" className="w-8 h-8 object-contain rounded" />
+                ) : (
+                  <div className="w-8 h-8 bg-slate-100 dark:bg-slate-700 rounded flex items-center justify-center text-xs text-slate-400 font-bold">
+                    {product.name.charAt(0)}
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-slate-700 dark:text-slate-200 truncate font-medium">
+                    {product.name}
+                  </p>
+                  <p className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
+                    {product.code}
+                  </p>
+                </div>
+                <span className={`inline-block px-1.5 py-0.5 text-[9px] font-bold rounded uppercase tracking-wide ${
+                  TYPE_COLORS[product.displayType] || "bg-slate-100 text-slate-600"
+                }`}>
+                  {product.displayType}
+                </span>
+              </a>
+            ))}
+          </div>
         )}
       </div>
 

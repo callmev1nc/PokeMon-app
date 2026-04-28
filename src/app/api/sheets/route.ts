@@ -19,6 +19,8 @@ import {
 import { verifySession, COOKIE_NAME } from "@/lib/auth-edge";
 import { logAction, getAuditLog } from "@/lib/auditLog";
 import { getSessionRole } from "@/lib/auth";
+import { orderSchema, customerSchema } from "@/lib/schemas";
+import { createRateLimiter } from "@/lib/rateLimit";
 
 // Check admin session cookie
 async function isAdmin(req: NextRequest): Promise<boolean> {
@@ -41,29 +43,7 @@ function sanitize(str: string): string {
 }
 
 // Simple in-memory rate limiter for public endpoints
-const publicRateLimits = new Map<string, { count: number; lastAttempt: number }>();
-const PUBLIC_MAX_REQUESTS = 10;
-const PUBLIC_WINDOW_MS = 60 * 1000;
-
-function checkPublicRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const record = publicRateLimits.get(ip);
-  if (record) {
-    if (now - record.lastAttempt > PUBLIC_WINDOW_MS) record.count = 0;
-    if (record.count >= PUBLIC_MAX_REQUESTS) return false;
-    record.count++;
-    record.lastAttempt = now;
-  } else {
-    publicRateLimits.set(ip, { count: 1, lastAttempt: now });
-  }
-  // Periodic cleanup
-  if (publicRateLimits.size > 500) {
-    for (const [key, val] of publicRateLimits) {
-      if (now - val.lastAttempt > PUBLIC_WINDOW_MS) publicRateLimits.delete(key);
-    }
-  }
-  return true;
-}
+const publicRateLimiter = createRateLimiter({ maxRequests: 10, windowMs: 60_000 });
 
 // Validate origin for admin POST requests (CSRF protection)
 function validateOrigin(req: NextRequest): boolean {
@@ -154,7 +134,7 @@ export async function POST(req: NextRequest) {
   // Public: submit order + customer info
   if (action === "addOrder") {
     const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
-    if (!checkPublicRateLimit(ip)) {
+    if (!publicRateLimiter(ip).allowed) {
       return NextResponse.json({ error: "Quá nhiều yêu cầu. Vui lòng thử lại sau." }, { status: 429 });
     }
 
@@ -182,6 +162,7 @@ export async function POST(req: NextRequest) {
         profit: 0,
         paymentStatus: "Chưa thanh toán" as const,
       };
+      orderSchema.parse(sanitized);
       logAction("addOrder", "customer", `Order ${sanitized.orderCode} from ${sanitized.customerName}`);
       return NextResponse.json(addOrder(sanitized));
     } catch {
@@ -194,7 +175,7 @@ export async function POST(req: NextRequest) {
 
   if (action === "addCustomer") {
     const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
-    if (!checkPublicRateLimit(ip)) {
+    if (!publicRateLimiter(ip).allowed) {
       return NextResponse.json({ error: "Quá nhiều yêu cầu. Vui lòng thử lại sau." }, { status: 429 });
     }
 
@@ -212,6 +193,7 @@ export async function POST(req: NextRequest) {
         newAddress: sanitize(String(customer.newAddress || "")),
         oldAddress: sanitize(String(customer.oldAddress || "")),
       };
+      customerSchema.parse(sanitized);
       return NextResponse.json(addCustomer(sanitized));
     } catch {
       return NextResponse.json(

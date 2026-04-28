@@ -9,73 +9,38 @@ import {
   generateCsrfToken,
   csrfCookieOptions,
 } from "@/lib/csrf";
+import { loginSchema, validateBody } from "@/lib/schemas";
+import { createRateLimiter } from "@/lib/rateLimit";
 
-// Simple in-memory rate limiter
-const attempts = new Map<string, { count: number; lastAttempt: number }>();
-const MAX_ATTEMPTS = 5;
-const WINDOW_MS = 60 * 1000; // 1 minute
+const rateLimiter = createRateLimiter({ maxRequests: 5, windowMs: 60_000, maxEntries: 100 });
 
 export async function POST(req: NextRequest) {
-  // Rate limit check
   const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
-  const now = Date.now();
-  const record = attempts.get(ip);
-
-  if (record) {
-    if (now - record.lastAttempt > WINDOW_MS) {
-      record.count = 0;
-    }
-    if (record.count >= MAX_ATTEMPTS) {
-      return NextResponse.json(
-        { error: "Quá nhiều lần thử. Vui lòng đợi 1 phút." },
-        { status: 429 }
-      );
-    }
-    record.count++;
-    record.lastAttempt = now;
-  } else {
-    attempts.set(ip, { count: 1, lastAttempt: now });
-  }
-
-  // Clean old entries periodically
-  if (attempts.size > 100) {
-    for (const [key, val] of attempts) {
-      if (now - val.lastAttempt > WINDOW_MS) attempts.delete(key);
-    }
-  }
-
-  let body: { username?: string; password?: string };
-  try {
-    body = await req.json();
-  } catch {
+  const { allowed } = rateLimiter(ip);
+  if (!allowed) {
     return NextResponse.json(
-      { error: "Invalid request" },
-      { status: 400 }
+      { error: "Quá nhiều lần thử. Vui lòng đợi 1 phút." },
+      { status: 429, headers: { "Retry-After": "60" } }
     );
   }
 
-  const { username, password } = body;
+  const parsed = await validateBody(req, loginSchema);
+  if ("error" in parsed) return parsed.error;
+  const { username, password } = parsed.data;
 
-  if (!username || !password) {
-    return NextResponse.json(
-      { error: "Vui lòng nhập tên đăng nhập và mật khẩu" },
-      { status: 400 }
-    );
-  }
-
-  const result = await verifyCredentials(username, password);
-  if (!result.valid) {
+  const credResult = await verifyCredentials(username, password);
+  if (!credResult.valid) {
     return NextResponse.json(
       { error: "Tên đăng nhập hoặc mật khẩu không đúng" },
       { status: 401 }
     );
   }
 
-  const token = createSession(username, result.role!);
+  const token = createSession(username, credResult.role!);
   const csrfToken = generateCsrfToken();
   const response = NextResponse.json({
     success: true,
-    role: result.role,
+    role: credResult.role,
     csrfToken,
   });
 

@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import type { Product } from "@/lib/types";
 import { useComparisonStore } from "@/store/comparisonStore";
 import { useLocaleStore } from "@/store/localeStore";
-import { t } from "@/lib/i18n";
+import { t, type Locale } from "@/lib/i18n";
 
-function formatPrice(price: number | null, locale: string): string {
+function formatPrice(price: number | null, locale: Locale): string {
   if (price === null) return t("contact.price", locale);
   return new Intl.NumberFormat("vi-VN").format(price * 1000) + " đ";
 }

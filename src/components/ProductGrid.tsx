@@ -1,43 +1,69 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef, useCallback } from "react";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import type { Product, DisplayType, SortOption, GroupCategory } from "@/lib/types";
 import { DISPLAY_TYPES } from "@/lib/constants";
 import { useLocaleStore } from "@/store/localeStore";
 import { t } from "@/lib/i18n";
+import { initSearchIndex, fuzzySearch } from "@/lib/search";
 import ProductCard from "./ProductCard";
+import { InlineErrorBoundary } from "./ErrorBoundary";
 import FilterBar from "./FilterBar";
 
 const PAGE_SIZE = 24;
+const CARD_HEIGHT = 420;
+const CARD_GAP = 16;
+
+function useColumnCount(ref: React.RefObject<HTMLDivElement | null>) {
+  const [cols, setCols] = useState(4);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new ResizeObserver(([entry]) => {
+      const w = entry.contentRect.width;
+      if (w >= 1280) setCols(4);
+      else if (w >= 1024) setCols(3);
+      else if (w >= 640) setCols(2);
+      else setCols(1);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [ref]);
+  return cols;
+}
 
 export default function ProductGrid({ products }: { products: Product[] }) {
   const [selectedTypes, setSelectedTypes] = useState<DisplayType[]>([
-    "Normal",
-    "Holo",
-    "Prize Card",
-    "EX",
-    "Holo Prize Card",
-    "EX Prize Card",
+    "Normal", "Holo", "Prize Card", "EX", "Holo Prize Card", "EX Prize Card",
   ]);
   const [selectedGroups, setSelectedGroups] = useState<GroupCategory[]>([]);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortOption>("name-asc");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const locale = useLocaleStore((s) => s.locale);
+  const parentRef = useRef<HTMLDivElement>(null);
+  const columns = useColumnCount(parentRef);
 
-  const toggleType = (type: DisplayType) => {
+  useEffect(() => { initSearchIndex(products); }, [products]);
+
+  const suggestions = useMemo(() => fuzzySearch(search), [search]);
+
+  const resetVisible = useCallback(() => setVisibleCount(PAGE_SIZE), []);
+
+  const toggleType = useCallback((type: DisplayType) => {
     setSelectedTypes((prev) =>
       prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
     );
-    setVisibleCount(PAGE_SIZE);
-  };
+    resetVisible();
+  }, [resetVisible]);
 
-  const toggleGroup = (group: GroupCategory) => {
+  const toggleGroup = useCallback((group: GroupCategory) => {
     setSelectedGroups((prev) =>
       prev.includes(group) ? prev.filter((g) => g !== group) : [...prev, group]
     );
-    setVisibleCount(PAGE_SIZE);
-  };
+    resetVisible();
+  }, [resetVisible]);
 
   const filtered = useMemo(() => {
     let result = products;
@@ -81,19 +107,47 @@ export default function ProductGrid({ products }: { products: Product[] }) {
   const visible = filtered.slice(0, visibleCount);
   const hasMore = visibleCount < filtered.length;
 
+  const rowCount = Math.ceil(visible.length / columns);
+  const rowHeight = CARD_HEIGHT + CARD_GAP;
+
+  const virtualizer = useWindowVirtualizer({
+    count: rowCount,
+    estimateSize: () => rowHeight,
+    overscan: 5,
+    scrollMargin: parentRef.current?.offsetTop ?? 0,
+  });
+
+  // Infinite scroll: load more when near bottom of page
+  useEffect(() => {
+    function onScroll() {
+      const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 600;
+      if (nearBottom && hasMore) {
+        setVisibleCount((c) => c + PAGE_SIZE);
+      }
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [hasMore]);
+
+  // Reset visible count when filters change
+  useEffect(() => { resetVisible(); }, [selectedTypes, selectedGroups, search, sort, resetVisible]);
+
+  const gridClass = columns === 4 ? "grid-cols-4" : columns === 3 ? "grid-cols-3" : columns === 2 ? "grid-cols-2" : "grid-cols-1";
+
   return (
-    <div>
+    <div ref={parentRef}>
       <FilterBar
         selectedTypes={selectedTypes}
         onToggleType={toggleType}
         selectedGroups={selectedGroups}
         onToggleGroup={toggleGroup}
         search={search}
-        onSearchChange={(v) => { setSearch(v); setVisibleCount(PAGE_SIZE); }}
+        onSearchChange={setSearch}
         sort={sort}
-        onSortChange={(v) => { setSort(v); setVisibleCount(PAGE_SIZE); }}
+        onSortChange={setSort}
         filteredTotal={filtered.length}
         filteredStock={totalStock}
+        suggestions={suggestions}
       />
 
       {filtered.length === 0 ? (
@@ -103,25 +157,49 @@ export default function ProductGrid({ products }: { products: Product[] }) {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {visible.map((product, index) => (
-              <ProductCard key={product.id} product={product} priority={index < 8} />
-            ))}
+          <div
+            style={{
+              height: `${virtualizer.getTotalSize()}px`,
+              width: "100%",
+              position: "relative",
+            }}
+          >
+            {virtualizer.getVirtualItems().map((virtualRow) => {
+              const startIdx = virtualRow.index * columns;
+              const rowItems = visible.slice(startIdx, startIdx + columns);
+              return (
+                <div
+                  key={virtualRow.index}
+                  data-index={virtualRow.index}
+                  ref={virtualizer.measureElement}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    transform: `translateY(${virtualRow.start}px)`,
+                  }}
+                >
+                  <div className={`grid gap-4 ${gridClass}`}>
+                    {rowItems.map((product, i) => (
+                      <InlineErrorBoundary key={product.id}>
+                        <ProductCard product={product} priority={startIdx + i < 8} />
+                      </InlineErrorBoundary>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           {hasMore && (
-            <div className="text-center mt-8">
-              <button
-                onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
-                className="px-8 py-3 bg-white dark:bg-[#0F1629] border border-slate-200 dark:border-slate-700/50 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600 transition-all shadow-sm"
-              >
-                {t("filter.loadMore", locale).replace("{count}", String(filtered.length - visibleCount))}
-              </button>
+            <div className="text-center py-4">
+              <p className="text-xs text-slate-400">{t("common.loading", locale)}</p>
             </div>
           )}
 
           {!hasMore && filtered.length > PAGE_SIZE && (
-            <p className="text-center text-xs text-slate-500 mt-6">
+            <p className="text-center text-xs text-slate-500 mt-4">
               {t("filter.allShown", locale).replace("{count}", String(filtered.length))}
             </p>
           )}

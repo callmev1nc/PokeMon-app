@@ -1,38 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchOrdersLive } from "@/lib/data";
+import { trackOrderSchema } from "@/lib/schemas";
+import { createRateLimiter } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
-// Simple rate limiter for order tracking
-const trackAttempts = new Map<string, { count: number; lastAttempt: number }>();
-const TRACK_MAX = 15;
-const TRACK_WINDOW = 60_000;
+const rateLimiter = createRateLimiter({ maxRequests: 15, windowMs: 60_000 });
 
 export async function GET(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
-  const now = Date.now();
-  const record = trackAttempts.get(ip);
-  if (record) {
-    if (now - record.lastAttempt > TRACK_WINDOW) record.count = 0;
-    if (record.count >= TRACK_MAX) {
-      return NextResponse.json({ error: "Quá nhiều yêu cầu. Vui lòng thử lại sau." }, { status: 429 });
-    }
-    record.count++;
-    record.lastAttempt = now;
-  } else {
-    trackAttempts.set(ip, { count: 1, lastAttempt: now });
-  }
-  if (trackAttempts.size > 500) {
-    for (const [key, val] of trackAttempts) {
-      if (now - val.lastAttempt > TRACK_WINDOW) trackAttempts.delete(key);
-    }
-  }
-  const phone = req.nextUrl.searchParams.get("phone")?.trim();
-  const orderCode = req.nextUrl.searchParams.get("orderCode")?.trim();
-
-  if (!phone && !orderCode) {
+  const { allowed, remaining } = rateLimiter(ip);
+  if (!allowed) {
     return NextResponse.json(
-      { error: "Vui lòng nhập số điện thoại hoặc mã đơn hàng" },
+      { error: "Quá nhiều yêu cầu. Vui lòng thử lại sau." },
+      { status: 429, headers: { "Retry-After": "60", "X-RateLimit-Remaining": "0" } }
+    );
+  }
+
+  const phone = req.nextUrl.searchParams.get("phone")?.trim() || undefined;
+  const orderCode = req.nextUrl.searchParams.get("orderCode")?.trim() || undefined;
+
+  const parsed = trackOrderSchema.safeParse({ phone, orderCode });
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Vui lòng nhập số điện thoại hoặc mã đơn hàng", details: parsed.error.issues.map((e) => e.message) },
       { status: 400 }
     );
   }
@@ -60,7 +51,9 @@ export async function GET(req: NextRequest) {
       deliveryStatus: o.deliveryStatus || "Chưa giao",
     }));
 
-    return NextResponse.json(safe);
+    return NextResponse.json(safe, {
+      headers: { "X-RateLimit-Remaining": String(remaining) },
+    });
   } catch {
     return NextResponse.json(
       { error: "Không thể tải đơn hàng" },

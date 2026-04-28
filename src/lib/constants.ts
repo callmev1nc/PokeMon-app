@@ -24,16 +24,9 @@ export const TYPE_COLORS: Record<string, string> = {
     "bg-rose-100 text-rose-800 border border-rose-300",
 };
 
-export const FACEBOOK_URL =
-  process.env.NEXT_PUBLIC_FACEBOOK_URL ||
-  "https://www.facebook.com/profile.php?id=61578802334775";
-
-export const SHOP_NAME =
-  process.env.NEXT_PUBLIC_SHOP_NAME || "V1ncc TCG Card Shop";
-
-export const SHOP_DESCRIPTION =
-  process.env.NEXT_PUBLIC_SHOP_DESCRIPTION ||
-  "Thẻ bài Pokémon chất lượng cao - Normal, Holo, Prize Card, EX. Hàng luôn cập nhật mỗi ngày!";
+export const FACEBOOK_URL = process.env.NEXT_PUBLIC_FACEBOOK_URL || "";
+export const SHOP_NAME = process.env.NEXT_PUBLIC_SHOP_NAME || "";
+export const SHOP_DESCRIPTION = process.env.NEXT_PUBLIC_SHOP_DESCRIPTION || "";
 
 export const GROUP_CATEGORIES = [
   "stadium",

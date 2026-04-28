@@ -3,9 +3,9 @@
 import { useState } from "react";
 import Header from "@/components/Header";
 import { useLocaleStore } from "@/store/localeStore";
-import { t } from "@/lib/i18n";
+import { t, type Locale } from "@/lib/i18n";
 
-function validatePhone(phone: string, locale: string): string | null {
+function validatePhone(phone: string, locale: Locale): string | null {
   if (!phone) return t("customer.phoneError", locale);
   if (phone.length < 9) return t("customer.phoneShort", locale);
   if (!/^(0[3-9]\d{8,9})$/.test(phone)) return t("customer.phoneInvalid", locale);
