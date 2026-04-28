@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Bebas_Neue, Outfit } from "next/font/google";
+import ThemeSync from "@/components/ThemeSync";
 import "./globals.css";
 
 const bebas = Bebas_Neue({
@@ -49,6 +50,7 @@ export default function RootLayout({
   return (
     <html lang="vi" className={`${bebas.variable} ${outfit.variable}`}>
       <body className="min-h-screen bg-surface-alt antialiased">
+        <ThemeSync />
         {children}
       </body>
     </html>

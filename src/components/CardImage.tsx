@@ -11,12 +11,12 @@ interface CardImageProps {
 }
 
 const TYPE_PLACEHOLDER_COLORS: Record<string, string> = {
-  Normal: "from-slate-700 to-slate-800",
-  Holo: "from-cyan-900/40 to-blue-900/40",
-  "Prize Card": "from-amber-900/40 to-yellow-900/40",
-  EX: "from-red-900/40 to-rose-900/40",
-  "Holo Prize Card": "from-purple-900/40 to-fuchsia-900/40",
-  "EX Prize Card": "from-rose-900/40 to-red-900/40",
+  Normal: "from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800",
+  Holo: "from-cyan-100/40 to-blue-100/40 dark:from-cyan-900/40 dark:to-blue-900/40",
+  "Prize Card": "from-amber-100/40 to-yellow-100/40 dark:from-amber-900/40 dark:to-yellow-900/40",
+  EX: "from-red-100/40 to-rose-100/40 dark:from-red-900/40 dark:to-rose-900/40",
+  "Holo Prize Card": "from-purple-100/40 to-fuchsia-100/40 dark:from-purple-900/40 dark:to-fuchsia-900/40",
+  "EX Prize Card": "from-rose-100/40 to-red-100/40 dark:from-rose-900/40 dark:to-red-900/40",
 };
 
 export default function CardImage({
@@ -31,7 +31,7 @@ export default function CardImage({
   const ref = useRef<HTMLDivElement>(null);
 
   const gradient =
-    TYPE_PLACEHOLDER_COLORS[displayType] || "from-slate-700 to-slate-800";
+    TYPE_PLACEHOLDER_COLORS[displayType] || "from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800";
 
   const highSrc = useMemo(() => (src ? toRenderUrl(src) : src), [src]);
   const placeholderSrc = useMemo(
@@ -66,7 +66,7 @@ export default function CardImage({
         <span className="text-3xl font-bold text-amber-400/50 drop-shadow-sm">
           {name.charAt(0)}
         </span>
-        <span className="text-[9px] font-semibold text-slate-500 uppercase tracking-wide text-center leading-tight">
+        <span className="text-[9px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wide text-center leading-tight">
           {displayType}
         </span>
       </div>
@@ -78,7 +78,7 @@ export default function CardImage({
   return (
     <div
       ref={ref}
-      className="aspect-[2.5/3.5] bg-slate-900 rounded-xl overflow-hidden relative"
+      className="aspect-[2.5/3.5] bg-slate-100 dark:bg-slate-900 rounded-xl overflow-hidden relative"
     >
       {showPlaceholder && (
         <img

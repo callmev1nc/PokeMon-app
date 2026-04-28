@@ -33,32 +33,32 @@ export default function HomePage() {
       <Header onCartClick={() => setCartOpen(true)} />
 
       {/* Hero */}
-      <section className="hero-gradient text-white relative">
+      <section className="hero-gradient relative">
         <div className="pokeball-deco top-[-80px] right-[-100px] opacity-50" />
         <div className="max-w-7xl mx-auto px-4 py-10 md:py-16 relative z-10">
           <div className="flex items-center gap-8">
             <div className="flex-1 animate-fade-in">
               <div className="inline-flex items-center gap-2 bg-amber-500/10 backdrop-blur-sm px-4 py-1.5 rounded-full border border-amber-500/20 text-xs font-medium mb-4">
                 <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
-                <span className="text-amber-200">{t("hero.newStock", locale)}</span>
+                <span className="text-amber-700 dark:text-amber-200">{t("hero.newStock", locale)}</span>
               </div>
               <h2
-                className="text-3xl md:text-5xl font-bold mb-3 leading-tight text-slate-100 holo-text"
+                className="text-3xl md:text-5xl font-bold mb-3 leading-tight text-slate-800 dark:text-slate-100 holo-text"
                 style={{ fontFamily: "var(--font-display)" }}
               >
                 {SHOP_NAME}
               </h2>
-              <p className="text-slate-400 text-sm md:text-base max-w-lg leading-relaxed">
+              <p className="text-slate-500 dark:text-slate-400 text-sm md:text-base max-w-lg leading-relaxed">
                 {SHOP_DESCRIPTION}
               </p>
               <div className="flex flex-wrap gap-3 mt-6">
-                <span className="inline-flex items-center gap-2 text-xs text-amber-200 bg-amber-500/10 backdrop-blur-sm px-4 py-2 rounded-full border border-amber-500/20 font-medium">
+                <span className="inline-flex items-center gap-2 text-xs text-amber-700 dark:text-amber-200 bg-amber-500/10 backdrop-blur-sm px-4 py-2 rounded-full border border-amber-500/20 font-medium">
                   <svg className="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                   </svg>
                   {t("hero.authentic", locale)}
                 </span>
-                <span className="inline-flex items-center gap-2 text-xs text-amber-200 bg-amber-500/10 backdrop-blur-sm px-4 py-2 rounded-full border border-amber-500/20 font-medium">
+                <span className="inline-flex items-center gap-2 text-xs text-amber-700 dark:text-amber-200 bg-amber-500/10 backdrop-blur-sm px-4 py-2 rounded-full border border-amber-500/20 font-medium">
                   <svg className="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0H6.375c-.621 0-1.125-.504-1.125-1.125V14.25m17.25 4.5V6.375c0-.621-.504-1.125-1.125-1.125H4.125c-.621 0-1.125.504-1.125 1.125v8.25" />
                   </svg>
@@ -76,7 +76,7 @@ export default function HomePage() {
         {/* Bottom wave */}
         <div className="absolute bottom-0 left-0 right-0">
           <svg viewBox="0 0 1440 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
-            <path d="M0 40V20C240 0 480 0 720 20C960 40 1200 40 1440 20V40H0Z" fill="#050816" />
+            <path d="M0 40V20C240 0 480 0 720 20C960 40 1200 40 1440 20V40H0Z" className="fill-[var(--background)]" />
           </svg>
         </div>
       </section>
@@ -100,7 +100,7 @@ export default function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="mt-16 border-t border-amber-500/10 bg-[#0A0F1E]">
+      <footer className="mt-16 border-t border-amber-500/10 bg-[var(--bg-sunken)]">
         <div className="max-w-7xl mx-auto px-4 py-10">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
             {/* Brand */}
@@ -118,7 +118,7 @@ export default function HomePage() {
 
             {/* Quick Links */}
             <div>
-              <h4 className="text-xs font-bold text-slate-300 uppercase tracking-widest mb-3">
+              <h4 className="text-xs font-bold text-slate-400 dark:text-slate-300 uppercase tracking-widest mb-3">
                 {t("footer.links", locale)}
               </h4>
               <div className="flex flex-col gap-2">
@@ -136,7 +136,7 @@ export default function HomePage() {
 
             {/* Trust */}
             <div>
-              <h4 className="text-xs font-bold text-slate-300 uppercase tracking-widest mb-3">
+              <h4 className="text-xs font-bold text-slate-400 dark:text-slate-300 uppercase tracking-widest mb-3">
                 {t("footer.trust", locale)}
               </h4>
               <div className="flex flex-col gap-2">
@@ -156,11 +156,11 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="mt-8 pt-6 border-t border-slate-700/50 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <p className="text-[11px] text-slate-600">
+          <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700/50 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <p className="text-[11px] text-slate-400 dark:text-slate-600">
               &copy; {new Date().getFullYear()} V1ncc TCG Card Shop
             </p>
-            <p className="text-[11px] text-slate-600">
+            <p className="text-[11px] text-slate-400 dark:text-slate-600">
               Pokemon &amp; Pokemon card names are trademarks of Nintendo/Game Freak
             </p>
           </div>

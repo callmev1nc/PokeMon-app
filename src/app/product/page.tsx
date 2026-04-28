@@ -83,8 +83,8 @@ function ProductDetailContent() {
       <>
         <Header onCartClick={() => {}} />
         <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-slate-800/50 flex items-center justify-center mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-slate-600">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-slate-400 dark:text-slate-600">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.182 16.318A4.486 4.486 0 0 0 12.016 15a4.486 4.486 0 0 0-3.198 1.318M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Z" />
             </svg>
           </div>
@@ -118,7 +118,7 @@ function ProductDetailContent() {
 
       <main className="max-w-5xl mx-auto px-4 py-6 animate-fade-in">
         {/* Breadcrumb */}
-        <a href="/" className="text-xs text-slate-500 hover:text-amber-400 transition-colors mb-5 inline-flex items-center gap-1 font-medium">
+        <a href="/" className="text-xs text-slate-400 dark:text-slate-500 hover:text-amber-400 transition-colors mb-5 inline-flex items-center gap-1 font-medium">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
           </svg>
@@ -128,7 +128,7 @@ function ProductDetailContent() {
         <div className="vault-card overflow-hidden">
           <div className="md:flex">
             {/* Image */}
-            <div className="md:w-2/5 p-6 md:p-8 flex items-center justify-center bg-[#0A0F1E] relative">
+            <div className="md:w-2/5 p-6 md:p-8 flex items-center justify-center bg-[var(--bg-sunken)] relative">
               <div className="w-full max-w-[300px] relative card-glow">
                 <CardImage
                   src={product.imageUrl}
@@ -143,11 +143,11 @@ function ProductDetailContent() {
             <div className="md:w-3/5 p-6 md:p-8 flex flex-col gap-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h1 className="text-3xl md:text-4xl font-bold text-slate-100 leading-tight tracking-wider" style={{ fontFamily: "var(--font-display)" }}>
+                  <h1 className="text-3xl md:text-4xl font-bold text-slate-800 dark:text-slate-100 leading-tight tracking-wider" style={{ fontFamily: "var(--font-display)" }}>
                     {product.name}
                   </h1>
                   {product.series && (
-                    <p className="text-sm text-slate-500 mt-1 font-mono tracking-tight">{product.series}</p>
+                    <p className="text-sm text-slate-400 dark:text-slate-500 mt-1 font-mono tracking-tight">{product.series}</p>
                   )}
                 </div>
                 <button
@@ -155,7 +155,7 @@ function ProductDetailContent() {
                   className={`p-2.5 rounded-xl border transition-all duration-300 flex-shrink-0 ${
                     isWished
                       ? "border-red-500/30 bg-red-500/10 text-red-400 scale-110"
-                      : "border-slate-700/50 text-slate-600 hover:text-red-400 hover:border-red-500/30"
+                      : "border-slate-200 dark:border-slate-700/50 text-slate-400 dark:text-slate-600 hover:text-red-400 hover:border-red-500/30"
                   }`}
                   aria-label={isWished ? "Bỏ yêu thích" : "Yêu thích"}
                 >
@@ -167,23 +167,23 @@ function ProductDetailContent() {
 
               {/* Badges */}
               <div className="flex flex-wrap items-center gap-2">
-                <span className={`px-3 py-1 text-[10px] font-bold rounded-md uppercase tracking-wide ${TYPE_COLORS[product.displayType] || "bg-slate-700 text-slate-300"}`}>
+                <span className={`px-3 py-1 text-[10px] font-bold rounded-md uppercase tracking-wide ${TYPE_COLORS[product.displayType] || "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300"}`}>
                   {product.displayType}
                 </span>
-                <span className="px-3 py-1 text-[10px] font-bold rounded-md uppercase tracking-wide bg-slate-800 text-slate-400">
+                <span className="px-3 py-1 text-[10px] font-bold rounded-md uppercase tracking-wide bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
                   {GROUP_LABELS[product.group] || product.group}
                 </span>
                 <LowStockBadge stock={product.stock} />
               </div>
 
               {/* Price */}
-              <div className="py-5 border-t border-b border-slate-700/50">
-                <p className={`text-4xl md:text-5xl font-bold tracking-wider ${noPrice ? "text-slate-600" : "text-amber-400"}`} style={{ fontFamily: "var(--font-display)" }}>
+              <div className="py-5 border-t border-b border-slate-200 dark:border-slate-700/50">
+                <p className={`text-4xl md:text-5xl font-bold tracking-wider ${noPrice ? "text-slate-400" : "text-amber-400"}`} style={{ fontFamily: "var(--font-display)" }}>
                   {displayPrice(product.price)}
                 </p>
-                <p className="text-sm text-slate-500 mt-1.5">
+                <p className="text-sm text-slate-400 dark:text-slate-500 mt-1.5">
                   {t("product.stock", locale)}{" "}
-                  <span className={`font-semibold ${product.stock <= 3 ? "text-amber-500" : "text-slate-400"}`}>
+                  <span className={`font-semibold ${product.stock <= 3 ? "text-amber-500" : "text-slate-500 dark:text-slate-400"}`}>
                     {product.stock}
                   </span>
                   {inCart > 0 && (
@@ -193,27 +193,27 @@ function ProductDetailContent() {
               </div>
 
               {/* Code */}
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-400 dark:text-slate-500">
                 {t("product.code", locale)}{" "}
-                <span className="font-mono font-bold text-slate-400 bg-slate-800/50 px-2 py-0.5 rounded">{product.code}</span>
+                <span className="font-mono font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/50 px-2 py-0.5 rounded">{product.code}</span>
               </p>
 
               {/* Add to cart */}
               {!isOutOfStock && !noPrice && (
                 <div className="flex items-center gap-3 mt-auto pt-2">
-                  <div className="flex items-center bg-slate-800/50 rounded-xl overflow-hidden border border-slate-700/50">
+                  <div className="flex items-center bg-slate-100 dark:bg-slate-800/50 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700/50">
                     <button
                       onClick={() => setQty(Math.max(1, qty - 1))}
-                      className="px-3.5 py-2.5 text-slate-400 hover:text-amber-400 hover:bg-slate-700/50 font-bold transition-colors"
+                      className="px-3.5 py-2.5 text-slate-400 hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700/50 font-bold transition-colors"
                     >
                       -
                     </button>
-                    <span className="px-3 py-2.5 text-sm font-bold min-w-[40px] text-center text-slate-300">
+                    <span className="px-3 py-2.5 text-sm font-bold min-w-[40px] text-center text-slate-600 dark:text-slate-300">
                       {qty}
                     </span>
                     <button
                       onClick={() => setQty(Math.min(maxQty, qty + 1))}
-                      className="px-3.5 py-2.5 text-slate-400 hover:text-amber-400 hover:bg-slate-700/50 font-bold transition-colors"
+                      className="px-3.5 py-2.5 text-slate-400 hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700/50 font-bold transition-colors"
                     >
                       +
                     </button>
@@ -225,7 +225,7 @@ function ProductDetailContent() {
                       added
                         ? "bg-emerald-500 text-white shadow-emerald-500/20 shadow-md"
                         : maxQty <= 0
-                        ? "bg-slate-800/50 text-slate-600 cursor-not-allowed"
+                        ? "bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-600 cursor-not-allowed"
                         : "btn-primary"
                     }`}
                   >
@@ -234,12 +234,12 @@ function ProductDetailContent() {
                 </div>
               )}
               {isOutOfStock && (
-                <button disabled className="w-full py-3.5 rounded-xl text-sm font-semibold bg-slate-800/50 text-slate-600 cursor-not-allowed mt-auto">
+                <button disabled className="w-full py-3.5 rounded-xl text-sm font-semibold bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-600 cursor-not-allowed mt-auto">
                   {t("product.outOfStock", locale)}
                 </button>
               )}
               {noPrice && !isOutOfStock && (
-                <button disabled className="w-full py-3.5 rounded-xl text-sm font-semibold bg-slate-800/50 text-slate-600 cursor-not-allowed mt-auto">
+                <button disabled className="w-full py-3.5 rounded-xl text-sm font-semibold bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-600 cursor-not-allowed mt-auto">
                   {t("product.contact", locale)}
                 </button>
               )}

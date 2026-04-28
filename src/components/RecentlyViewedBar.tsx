@@ -20,7 +20,7 @@ function ThumbnailImage({ product }: { product: Product }) {
 
   if (!src || error) {
     return (
-      <div className="w-full h-full bg-gradient-to-br from-amber-900/20 to-slate-800 flex items-center justify-center">
+      <div className="w-full h-full bg-gradient-to-br from-amber-100/20 to-slate-200 dark:from-amber-900/20 dark:to-slate-800 flex items-center justify-center">
         <span className="text-sm font-bold text-amber-400/60">
           {product.name.charAt(0)}
         </span>
@@ -29,7 +29,7 @@ function ThumbnailImage({ product }: { product: Product }) {
   }
 
   return (
-    <div className="w-full h-full relative bg-slate-900">
+    <div className="w-full h-full relative bg-slate-100 dark:bg-slate-900">
       {lowSrc && !loaded && (
         <img
           src={lowSrc}
@@ -79,7 +79,7 @@ export default function RecentlyViewedBar({
 
   return (
     <section className="py-4 animate-fade-in">
-      <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3" style={{ fontFamily: "var(--font-display)", letterSpacing: "0.15em" }}>
+      <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3" style={{ fontFamily: "var(--font-display)", letterSpacing: "0.15em" }}>
         {t("recent.title", locale)}
       </h3>
       <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
@@ -87,13 +87,13 @@ export default function RecentlyViewedBar({
           <a
             key={product.id}
             href={`/product?id=${encodeURIComponent(product.id)}`}
-            className="flex-shrink-0 flex items-center gap-3 bg-[#0F1629] border border-slate-700/30 rounded-xl p-2 pr-4 shadow-sm hover:shadow-amber-500/10 hover:border-amber-500/20 transition-all duration-300 min-w-[200px] max-w-[260px] group"
+            className="flex-shrink-0 flex items-center gap-3 bg-white dark:bg-[#0F1629] border border-slate-200 dark:border-slate-700/30 rounded-xl p-2 pr-4 shadow-sm hover:shadow-amber-500/10 hover:border-amber-500/20 transition-all duration-300 min-w-[200px] max-w-[260px] group"
           >
-            <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-slate-900">
+            <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-slate-100 dark:bg-slate-900">
               <ThumbnailImage product={product} />
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-semibold text-slate-300 line-clamp-1 leading-tight group-hover:text-amber-400 transition-colors">
+              <p className="text-xs font-semibold text-slate-600 dark:text-slate-300 line-clamp-1 leading-tight group-hover:text-amber-400 transition-colors">
                 {product.name}
               </p>
               <p className="text-xs font-bold text-amber-400 mt-0.5">

@@ -113,7 +113,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
             <div className="text-center mt-8">
               <button
                 onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
-                className="px-8 py-3 bg-[#0F1629] border border-slate-700/50 rounded-xl text-sm font-semibold text-slate-300 hover:bg-slate-700/50 hover:border-slate-600 transition-all shadow-sm"
+                className="px-8 py-3 bg-white dark:bg-[#0F1629] border border-slate-200 dark:border-slate-700/50 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600 transition-all shadow-sm"
               >
                 {t("filter.loadMore", locale).replace("{count}", String(filtered.length - visibleCount))}
               </button>
