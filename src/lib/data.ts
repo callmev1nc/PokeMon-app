@@ -49,7 +49,7 @@ async function fetchSheet<T>(url: string): Promise<T | null> {
   }
 }
 
-async function postSheet<T>(baseUrl: string, payload: Record<string, unknown>): Promise<T | null> {
+export async function postSheet<T>(baseUrl: string, payload: Record<string, unknown>): Promise<T | null> {
   if (!baseUrl) return null;
   try {
     // Google Apps Script: POST body is lost on 302 redirect.

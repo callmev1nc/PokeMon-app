@@ -35,19 +35,21 @@ export default function CartItem({ item }: { item: CartItemType }) {
         </p>
       </div>
       <div className="flex items-center gap-2">
-        <div className="flex items-center border border-slate-200 dark:border-slate-700/50 rounded-lg overflow-hidden bg-slate-50 dark:bg-slate-800/30">
+        <div className="flex items-center rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50">
           <button
             onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-            className="px-2 py-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-amber-400 text-xs font-bold transition-colors"
+            className="px-3 py-2 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-red-500 text-sm font-bold transition-colors min-w-[32px] text-center active:bg-slate-300 dark:active:bg-slate-600"
+            aria-label="Decrease quantity"
           >
             -
           </button>
-          <span className="px-2 py-1.5 text-xs font-bold min-w-[24px] text-center text-slate-600 dark:text-slate-300">
+          <span className="px-2 py-2 text-sm font-bold min-w-[32px] text-center text-slate-700 dark:text-slate-200">
             {item.quantity}
           </span>
           <button
             onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-            className="px-2 py-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 hover:text-amber-400 text-xs font-bold transition-colors"
+            className="px-3 py-2 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-amber-500 text-sm font-bold transition-colors min-w-[32px] text-center active:bg-slate-300 dark:active:bg-slate-600"
+            aria-label="Increase quantity"
           >
             +
           </button>
@@ -61,8 +63,8 @@ export default function CartItem({ item }: { item: CartItemType }) {
         </div>
         <button
           onClick={() => removeItem(item.product.id)}
-          className="p-1.5 rounded-lg text-slate-400 dark:text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
-          aria-label="Remove"
+          className="p-2 rounded-lg text-slate-400 dark:text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-all sm:opacity-0 sm:group-hover:opacity-100"
+          aria-label="Remove item"
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />

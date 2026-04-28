@@ -15,12 +15,16 @@ import {
   addCustomer,
   updateCustomer,
   addProductLocal,
+  postSheet,
+  adjustInventory,
 } from "@/lib/data";
 import { verifySession, COOKIE_NAME } from "@/lib/auth-edge";
 import { logAction, getAuditLog } from "@/lib/auditLog";
 import { getSessionRole } from "@/lib/auth";
 import { orderSchema, customerSchema } from "@/lib/schemas";
 import { createRateLimiter } from "@/lib/rateLimit";
+
+const BUSINESS_URL = process.env.GOOGLE_BUSINESS_URL || "";
 
 // Check admin session cookie
 async function isAdmin(req: NextRequest): Promise<boolean> {
@@ -255,16 +259,29 @@ export async function POST(req: NextRequest) {
         const row = Number(body.row);
         logAction("deleteOrder", "admin", `Row ${row}`);
         const orderData = body.orderData as Record<string, unknown> | undefined;
+
+        // Adjust inventory from the order data
+        if (orderData?.products) {
+          adjustInventory(String(orderData.products), 1);
+        }
+
+        // Send delete to Google Sheets and await result
+        if (BUSINESS_URL && !isNaN(row)) {
+          const sheetResult = await postSheet(BUSINESS_URL, { action: "deleteOrder", row });
+          if (sheetResult === null) {
+            // Sheets deletion failed, still try local
+            console.error("Failed to delete order from Google Sheets, row:", row);
+          }
+        }
+
+        // Also remove from local data
         if (!isNaN(row) && orderData) {
-          return NextResponse.json(deleteOrder({ _row: row, products: String(orderData.products || "") }));
+          deleteOrder({ _row: row, products: String(orderData.products || "") });
+        } else if (!isNaN(row)) {
+          deleteOrder(row);
         }
-        if (!isNaN(row)) {
-          return NextResponse.json(deleteOrder(row));
-        }
-        return NextResponse.json(
-          { error: "Invalid data" },
-          { status: 400 }
-        );
+
+        return NextResponse.json({ success: true });
       }
       case "deleteOrders": {
         const items = body.items as { row: number; products: string }[];
@@ -276,6 +293,15 @@ export async function POST(req: NextRequest) {
         }
         let deleted = 0;
         for (const item of items) {
+          // Adjust inventory
+          if (item.products) adjustInventory(item.products, 1);
+
+          // Delete from Google Sheets
+          if (BUSINESS_URL) {
+            await postSheet(BUSINESS_URL, { action: "deleteOrder", row: item.row });
+          }
+
+          // Delete from local data
           const result = deleteOrder({ _row: item.row, products: item.products });
           if (result.success) deleted++;
         }
