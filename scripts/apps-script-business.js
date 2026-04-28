@@ -286,7 +286,7 @@ function adjustInventory(productsString, delta) {
     // Parse order products: "2x ABRA - PO-P-01, 1x CHARIZARD - PC-PO-001"
     var items = productsString.split(", ");
     for (var idx = 0; idx < items.length; idx++) {
-      var match = items[idx].match(/^(\d+)x\s+(.+?)\s+-\s+(\S+)$/);
+      var match = items[idx].match(/^(\d+)x\s+(.+?)\s+-\s+([^\s|]+)(?:\|([\d.]+))?$/);
       if (!match) continue;
       var quantity = parseInt(match[1]) * delta;
 

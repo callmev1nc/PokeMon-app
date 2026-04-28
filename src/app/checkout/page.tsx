@@ -29,7 +29,10 @@ export default function CheckoutPage() {
         : { name: "", phone: "", newAddress: "", oldAddress: "" };
 
       const productDesc = items
-        .map((item) => `${item.quantity}x ${item.product.name} - ${item.product.code}`)
+        .map((item) => {
+          const pricePart = item.product.price !== null ? `|${item.product.price}` : "";
+          return `${item.quantity}x ${item.product.name} - ${item.product.code}${pricePart}`;
+        })
         .join(", ");
 
       const order = {

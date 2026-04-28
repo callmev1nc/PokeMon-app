@@ -35,9 +35,10 @@ function codeSortKey(code: string): [string, string, number] {
 
 function parseAndSortProducts(productsStr: string, codeToGroup: Map<string, string>, productMap: Map<string, Product>): ParsedProduct[] {
   const items: ParsedProduct[] = (productsStr || "").split(", ").map((p) => {
-    const match = p.match(/^(\d+)x\s+(.+?)\s+-\s+(\S+)$/);
+    const match = p.match(/^(\d+)x\s+(.+?)\s+-\s+([^\s|]+)(?:\|([\d.]+))?$/);
     if (!match) return null;
     const code = match[3];
+    const storedPrice = match[4] !== undefined ? parseFloat(match[4]) : undefined;
     const prod = productMap.get(code);
     return {
       qty: parseInt(match[1]),
@@ -45,7 +46,7 @@ function parseAndSortProducts(productsStr: string, codeToGroup: Map<string, stri
       code,
       group: codeToGroup.get(code) || "z",
       series: prod?.series || "",
-      price: prod?.price ?? null,
+      price: storedPrice !== undefined ? storedPrice : (prod?.price ?? null),
     };
   }).filter(Boolean) as ParsedProduct[];
 
@@ -330,7 +331,7 @@ export default function AdminOrdersPage() {
     if (orderIdx === -1) return;
     const items = parseAndSortProducts(order.products, codeToGroup, productMap);
     const remaining = items.filter((p) => !(p.code === product.code && p.name === product.name));
-    const newProducts = remaining.map((p) => `${p.qty}x ${p.name} - ${p.code}`).join(", ");
+    const newProducts = remaining.map((p) => `${p.qty}x ${p.name} - ${p.code}${p.price !== null ? `|${p.price}` : ""}`).join(", ");
     const removedStr = `${product.qty}x ${product.name} - ${product.code}`;
     const isPaid = order.paymentStatus === "Đã thanh toán" || order.paymentStatus === "Đã chuyển khoản";
     try {
@@ -355,7 +356,7 @@ export default function AdminOrdersPage() {
     } else {
       items.push({ qty, name: product.name, code: product.code, group: product.group || "", series: product.series || "", price: product.price });
     }
-    const newProducts = items.map((p) => `${p.qty}x ${p.name} - ${p.code}`).join(", ");
+    const newProducts = items.map((p) => `${p.qty}x ${p.name} - ${p.code}${p.price !== null ? `|${p.price}` : ""}`).join(", ");
     const addedStr = `${qty}x ${product.name} - ${product.code}`;
     const isPaid = order.paymentStatus === "Đã thanh toán" || order.paymentStatus === "Đã chuyển khoản";
     try {

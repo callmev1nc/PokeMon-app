@@ -82,7 +82,7 @@ export function adjustInventory(orderProducts: string, delta: number): void {
 
   const items = orderProducts.split(", ");
   for (const item of items) {
-    const match = item.match(/^(\d+)x\s+(.+?)\s+-\s+(\S+)$/);
+    const match = item.match(/^(\d+)x\s+(.+?)\s+-\s+([^\s|]+)(?:\|([\d.]+))?$/);
     if (!match) continue;
     const quantity = parseInt(match[1]) * delta;
     const code = match[3];
@@ -100,7 +100,7 @@ export function adjustInventory(orderProducts: string, delta: number): void {
   // updateStock handles both XUẤT (col I) and TỒN (col K) correctly.
   if (STOCK_URL) {
     for (const item of items) {
-      const match = item.match(/^(\d+)x\s+(.+?)\s+-\s+(\S+)$/);
+      const match = item.match(/^(\d+)x\s+(.+?)\s+-\s+([^\s|]+)(?:\|([\d.]+))?$/);
       if (!match) continue;
       const qty = parseInt(match[1]);
       const code = match[3];
@@ -362,14 +362,18 @@ export function editOrderProducts(
 
   order.products = newProducts;
 
-  // Recalculate sellPrice from new products + current prices
+  // Recalculate sellPrice from stored prices or current prices
   const allProducts = fetchProducts();
   const pMap = new Map(allProducts.map((p) => [p.code, p]));
   const newTotal = (newProducts || "").split(", ").reduce((sum, item) => {
-    const match = item.match(/^(\d+)x\s+(.+?)\s+-\s+(\S+)$/);
+    const match = item.match(/^(\d+)x\s+(.+?)\s+-\s+([^\s|]+)(?:\|([\d.]+))?$/);
     if (!match) return sum;
     const qty = parseInt(match[1]);
     const code = match[3];
+    const storedPrice = match[4] !== undefined ? parseFloat(match[4]) : null;
+    if (storedPrice !== null) {
+      return sum + storedPrice * qty * 1000;
+    }
     const prod = pMap.get(code);
     if (!prod || prod.price === null) return sum;
     return sum + prod.price * qty * 1000;
