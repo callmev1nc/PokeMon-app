@@ -376,12 +376,12 @@ export default function AdminOrdersPage() {
   }
 
   const updateOrderField = useCallback(
-    async (orderIndex: number, field: "buyPrice" | "shippingCost" | "notes" | "orderCode", value: string | number) => {
+    async (orderIndex: number, field: "buyPrice" | "shippingCost" | "notes" | "orderCode", value: string | number, sheetRow?: number) => {
       try {
         await fetch("/api/sheets", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "updateOrder", row: orderIndex, data: { [field]: value } }),
+          body: JSON.stringify({ action: "updateOrder", row: orderIndex, sheetRow, data: { [field]: value } }),
         });
       } catch {}
     }, []
@@ -919,14 +919,14 @@ export default function AdminOrdersPage() {
                     <span className="text-slate-400 text-xs">GIÁ MUA</span>
                     <input type="number" value={editValues[orderIdx]?.buyPrice ?? ""} placeholder="0"
                       onChange={(e) => setEditValues((prev) => ({ ...prev, [orderIdx]: { buyPrice: e.target.value, shippingCost: prev[orderIdx]?.shippingCost ?? "", notes: prev[orderIdx]?.notes ?? "" } }))}
-                      onBlur={(e) => updateOrderField(orderIdx, "buyPrice", Number(e.target.value) || 0)}
+                      onBlur={(e) => updateOrderField(orderIdx, "buyPrice", Number(e.target.value) || 0, order._row)}
                       className="w-full px-2 py-1 border border-slate-200 rounded text-sm" />
                   </div>
                   <div>
                     <span className="text-slate-400 text-xs">SHIP + ĐÓNG GÓI</span>
                     <input type="number" value={editValues[orderIdx]?.shippingCost ?? ""} placeholder="0"
                       onChange={(e) => setEditValues((prev) => ({ ...prev, [orderIdx]: { buyPrice: prev[orderIdx]?.buyPrice ?? "", shippingCost: e.target.value, notes: prev[orderIdx]?.notes ?? "" } }))}
-                      onBlur={(e) => updateOrderField(orderIdx, "shippingCost", Number(e.target.value) || 0)}
+                      onBlur={(e) => updateOrderField(orderIdx, "shippingCost", Number(e.target.value) || 0, order._row)}
                       className="w-full px-2 py-1 border border-slate-200 rounded text-sm" />
                   </div>
                   <div>
@@ -939,12 +939,12 @@ export default function AdminOrdersPage() {
 
                 {order.address && <p className="text-xs text-slate-400 mt-2">Địa chỉ mới: {order.address}</p>}
                 {order.oldAddress && <p className="text-xs text-slate-400 mt-1">Địa chỉ cũ: {order.oldAddress}</p>}
-                <div className="mt-2">
-                  <span className="text-slate-400 text-xs">GHI CHÚ</span>
+                <div className="mt-3">
+                  <label className="text-xs font-semibold text-amber-600 uppercase tracking-wide">📝 Ghi chú</label>
                   <input type="text" value={editValues[orderIdx]?.notes ?? ""} placeholder="Thêm ghi chú..."
                     onChange={(e) => setEditValues((prev) => ({ ...prev, [orderIdx]: { buyPrice: prev[orderIdx]?.buyPrice ?? "", shippingCost: prev[orderIdx]?.shippingCost ?? "", notes: e.target.value } }))}
-                    onBlur={(e) => updateOrderField(orderIdx, "notes", e.target.value)}
-                    className="w-full px-2 py-1 border border-slate-200 rounded text-sm mt-0.5" />
+                    onBlur={(e) => updateOrderField(orderIdx, "notes", e.target.value, order._row)}
+                    className="w-full px-3 py-2 border border-amber-200 rounded-lg text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 transition-colors" />
                 </div>
               </div>
             );

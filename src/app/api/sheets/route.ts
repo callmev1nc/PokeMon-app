@@ -309,6 +309,7 @@ export async function POST(req: NextRequest) {
       }
       case "updateOrder": {
         const row = Number(body.row);
+        const sheetRow = body.sheetRow ? Number(body.sheetRow) : undefined;
         const data = body.data as Record<string, unknown> | undefined;
         if (isNaN(row) || !data) {
           return NextResponse.json(
@@ -316,7 +317,20 @@ export async function POST(req: NextRequest) {
             { status: 400 }
           );
         }
-        return NextResponse.json(updateOrder(row, filterFields(data, ORDER_UPDATABLE_FIELDS)));
+        const filtered = filterFields(data, ORDER_UPDATABLE_FIELDS);
+        const result = updateOrder(row, filtered);
+
+        // Push to Google Sheets using sheetRow if available
+        if (BUSINESS_URL) {
+          const targetRow = sheetRow || row + 2;
+          postSheet(BUSINESS_URL, {
+            action: "updateOrder",
+            row: targetRow,
+            data: filtered,
+          }).catch(() => {});
+        }
+
+        return NextResponse.json(result);
       }
       case "editOrderProducts": {
         const row = Number(body.row);
