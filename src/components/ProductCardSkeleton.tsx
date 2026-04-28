@@ -1,6 +1,6 @@
 export default function ProductCardSkeleton() {
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
+    <div className="bg-[#0F1629] rounded-2xl border border-slate-700/50 overflow-hidden shadow-sm">
       <div className="p-3 pb-0">
         <div className="aspect-[2.5/3.5] skeleton rounded-xl" />
       </div>
@@ -11,7 +11,7 @@ export default function ProductCardSkeleton() {
           <div className="h-5 skeleton rounded-md w-16" />
           <div className="h-5 skeleton rounded-md w-12" />
         </div>
-        <div className="pt-3 border-t border-slate-50">
+        <div className="pt-3 border-t border-slate-700/50">
           <div className="h-6 skeleton rounded w-20 mb-2" />
           <div className="h-3 skeleton rounded w-16" />
         </div>

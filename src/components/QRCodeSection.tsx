@@ -8,14 +8,14 @@ export default function QRCodeSection({ onDone }: { onDone: () => void }) {
   const locale = useLocaleStore((s) => s.locale);
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-      <div className="px-5 py-4 border-b border-slate-100">
-        <h3 className="font-bold text-slate-800" style={{ fontFamily: "var(--font-display)" }}>
+    <div className="bg-[#0F1629] rounded-2xl border border-slate-700/50 shadow-sm overflow-hidden">
+      <div className="px-5 py-4 border-b border-slate-700/50">
+        <h3 className="font-bold text-slate-100 uppercase tracking-wider" style={{ fontFamily: "var(--font-display)", letterSpacing: "0.05em" }}>
           {t("qr.title", locale)}
         </h3>
       </div>
       <div className="p-6 flex flex-col items-center gap-5">
-        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+        <div className="p-4 bg-slate-800/30 rounded-2xl border border-slate-700/50">
           <img
             src="/qr-code.jpg"
             alt={t("qr.title", locale)}
@@ -24,10 +24,10 @@ export default function QRCodeSection({ onDone }: { onDone: () => void }) {
         </div>
 
         <div className="text-center space-y-2 max-w-sm">
-          <p className="text-sm font-semibold text-slate-700">
+          <p className="text-sm font-semibold text-slate-300">
             {t("qr.scan", locale)}
           </p>
-          <p className="text-xs text-slate-400 leading-relaxed">
+          <p className="text-xs text-slate-500 leading-relaxed">
             {t("qr.instruction", locale)}
           </p>
           <a

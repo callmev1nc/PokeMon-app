@@ -24,20 +24,20 @@ function getPaymentStyle(status: string) {
   switch (status) {
     case "Đã thanh toán":
     case "Đã chuyển khoản":
-      return "bg-green-100 text-green-700";
+      return "bg-emerald-500/10 text-emerald-400";
     default:
-      return "bg-yellow-100 text-yellow-700";
+      return "bg-amber-500/10 text-amber-400";
   }
 }
 
 function getDeliveryStyle(status: string) {
   switch (status) {
     case "Đã giao":
-      return "bg-green-100 text-green-700";
+      return "bg-emerald-500/10 text-emerald-400";
     case "Đang giao":
-      return "bg-blue-100 text-blue-700";
+      return "bg-blue-500/10 text-blue-400";
     default:
-      return "bg-yellow-100 text-yellow-700";
+      return "bg-amber-500/10 text-amber-400";
   }
 }
 
@@ -90,16 +90,16 @@ export default function AccountPage() {
       <Header onCartClick={() => {}} />
 
       <main className="max-w-2xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-slate-800 mb-2">
+        <h1 className="text-2xl font-bold text-slate-100 uppercase tracking-wider mb-2" style={{ fontFamily: "var(--font-display)", letterSpacing: "0.05em" }}>
           {t("account.title", locale)}
         </h1>
-        <p className="text-sm text-slate-500 mb-6">
+        <p className="text-sm text-slate-400 mb-6">
           {t("account.subtitle", locale)}
         </p>
 
         {/* Phone Input */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 mb-6">
-          <label className="text-sm font-semibold text-slate-600 block mb-2">
+        <div className="bg-[#0F1629] rounded-2xl border border-slate-700/50 shadow-sm p-5 mb-6">
+          <label className="text-sm font-semibold text-slate-300 block mb-2">
             {t("account.phoneLabel", locale)}
           </label>
           <div className="flex gap-2">
@@ -109,12 +109,12 @@ export default function AccountPage() {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand"
+              className="flex-1 px-4 py-2.5 rounded-xl border border-slate-700/50 bg-slate-800/30 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-amber-400/30 focus:border-amber-500"
             />
             <button
               onClick={handleLookup}
               disabled={loading || !phone.trim()}
-              className="px-5 py-2.5 bg-brand text-white rounded-xl text-sm font-semibold hover:bg-brand-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-5 py-2.5 bg-amber-500 text-white rounded-xl text-sm font-semibold hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? t("order.searching", locale) : t("account.lookup", locale)}
             </button>
@@ -130,7 +130,7 @@ export default function AccountPage() {
 
         {/* No Results */}
         {!loading && searched && orders.length === 0 && (
-          <div className="text-center py-12 text-slate-400">
+          <div className="text-center py-12 text-slate-500">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -156,16 +156,16 @@ export default function AccountPage() {
         {!loading && orders.length > 0 && (
           <>
             {/* Customer Summary */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 mb-6">
+            <div className="bg-[#0F1629] rounded-2xl border border-slate-700/50 shadow-sm p-5 mb-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-brand/10 rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 bg-amber-500/10 rounded-full flex items-center justify-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
                     stroke="currentColor"
-                    className="w-5 h-5 text-brand"
+                    className="w-5 h-5 text-amber-400"
                   >
                     <path
                       strokeLinecap="round"
@@ -175,26 +175,26 @@ export default function AccountPage() {
                   </svg>
                 </div>
                 <div>
-                  <p className="font-bold text-slate-800">{customerName}</p>
-                  <p className="text-xs text-slate-400">{phone}</p>
+                  <p className="font-bold text-slate-100">{customerName}</p>
+                  <p className="text-xs text-slate-500">{phone}</p>
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <p className="text-xs text-slate-400">{t("account.totalOrders", locale)}</p>
-                  <p className="text-lg font-bold text-slate-800">
+                  <p className="text-xs text-slate-500">{t("account.totalOrders", locale)}</p>
+                  <p className="text-lg font-bold text-slate-100">
                     {orders.length}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-400">{t("account.paid", locale)}</p>
-                  <p className="text-lg font-bold text-green-600">
+                  <p className="text-xs text-slate-500">{t("account.paid", locale)}</p>
+                  <p className="text-lg font-bold text-emerald-400">
                     {paidCount}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-400">{t("account.totalSpent", locale)}</p>
-                  <p className="text-lg font-bold text-brand">
+                  <p className="text-xs text-slate-500">{t("account.totalSpent", locale)}</p>
+                  <p className="text-lg font-bold text-amber-400">
                     {formatVND(totalSpent)}
                   </p>
                 </div>
@@ -202,25 +202,25 @@ export default function AccountPage() {
             </div>
 
             {/* Order History */}
-            <h2 className="text-lg font-bold text-slate-800 mb-3">
+            <h2 className="text-lg font-bold text-slate-100 mb-3">
               {t("account.orderHistory", locale)}
             </h2>
 
             {orders.map((order) => (
               <div
                 key={order.orderCode}
-                className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 mb-4"
+                className="bg-[#0F1629] rounded-2xl border border-slate-700/50 shadow-sm p-5 mb-4"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <p className="font-bold text-slate-800">
+                    <p className="font-bold text-slate-100">
                       {order.orderCode || "N/A"}
                     </p>
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <p className="text-xs text-slate-500 mt-0.5">
                       {order.orderDate}
                     </p>
                   </div>
-                  <p className="text-lg font-bold text-brand">
+                  <p className="text-lg font-bold text-amber-400">
                     {formatVND(order.sellPrice)}
                   </p>
                 </div>
@@ -245,7 +245,7 @@ export default function AccountPage() {
 
                 {/* Progress Bar */}
                 <div className="mb-4">
-                  <div className="flex justify-between text-[10px] text-slate-400 mb-1">
+                  <div className="flex justify-between text-[10px] text-slate-500 mb-1">
                     <span>{t("order.ordered", locale)}</span>
                     <span>{t("order.payment", locale)}</span>
                     <span>{t("order.shipping", locale)}</span>
@@ -263,7 +263,7 @@ export default function AccountPage() {
                       <div
                         key={i}
                         className={`h-1.5 flex-1 rounded-full ${
-                          done ? "bg-brand" : "bg-slate-100"
+                          done ? "bg-amber-500" : "bg-slate-700/50"
                         }`}
                       />
                     ))}
@@ -271,9 +271,9 @@ export default function AccountPage() {
                 </div>
 
                 {/* Products */}
-                <div className="border-t border-slate-50 pt-3">
-                  <p className="text-xs text-slate-400 mb-1">{t("order.products", locale)}</p>
-                  <p className="text-sm text-slate-700">
+                <div className="border-t border-slate-700/50 pt-3">
+                  <p className="text-xs text-slate-500 mb-1">{t("order.products", locale)}</p>
+                  <p className="text-sm text-slate-300">
                     {order.products || "N/A"}
                   </p>
                 </div>
@@ -286,7 +286,7 @@ export default function AccountPage() {
         <div className="text-center mt-8">
           <a
             href="/"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-brand hover:underline"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-amber-400 hover:underline"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

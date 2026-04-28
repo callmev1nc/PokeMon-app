@@ -7,17 +7,16 @@ interface CardImageProps {
   src?: string | null;
   name: string;
   displayType: string;
-  /** Mark as above-the-fold for priority loading */
   priority?: boolean;
 }
 
 const TYPE_PLACEHOLDER_COLORS: Record<string, string> = {
-  Normal: "from-gray-200 to-gray-300",
-  Holo: "from-blue-200 to-blue-400",
-  "Prize Card": "from-yellow-200 to-yellow-400",
-  EX: "from-red-200 to-red-400",
-  "Holo Prize Card": "from-purple-200 to-purple-400",
-  "EX Prize Card": "from-rose-200 to-red-400",
+  Normal: "from-slate-700 to-slate-800",
+  Holo: "from-cyan-900/40 to-blue-900/40",
+  "Prize Card": "from-amber-900/40 to-yellow-900/40",
+  EX: "from-red-900/40 to-rose-900/40",
+  "Holo Prize Card": "from-purple-900/40 to-fuchsia-900/40",
+  "EX Prize Card": "from-rose-900/40 to-red-900/40",
 };
 
 export default function CardImage({
@@ -32,7 +31,7 @@ export default function CardImage({
   const ref = useRef<HTMLDivElement>(null);
 
   const gradient =
-    TYPE_PLACEHOLDER_COLORS[displayType] || "from-slate-200 to-slate-300";
+    TYPE_PLACEHOLDER_COLORS[displayType] || "from-slate-700 to-slate-800";
 
   const highSrc = useMemo(() => (src ? toRenderUrl(src) : src), [src]);
   const placeholderSrc = useMemo(
@@ -40,7 +39,6 @@ export default function CardImage({
     [src]
   );
 
-  // Preload high-res image slightly before it enters viewport
   useEffect(() => {
     if (!highSrc || priority) return;
     const el = ref.current;
@@ -65,10 +63,10 @@ export default function CardImage({
       <div
         className={`aspect-[2.5/3.5] bg-gradient-to-br ${gradient} rounded-xl flex flex-col items-center justify-center gap-1 p-2`}
       >
-        <span className="text-3xl font-bold text-white/80 drop-shadow-sm">
+        <span className="text-3xl font-bold text-amber-400/50 drop-shadow-sm">
           {name.charAt(0)}
         </span>
-        <span className="text-[9px] font-semibold text-white/70 uppercase tracking-wide text-center leading-tight">
+        <span className="text-[9px] font-semibold text-slate-500 uppercase tracking-wide text-center leading-tight">
           {displayType}
         </span>
       </div>
@@ -80,9 +78,8 @@ export default function CardImage({
   return (
     <div
       ref={ref}
-      className="aspect-[2.5/3.5] bg-slate-50 rounded-xl overflow-hidden relative"
+      className="aspect-[2.5/3.5] bg-slate-900 rounded-xl overflow-hidden relative"
     >
-      {/* Low-res placeholder — loads instantly, blurs up */}
       {showPlaceholder && (
         <img
           src={placeholderSrc}
@@ -97,7 +94,6 @@ export default function CardImage({
           }`}
         />
       )}
-      {/* High-res image — fades in when loaded */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={highSrc}

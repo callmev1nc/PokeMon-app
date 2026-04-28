@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
-import { Lilita_One, Sora } from "next/font/google";
-import ThemeSync from "@/components/ThemeSync";
+import { Bebas_Neue, Outfit } from "next/font/google";
 import "./globals.css";
 
-const lilita = Lilita_One({
+const bebas = Bebas_Neue({
   weight: "400",
   subsets: ["latin"],
   variable: "--font-display",
   display: "swap",
 });
 
-const sora = Sora({
+const outfit = Outfit({
   subsets: ["latin", "vietnamese"],
   variable: "--font-body",
   display: "swap",
@@ -48,9 +47,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="vi" className={`${lilita.variable} ${sora.variable}`}>
+    <html lang="vi" className={`${bebas.variable} ${outfit.variable}`}>
       <body className="min-h-screen bg-surface-alt antialiased">
-        <ThemeSync />
         {children}
       </body>
     </html>

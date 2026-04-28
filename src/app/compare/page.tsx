@@ -43,11 +43,11 @@ export default function ComparePage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-800">{t("compare.title", locale)}</h1>
+        <h1 className="text-2xl font-bold text-slate-100 uppercase tracking-wider" style={{ fontFamily: "var(--font-display)", letterSpacing: "0.05em" }}>{t("compare.title", locale)}</h1>
         {compareProducts.length > 0 && (
           <button
             onClick={clear}
-            className="px-4 py-2 bg-red-50 text-red-600 rounded-xl text-sm font-semibold hover:bg-red-100 transition-colors"
+            className="px-4 py-2 bg-red-500/10 text-red-400 rounded-xl text-sm font-semibold hover:bg-red-500/20 transition-colors"
           >
             {t("cart.clearAll", locale)}
           </button>
@@ -56,30 +56,30 @@ export default function ComparePage() {
 
       {loading ? (
         <div className="text-center py-12">
-          <p className="text-slate-500">{t("common.loading", locale)}</p>
+          <p className="text-slate-400">{t("common.loading", locale)}</p>
         </div>
       ) : compareProducts.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-2xl border border-slate-100">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 text-slate-300 mx-auto mb-4">
+        <div className="text-center py-16 bg-[#0F1629] rounded-2xl border border-slate-700/50">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 text-slate-600 mx-auto mb-4">
             <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
           </svg>
           <p className="text-slate-400 text-lg font-medium">{t("compare.empty", locale)}</p>
-          <p className="text-slate-300 text-sm mt-1">
+          <p className="text-slate-500 text-sm mt-1">
             {t("compare.emptySub", locale)}
           </p>
           <a
             href="/"
-            className="inline-block mt-4 px-5 py-2 bg-brand text-white rounded-xl text-sm font-semibold hover:bg-brand-dark transition-colors"
+            className="inline-block mt-4 px-5 py-2 bg-amber-500 text-white rounded-xl text-sm font-semibold hover:bg-amber-600 transition-colors"
           >
             {t("compare.viewProducts", locale)}
           </a>
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
+          <table className="w-full bg-[#0F1629] rounded-2xl border border-slate-700/50 overflow-hidden shadow-sm">
             <thead>
-              <tr className="border-b border-slate-100">
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider w-32">
+              <tr className="border-b border-slate-700/50">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider w-32">
                   {t("compare.attribute", locale)}
                 </th>
                 {compareProducts.map((p) => (
@@ -94,7 +94,7 @@ export default function ComparePage() {
                       )}
                       <button
                         onClick={() => remove(p.id)}
-                        className="text-xs px-3 py-1 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 font-semibold transition-colors"
+                        className="text-xs px-3 py-1 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 font-semibold transition-colors"
                       >
                         {t("common.delete", locale)}
                       </button>
@@ -105,14 +105,14 @@ export default function ComparePage() {
             </thead>
             <tbody>
               {fields.map((field) => (
-                <tr key={field.key} className="border-b border-slate-50 last:border-b-0">
-                  <td className="px-4 py-3 text-sm font-semibold text-slate-600 bg-slate-50/50">
+                <tr key={field.key} className="border-b border-slate-700/50 last:border-b-0">
+                  <td className="px-4 py-3 text-sm font-semibold text-slate-400 bg-slate-800/30">
                     {field.label}
                   </td>
                   {compareProducts.map((p) => (
                     <td
                       key={p.id}
-                      className="px-4 py-3 text-sm text-slate-700 text-center"
+                      className="px-4 py-3 text-sm text-slate-300 text-center"
                     >
                       {field.render(p)}
                     </td>
@@ -125,7 +125,7 @@ export default function ComparePage() {
       )}
 
       <div className="mt-8">
-        <a href="/" className="text-sm text-blue-600 hover:underline">
+        <a href="/" className="text-sm text-amber-400 hover:underline">
           &larr; {t("common.backToShop", locale)}
         </a>
       </div>
