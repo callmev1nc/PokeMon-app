@@ -153,7 +153,7 @@ export async function POST(req: NextRequest) {
       const sanitized = {
         timestamp: String(order.timestamp || new Date().toISOString()),
         orderDate: String(order.orderDate || ""),
-        orderCode: sanitize(String(order.orderCode || "")),
+        orderCode: sanitize(String(order.orderCode || "")) || `DH${Date.now()}`,
         products: sanitize(String(order.products || "")).slice(0, 5000),
         customerName: sanitize(String(order.customerName || "")),
         phone: sanitize(String(order.phone || "")),
@@ -333,6 +333,7 @@ export async function POST(req: NextRequest) {
       }
       case "editOrderProducts": {
         const row = Number(body.row);
+        const sheetRow = body.sheetRow ? Number(body.sheetRow) : undefined;
         const newProducts = sanitize(String(body.newProducts || "")).slice(0, 5000);
         const removedItems = sanitize(String(body.removedItems || "")).slice(0, 5000);
         const addedItems = sanitize(String(body.addedItems || "")).slice(0, 5000);
@@ -341,7 +342,31 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ error: "Invalid data" }, { status: 400 });
         }
         logAction("editOrderProducts", "admin", `Row ${row}: products updated`);
-        return NextResponse.json(editOrderProducts(row, newProducts, removedItems, addedItems, isPaid));
+        const result = editOrderProducts(row, newProducts, removedItems, addedItems, isPaid);
+
+        // Push to Google Sheets with correct row if local update failed or to ensure sync
+        if (sheetRow && BUSINESS_URL) {
+          const allProducts = await fetchProductsLive();
+          const pMap = new Map(allProducts.map((p) => [p.code, p]));
+          const newTotal = (newProducts || "").split(", ").reduce((sum, item) => {
+            const match = item.match(/^(\d+)x\s+(.+?)\s+-\s+([^\s|]+)(?:\|([\d.]+))?$/);
+            if (!match) return sum;
+            const qty = parseInt(match[1]);
+            const code = match[3];
+            const storedPrice = match[4] !== undefined ? parseFloat(match[4]) : null;
+            if (storedPrice !== null) return sum + storedPrice * qty * 1000;
+            const prod = pMap.get(code);
+            if (!prod || prod.price === null) return sum;
+            return sum + prod.price * qty * 1000;
+          }, 0);
+          postSheet(BUSINESS_URL, {
+            action: "updateOrder",
+            row: sheetRow,
+            data: { products: newProducts, sellPrice: newTotal },
+          }).catch(() => {});
+        }
+
+        return NextResponse.json(result);
       }
       case "updateProducts": {
         const products = body.products as unknown[];

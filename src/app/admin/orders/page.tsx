@@ -24,7 +24,6 @@ interface ParsedProduct {
   group: string;
   series: string;
   price: number | null;
-  imageUrl?: string | null;
 }
 
 function codeSortKey(code: string): [string, string, number] {
@@ -49,7 +48,6 @@ function parseAndSortProducts(productsStr: string, codeToGroup: Map<string, stri
       group: codeToGroup.get(code) || "z",
       series: prod?.series || "",
       price: storedPrice !== undefined ? storedPrice : (prod?.price ?? null),
-      imageUrl: prod?.imageUrl || null,
     };
   }).filter(Boolean) as ParsedProduct[];
 
@@ -182,7 +180,7 @@ export default function AdminOrdersPage() {
       const res = await fetch("/api/sheets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "updateOrder", row: orderIdx, data: { deliveryStatus: newStatus } }),
+        body: JSON.stringify({ action: "updateOrder", row: orderIdx, sheetRow: order._row, data: { deliveryStatus: newStatus } }),
       });
       const data = await res.json();
       if (data.success) { setMessage(`Giao hàng: ${newStatus}`); await fetchOrders(); }
@@ -340,7 +338,7 @@ export default function AdminOrdersPage() {
       const res = await fetch("/api/sheets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "editOrderProducts", row: orderIdx, newProducts, removedItems: removedStr, addedItems: "", isPaid }),
+        body: JSON.stringify({ action: "editOrderProducts", row: orderIdx, sheetRow: order._row, newProducts, removedItems: removedStr, addedItems: "", isPaid }),
       });
       const data = await res.json();
       if (data.success) { setMessage(`Đã xóa ${product.name}`); await fetchOrders(); }
@@ -365,7 +363,7 @@ export default function AdminOrdersPage() {
       const res = await fetch("/api/sheets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "editOrderProducts", row: orderIdx, newProducts, removedItems: "", addedItems: addedStr, isPaid }),
+        body: JSON.stringify({ action: "editOrderProducts", row: orderIdx, sheetRow: order._row, newProducts, removedItems: "", addedItems: addedStr, isPaid }),
       });
       const data = await res.json();
       if (data.success) {
