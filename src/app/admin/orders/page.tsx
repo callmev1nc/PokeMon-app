@@ -375,6 +375,46 @@ export default function AdminOrdersPage() {
     } catch { setMessage("Lỗi kết nối"); }
   }
 
+  async function handleChangeQty(order: Order, product: ParsedProduct, delta: number) {
+    const orderIdx = orders.indexOf(order);
+    if (orderIdx === -1) return;
+    const items = parseAndSortProducts(order.products, codeToGroup, productMap);
+    const target = items.find((p) => p.code === product.code && p.name === product.name);
+    if (!target) return;
+
+    const newQty = target.qty + delta;
+    const isPaid = order.paymentStatus === "Đã thanh toán" || order.paymentStatus === "Đã chuyển khoản";
+
+    let newProducts: string;
+    let removedItems = "";
+    let addedItems = "";
+
+    if (newQty <= 0) {
+      // Remove the product entirely
+      const remaining = items.filter((p) => !(p.code === product.code && p.name === product.name));
+      newProducts = remaining.map((p) => `${p.qty}x ${p.name} - ${p.code}${p.price !== null ? `|${p.price}` : ""}`).join(", ");
+      removedItems = `${target.qty}x ${target.name} - ${target.code}`;
+    } else {
+      target.qty = newQty;
+      newProducts = items.map((p) => `${p.qty}x ${p.name} - ${p.code}${p.price !== null ? `|${p.price}` : ""}`).join(", ");
+      if (delta > 0) addedItems = `${delta}x ${target.name} - ${target.code}`;
+      else removedItems = `${Math.abs(delta)}x ${target.name} - ${target.code}`;
+    }
+
+    try {
+      const res = await fetch("/api/sheets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "editOrderProducts", row: orderIdx, sheetRow: order._row, newProducts, removedItems, addedItems, isPaid }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMessage(delta > 0 ? `+${delta} ${target.name}` : `${delta} ${target.name}`);
+        await fetchOrders();
+      } else { setMessage("Lỗi cập nhật"); }
+    } catch { setMessage("Lỗi kết nối"); }
+  }
+
   const updateOrderField = useCallback(
     async (orderIndex: number, field: "buyPrice" | "shippingCost" | "notes" | "orderCode", value: string | number, sheetRow?: number) => {
       try {
@@ -838,8 +878,20 @@ export default function AdminOrdersPage() {
                   <div className="space-y-1">
                     {parseAndSortProducts(order.products, codeToGroup, productMap).map((p, pi) => (
                       <div key={pi} className="flex items-center gap-2 text-sm bg-slate-50 rounded-lg px-2.5 py-1.5 group">
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            onClick={() => handleChangeQty(order, p, -1)}
+                            className="w-6 h-6 rounded bg-slate-200 hover:bg-red-100 hover:text-red-600 text-slate-500 text-xs font-bold flex items-center justify-center transition-colors"
+                            title="Giảm 1"
+                          >-</button>
+                          <span className="w-6 text-center font-semibold text-slate-700">{p.qty}</span>
+                          <button
+                            onClick={() => handleChangeQty(order, p, 1)}
+                            className="w-6 h-6 rounded bg-slate-200 hover:bg-amber-100 hover:text-amber-600 text-slate-500 text-xs font-bold flex items-center justify-center transition-colors"
+                            title="Tăng 1"
+                          >+</button>
+                        </div>
                         <span className="flex-1 min-w-0">
-                          <span className="font-medium text-slate-700">{p.qty}x</span>{" "}
                           <span className="text-slate-800">{p.name}</span>{" "}
                           <span className="text-slate-400 font-mono text-xs">({p.code})</span>
                           {p.price !== null && (
