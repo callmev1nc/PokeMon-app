@@ -342,9 +342,9 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ error: "Invalid data" }, { status: 400 });
         }
         logAction("editOrderProducts", "admin", `Row ${row}: products updated`);
-        const result = editOrderProducts(row, newProducts, removedItems, addedItems, isPaid);
+        const localResult = editOrderProducts(row, newProducts, removedItems, addedItems, isPaid);
 
-        // Push to Google Sheets with correct row if local update failed or to ensure sync
+        // Push to Google Sheets with correct row
         if (sheetRow && BUSINESS_URL) {
           const allProducts = await fetchProductsLive();
           const pMap = new Map(allProducts.map((p) => [p.code, p]));
@@ -359,14 +359,17 @@ export async function POST(req: NextRequest) {
             if (!prod || prod.price === null) return sum;
             return sum + prod.price * qty * 1000;
           }, 0);
-          postSheet(BUSINESS_URL, {
+          const sheetResult = await postSheet(BUSINESS_URL, {
             action: "updateOrder",
             row: sheetRow,
             data: { products: newProducts, sellPrice: newTotal },
-          }).catch(() => {});
+          });
+          if (sheetResult !== null) {
+            return NextResponse.json({ success: true });
+          }
         }
 
-        return NextResponse.json(result);
+        return NextResponse.json(localResult);
       }
       case "updateProducts": {
         const products = body.products as unknown[];
