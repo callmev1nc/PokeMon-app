@@ -320,12 +320,11 @@ export async function POST(req: NextRequest) {
         const filtered = filterFields(data, ORDER_UPDATABLE_FIELDS);
         const result = updateOrder(row, filtered);
 
-        // Push to Google Sheets using sheetRow if available
-        if (BUSINESS_URL) {
-          const targetRow = sheetRow || row + 2;
+        // If sheetRow is provided, also push directly with the correct row
+        if (sheetRow && BUSINESS_URL) {
           postSheet(BUSINESS_URL, {
             action: "updateOrder",
-            row: targetRow,
+            row: sheetRow,
             data: filtered,
           }).catch(() => {});
         }
