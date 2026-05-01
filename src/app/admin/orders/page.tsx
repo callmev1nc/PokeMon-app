@@ -163,6 +163,7 @@ export default function AdminOrdersPage() {
           action: "confirmOrder",
           row: orderIdx,
           orderRow: order._row,
+          orderCode: order.orderCode,
           data: { paymentStatus: newStatus },
           products: order.products,
         }),
@@ -180,7 +181,7 @@ export default function AdminOrdersPage() {
       const res = await fetch("/api/sheets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "updateOrder", row: orderIdx, sheetRow: order._row, data: { deliveryStatus: newStatus } }),
+        body: JSON.stringify({ action: "updateOrder", row: orderIdx, sheetRow: order._row, orderCode: order.orderCode, data: { deliveryStatus: newStatus } }),
       });
       const data = await res.json();
       if (data.success) { setMessage(`Giao hàng: ${newStatus}`); await fetchOrders(); }
@@ -338,7 +339,7 @@ export default function AdminOrdersPage() {
       const res = await fetch("/api/sheets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "editOrderProducts", row: orderIdx, sheetRow: order._row, newProducts, removedItems: removedStr, addedItems: "", isPaid }),
+        body: JSON.stringify({ action: "editOrderProducts", row: orderIdx, sheetRow: order._row, orderCode: order.orderCode, newProducts, removedItems: removedStr, addedItems: "", isPaid }),
       });
       const data = await res.json();
       if (data.success) { setMessage(`Đã xóa ${product.name}`); await fetchOrders(); }
@@ -363,7 +364,7 @@ export default function AdminOrdersPage() {
       const res = await fetch("/api/sheets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "editOrderProducts", row: orderIdx, sheetRow: order._row, newProducts, removedItems: "", addedItems: addedStr, isPaid }),
+        body: JSON.stringify({ action: "editOrderProducts", row: orderIdx, sheetRow: order._row, orderCode: order.orderCode, newProducts, removedItems: "", addedItems: addedStr, isPaid }),
       });
       const data = await res.json();
       if (data.success) {
@@ -405,7 +406,7 @@ export default function AdminOrdersPage() {
       const res = await fetch("/api/sheets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "editOrderProducts", row: orderIdx, sheetRow: order._row, newProducts, removedItems, addedItems, isPaid }),
+        body: JSON.stringify({ action: "editOrderProducts", row: orderIdx, sheetRow: order._row, orderCode: order.orderCode, newProducts, removedItems, addedItems, isPaid }),
       });
       const data = await res.json();
       if (data.success) {
@@ -416,12 +417,12 @@ export default function AdminOrdersPage() {
   }
 
   const updateOrderField = useCallback(
-    async (orderIndex: number, field: "buyPrice" | "shippingCost" | "notes" | "orderCode", value: string | number, sheetRow?: number) => {
+    async (orderIndex: number, field: "buyPrice" | "shippingCost" | "notes" | "orderCode", value: string | number, sheetRow?: number, orderCode?: string) => {
       try {
         await fetch("/api/sheets", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "updateOrder", row: orderIndex, sheetRow, data: { [field]: value } }),
+          body: JSON.stringify({ action: "updateOrder", row: orderIndex, sheetRow, orderCode, data: { [field]: value } }),
         });
       } catch {}
     }, []
@@ -971,14 +972,14 @@ export default function AdminOrdersPage() {
                     <span className="text-slate-400 text-xs">GIÁ MUA</span>
                     <input type="number" value={editValues[orderIdx]?.buyPrice ?? ""} placeholder="0"
                       onChange={(e) => setEditValues((prev) => ({ ...prev, [orderIdx]: { buyPrice: e.target.value, shippingCost: prev[orderIdx]?.shippingCost ?? "", notes: prev[orderIdx]?.notes ?? "" } }))}
-                      onBlur={(e) => updateOrderField(orderIdx, "buyPrice", Number(e.target.value) || 0, order._row)}
+                      onBlur={(e) => updateOrderField(orderIdx, "buyPrice", Number(e.target.value) || 0, order._row, order.orderCode)}
                       className="w-full px-2 py-1 border border-slate-200 rounded text-sm" />
                   </div>
                   <div>
                     <span className="text-slate-400 text-xs">SHIP + ĐÓNG GÓI</span>
                     <input type="number" value={editValues[orderIdx]?.shippingCost ?? ""} placeholder="0"
                       onChange={(e) => setEditValues((prev) => ({ ...prev, [orderIdx]: { buyPrice: prev[orderIdx]?.buyPrice ?? "", shippingCost: e.target.value, notes: prev[orderIdx]?.notes ?? "" } }))}
-                      onBlur={(e) => updateOrderField(orderIdx, "shippingCost", Number(e.target.value) || 0, order._row)}
+                      onBlur={(e) => updateOrderField(orderIdx, "shippingCost", Number(e.target.value) || 0, order._row, order.orderCode)}
                       className="w-full px-2 py-1 border border-slate-200 rounded text-sm" />
                   </div>
                   <div>
@@ -995,7 +996,7 @@ export default function AdminOrdersPage() {
                   <label className="text-xs font-semibold text-amber-600 uppercase tracking-wide">📝 Ghi chú</label>
                   <input type="text" value={editValues[orderIdx]?.notes ?? ""} placeholder="Thêm ghi chú..."
                     onChange={(e) => setEditValues((prev) => ({ ...prev, [orderIdx]: { buyPrice: prev[orderIdx]?.buyPrice ?? "", shippingCost: prev[orderIdx]?.shippingCost ?? "", notes: e.target.value } }))}
-                    onBlur={(e) => updateOrderField(orderIdx, "notes", e.target.value, order._row)}
+                    onBlur={(e) => updateOrderField(orderIdx, "notes", e.target.value, order._row, order.orderCode)}
                     className="w-full px-3 py-2 border border-amber-200 rounded-lg text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 transition-colors" />
                 </div>
               </div>

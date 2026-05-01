@@ -236,12 +236,12 @@ export function addOrder(order: Omit<Order, "_row">): { success: boolean } {
 export function updateOrder(
   index: number,
   data: Partial<Order>,
-  sheetRow?: number,
+  orderCode?: string,
 ): { success: boolean } {
   const orders = fetchOrders();
   let idx = index;
-  if (sheetRow) {
-    const found = orders.findIndex(o => o._row === sheetRow);
+  if (orderCode) {
+    const found = orders.findIndex(o => o.orderCode === orderCode);
     if (found !== -1) idx = found;
   }
   if (idx < 0 || idx >= orders.length) return { success: false };
@@ -269,11 +269,12 @@ export function confirmOrder(
   data: Partial<Order>,
   orderProducts?: string,
   orderRow?: number,
+  orderCode?: string,
 ): { success: boolean } {
   const orders = fetchOrders();
   let idx = index;
-  if (orderRow) {
-    const found = orders.findIndex(o => o._row === orderRow);
+  if (orderCode) {
+    const found = orders.findIndex(o => o.orderCode === orderCode);
     if (found !== -1) idx = found;
   }
   const order = (idx >= 0 && idx < orders.length) ? orders[idx] : null;
@@ -366,12 +367,12 @@ export function editOrderProducts(
   removedItems: string,
   addedItems: string,
   isPaid: boolean,
-  sheetRow?: number,
+  orderCode?: string,
 ): { success: boolean } {
   const orders = fetchOrders();
   let idx = index;
-  if (sheetRow) {
-    const found = orders.findIndex(o => o._row === sheetRow);
+  if (orderCode) {
+    const found = orders.findIndex(o => o.orderCode === orderCode);
     if (found !== -1) idx = found;
   }
   const order = (idx >= 0 && idx < orders.length) ? orders[idx] : null;
