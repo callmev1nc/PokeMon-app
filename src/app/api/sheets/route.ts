@@ -318,7 +318,7 @@ export async function POST(req: NextRequest) {
           );
         }
         const filtered = filterFields(data, ORDER_UPDATABLE_FIELDS);
-        const result = updateOrder(row, filtered);
+        const result = updateOrder(row, filtered, sheetRow);
 
         // If sheetRow is provided, also push directly with the correct row
         if (sheetRow && BUSINESS_URL) {
@@ -342,7 +342,7 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ error: "Invalid data" }, { status: 400 });
         }
         logAction("editOrderProducts", "admin", `Row ${row}: products updated`);
-        const localResult = editOrderProducts(row, newProducts, removedItems, addedItems, isPaid);
+        const localResult = editOrderProducts(row, newProducts, removedItems, addedItems, isPaid, sheetRow);
 
         // Push to Google Sheets with correct row
         if (sheetRow && BUSINESS_URL) {

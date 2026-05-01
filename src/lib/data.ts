@@ -235,18 +235,24 @@ export function addOrder(order: Omit<Order, "_row">): { success: boolean } {
 
 export function updateOrder(
   index: number,
-  data: Partial<Order>
+  data: Partial<Order>,
+  sheetRow?: number,
 ): { success: boolean } {
   const orders = fetchOrders();
-  if (index < 0 || index >= orders.length) return { success: false };
-  orders[index] = { ...orders[index], ...data };
+  let idx = index;
+  if (sheetRow) {
+    const found = orders.findIndex(o => o._row === sheetRow);
+    if (found !== -1) idx = found;
+  }
+  if (idx < 0 || idx >= orders.length) return { success: false };
+  orders[idx] = { ...orders[idx], ...data };
   writeJson("orders.json", orders);
 
   // Also push to Google Sheets in background
   if (BUSINESS_URL) {
     postSheet(BUSINESS_URL, {
       action: "updateOrder",
-      row: orders[index]._row || index + 2,
+      row: orders[idx]._row || idx + 2,
       data,
     }).catch(() => {});
   }
@@ -265,7 +271,12 @@ export function confirmOrder(
   orderRow?: number,
 ): { success: boolean } {
   const orders = fetchOrders();
-  const order = (index >= 0 && index < orders.length) ? orders[index] : null;
+  let idx = index;
+  if (orderRow) {
+    const found = orders.findIndex(o => o._row === orderRow);
+    if (found !== -1) idx = found;
+  }
+  const order = (idx >= 0 && idx < orders.length) ? orders[idx] : null;
 
   // Use provided products string or fall back to local order's products
   const productsStr = orderProducts || (order?.products ?? "");
@@ -278,7 +289,7 @@ export function confirmOrder(
 
   // Update local store if possible
   if (order) {
-    orders[index] = { ...order, ...data };
+    orders[idx] = { ...order, ...data };
     writeJson("orders.json", orders);
   }
 
@@ -355,9 +366,15 @@ export function editOrderProducts(
   removedItems: string,
   addedItems: string,
   isPaid: boolean,
+  sheetRow?: number,
 ): { success: boolean } {
   const orders = fetchOrders();
-  const order = (index >= 0 && index < orders.length) ? orders[index] : null;
+  let idx = index;
+  if (sheetRow) {
+    const found = orders.findIndex(o => o._row === sheetRow);
+    if (found !== -1) idx = found;
+  }
+  const order = (idx >= 0 && idx < orders.length) ? orders[idx] : null;
   if (!order) return { success: false };
 
   order.products = newProducts;
@@ -391,7 +408,7 @@ export function editOrderProducts(
   if (BUSINESS_URL) {
     postSheet(BUSINESS_URL, {
       action: "updateOrder",
-      row: order._row || index + 2,
+      row: order._row || idx + 2,
       data: { products: newProducts, sellPrice: newTotal },
     }).catch(() => {});
   }
