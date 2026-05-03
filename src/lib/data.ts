@@ -55,7 +55,8 @@ export async function postSheet<T>(baseUrl: string, payload: Record<string, unkn
     // Google Apps Script: POST body is lost on 302 redirect.
     // Encode the entire payload as a GET query parameter instead.
     const json = JSON.stringify(payload);
-    const url = `${baseUrl}?payload=${encodeURIComponent(json)}`;
+    const sep = baseUrl.includes("?") ? "&" : "?";
+    const url = `${baseUrl}${sep}payload=${encodeURIComponent(json)}`;
     const res = await fetch(url, { redirect: "follow" });
     if (!res.ok) return null;
     return (await res.json()) as T;
@@ -122,8 +123,13 @@ export function adjustInventory(orderProducts: string, delta: number): void {
 
 export async function fetchProductsLive(): Promise<Product[]> {
   if (STOCK_URL) {
-    const data = await fetchSheet<Product[]>(`${STOCK_URL}?action=products`);
-    if (data && Array.isArray(data) && data.length > 0) return data;
+    const data = await fetchSheet<Product[]>(`${STOCK_URL}&action=products`);
+    if (data && Array.isArray(data) && data.length > 0) {
+      // Keep local cache in sync so fallbacks always have the latest data
+      productsCache = data;
+      writeJson("products.json", data);
+      return data;
+    }
   }
   return fetchProducts();
 }
@@ -213,9 +219,14 @@ export function fetchOrders(): Order[] {
 export async function fetchOrdersLive(): Promise<Order[]> {
   if (BUSINESS_URL) {
     const data = await fetchSheet<{ error?: string; data?: Order[]; [key: number]: Order }>(
-      `${BUSINESS_URL}?action=orders`
+      `${BUSINESS_URL}&action=orders`
     );
-    if (data && Array.isArray(data)) return data;
+    if (data && Array.isArray(data)) {
+      ordersStore.length = 0;
+      ordersStore.push(...data);
+      writeJson("orders.json", data);
+      return data;
+    }
   }
   return fetchOrders();
 }
@@ -429,9 +440,14 @@ export function fetchCustomers(): Customer[] {
 export async function fetchCustomersLive(): Promise<Customer[]> {
   if (BUSINESS_URL) {
     const data = await fetchSheet<Customer[]>(
-      `${BUSINESS_URL}?action=customers`
+      `${BUSINESS_URL}&action=customers`
     );
-    if (data && Array.isArray(data)) return data;
+    if (data && Array.isArray(data)) {
+      customersStore.length = 0;
+      customersStore.push(...data);
+      writeJson("customers.json", data);
+      return data;
+    }
   }
   return fetchCustomers();
 }

@@ -8172,6 +8172,18 @@
     "stock": 10
   },
   {
+    "id": "IT-59-normal-c4a1b2",
+    "code": "IT-59",
+    "name": "Poké Pad",
+    "series": "POR 81/88",
+    "type": "normal",
+    "displayType": "Normal",
+    "group": "item",
+    "price": 30,
+    "buyPrice": null,
+    "stock": 30
+  },
+  {
     "id": "IT-38-normal-3b40ed",
     "code": "IT-38",
     "name": "Pokegear 3.0",
