@@ -16,6 +16,20 @@ interface Product {
   stock: number;
 }
 
+interface SheetsProduct {
+  _row?: number;
+  code: string;
+  group: string;
+  name: string;
+  series: string;
+  type: string;
+  displayType: string;
+  kho?: string;
+  price: number | null;
+  buyPrice: number | null;
+  stock: number;
+}
+
 function mapDisplayType(
   rawType: string
 ): "Normal" | "Holo" | "Prize Card" | "EX" | "Holo Prize Card" | "EX Prize Card" {
@@ -34,11 +48,59 @@ function parseNumber(val: unknown): number | null {
   return isNaN(n) ? null : n;
 }
 
-function main() {
+async function fetchFromGoogleSheets(): Promise<Product[] | null> {
+  const stockUrl = process.env.GOOGLE_STOCK_URL;
+  if (!stockUrl) return null;
+
+  try {
+    const sep = stockUrl.includes("?") ? "&" : "?";
+    const url = `${stockUrl}${sep}action=products`;
+    console.log("Fetching products from Google Sheets...");
+    const res = await fetch(url, { redirect: "follow" });
+    if (!res.ok) {
+      console.log(`Google Sheets returned HTTP ${res.status}, falling back to Excel`);
+      return null;
+    }
+    const data: SheetsProduct[] = await res.json();
+    if (!Array.isArray(data) || data.length === 0) {
+      console.log("Google Sheets returned empty data, falling back to Excel");
+      return null;
+    }
+
+    const products: Product[] = data.map((p, i) => {
+      const typeSlug = (p.type || "normal").replace(/\s+/g, "-");
+      const uniqueKey = `${p.series}-${i}`;
+      const seriesHash = crypto
+        .createHash("md5")
+        .update(uniqueKey)
+        .digest("hex")
+        .slice(0, 6);
+      return {
+        id: `${p.code}-${typeSlug}-${seriesHash}`,
+        code: p.code,
+        name: p.name,
+        series: p.series,
+        type: p.type,
+        displayType: mapDisplayType(p.type),
+        group: p.group,
+        price: p.price,
+        buyPrice: p.buyPrice,
+        stock: Math.round(p.stock),
+      };
+    });
+
+    products.sort((a, b) => a.name.localeCompare(b.name));
+    return products;
+  } catch (err) {
+    console.log(`Google Sheets fetch failed: ${err instanceof Error ? err.message : err}, falling back to Excel`);
+    return null;
+  }
+}
+
+function parseFromExcel(): Product[] {
   const rootDir = path.resolve(__dirname, "..");
   const stockPath = path.join(rootDir, "2026 Stock Pokemon extra.xlsx");
   const menuPath = path.join(rootDir, "2026 Stock Pokemon.xlsx");
-  const outputPath = path.join(rootDir, "src", "data", "products.json");
 
   if (!fs.existsSync(stockPath)) {
     console.error("Stock file not found:", stockPath);
@@ -95,7 +157,6 @@ function main() {
     const name = String(row[2] || "").trim();
     const series = String(row[3] || "").trim();
     const rawType = String(row[4] || "").trim().toLowerCase();
-    const kho = String(row[5] || "").trim();
     const price = parseNumber(row[6]);
     const stock = parseNumber(row[10]) ?? parseNumber(row[11]) ?? 0;
 
@@ -115,7 +176,6 @@ function main() {
       .slice(0, 6);
     const id = `${baseId}-${seriesHash}`;
 
-    // Look up buy price from MENU sheet
     const menuKey = `${code}|${series.toUpperCase()}`;
     const buyPrice = menuBuyPrices.get(menuKey) ?? null;
 
@@ -134,17 +194,17 @@ function main() {
   }
 
   products.sort((a, b) => a.name.localeCompare(b.name));
+  console.log(`Parsed ${products.length} products from Excel (skipped ${skipped} rows)`);
+  return products;
+}
 
+function writeProducts(products: Product[], outputPath: string): void {
   const outputDir = path.dirname(outputPath);
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
   fs.writeFileSync(outputPath, JSON.stringify(products, null, 2), "utf-8");
-
-  console.log(
-    `\n✅ Parsed ${products.length} products (skipped ${skipped} rows)`
-  );
   console.log(`📄 Output: ${outputPath}`);
 
   const stats: Record<string, number> = {};
@@ -161,6 +221,23 @@ function main() {
 
   const withBuyPrice = products.filter((p) => p.buyPrice !== null).length;
   console.log(`With buy price: ${withBuyPrice}/${products.length}`);
+}
+
+async function main() {
+  const rootDir = path.resolve(__dirname, "..");
+  const outputPath = path.join(rootDir, "src", "data", "products.json");
+
+  // Try Google Sheets first
+  let products = await fetchFromGoogleSheets();
+
+  const source = products ? "Google Sheets" : "Excel file";
+  if (!products) {
+    console.log("Falling back to local Excel file...");
+    products = parseFromExcel();
+  }
+
+  console.log(`\n✅ Loaded ${products.length} products from ${source}`);
+  writeProducts(products, outputPath);
 }
 
 main();
