@@ -285,13 +285,16 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: true });
       }
       case "deleteOrders": {
-        const items = body.items as { row: number; products: string }[];
-        if (!Array.isArray(items) || items.length === 0) {
+        const rawItems = body.items as { row: number; products: string }[];
+        if (!Array.isArray(rawItems) || rawItems.length === 0) {
           return NextResponse.json(
             { error: "Invalid data" },
             { status: 400 }
           );
         }
+        // Sort by row descending so higher rows are deleted first
+        // (Google Sheets rows shift after each deletion)
+        const items = [...rawItems].sort((a, b) => b.row - a.row);
         let deleted = 0;
         for (const item of items) {
           // Adjust inventory

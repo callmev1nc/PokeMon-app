@@ -320,50 +320,27 @@ export function confirmOrder(
 
 /**
  * Delete order by _row (Google Sheets row number) or local index.
- * Works with both live (Google Sheets) and local data.
+ * Only handles local data removal — inventory and Sheets deletion
+ * are managed by the API route to avoid double calls.
  */
 export function deleteOrder(
   identifier: number | { _row?: number; products?: string }
 ): { success: boolean } {
   const orders = fetchOrders();
   let index = -1;
-  let order: Order | undefined;
 
   if (typeof identifier === "object") {
-    // Find by _row from live data
     const row = identifier._row;
     if (row) {
       index = orders.findIndex((o) => o._row === row);
     }
-    if (index === -1) {
-      // Fallback: still try to adjust inventory from the passed order data
-      if (identifier.products) adjustInventory(identifier.products, 1);
-      if (BUSINESS_URL && row) {
-        postSheet(BUSINESS_URL, { action: "deleteOrder", row }).catch(() => {});
-      }
-      return { success: true };
-    }
-    order = orders[index];
+    if (index === -1) return { success: true };
   } else {
     if (identifier < 0 || identifier >= orders.length) return { success: false };
     index = identifier;
-    order = orders[index];
-  }
-
-  if (!order) return { success: false };
-  adjustInventory(order.products, 1);
-
-  if (BUSINESS_URL) {
-    postSheet(BUSINESS_URL, {
-      action: "deleteOrder",
-      row: order._row || index + 2,
-    }).catch(() => {});
   }
 
   orders.splice(index, 1);
-  for (let i = index; i < orders.length; i++) {
-    orders[i]._row = i + 1;
-  }
   writeJson("orders.json", orders);
   return { success: true };
 }
