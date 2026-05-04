@@ -376,19 +376,27 @@ function getAllProducts() {
       var code = String(menuData[i][0] || "").trim();
       var name = String(menuData[i][3] || "").trim();
       if (!code || !name) continue;
+      var rawType = String(menuData[i][4] || "").trim().toLowerCase();
       menuProducts.push({
         _row: i + 1,
         code: code,
         group: String(menuData[i][1] || "").trim().toLowerCase(),
         series: String(menuData[i][2] || "").trim(),
         name: name,
-        type: String(menuData[i][4] || "").trim().toLowerCase(),
+        type: rawType,
+        displayType: mapDisplayType(rawType),
         sellPrice: menuData[i][5] ? Number(menuData[i][5]) : null,
         buyPrice: menuData[i][6] ? Number(menuData[i][6]) : null,
         stock: menuData[i][7] ? Number(menuData[i][7]) : 0,
         image: String(menuData[i][8] || "").trim(),
       });
     }
+  }
+
+  // Build a set of product keys already in MENU to detect stock-only products
+  var menuKeys = {};
+  for (var j = 0; j < menuProducts.length; j++) {
+    menuKeys[menuProducts[j].code + "|" + menuProducts[j].series.toUpperCase()] = true;
   }
 
   var stockMap = {};
@@ -402,20 +410,42 @@ function getAllProducts() {
         var series = String(stockData[i][3] || "").trim();
         if (!code) continue;
         var key = code + "|" + series.toUpperCase();
-        stockMap[key] = {
-          kho: String(stockData[i][5] || "").trim(),
-          stock: stockData[i][10] ? Number(stockData[i][10]) : 0,
-        };
+        var kho = String(stockData[i][5] || "").trim();
+        var price = stockData[i][6] ? Number(stockData[i][6]) : null;
+        var stock = stockData[i][10] ? Number(stockData[i][10]) : 0;
+        stockMap[key] = { kho: kho, stock: stock, price: price };
+
+        // Add stock-only products not already in MENU
+        if (!menuKeys[key]) {
+          var name = String(stockData[i][2] || "").trim();
+          if (!name) continue;
+          var rawType = String(stockData[i][4] || "").trim().toLowerCase();
+          menuProducts.push({
+            _row: i + 1,
+            code: code,
+            group: String(stockData[i][1] || "").trim().toLowerCase(),
+            series: series,
+            name: name,
+            type: rawType,
+            displayType: mapDisplayType(rawType),
+            sellPrice: price !== null && !isNaN(price) ? price : null,
+            buyPrice: null,
+            stock: Math.round(stock),
+            kho: kho,
+          });
+          menuKeys[key] = true;
+        }
       }
     }
   } catch (err) {}
 
+  // Merge stock data into MENU products
   for (var j = 0; j < menuProducts.length; j++) {
     var p = menuProducts[j];
     var menuKey = p.code + "|" + p.series.toUpperCase();
     if (stockMap[menuKey]) {
       if (!p.stock || p.stock === 0) p.stock = stockMap[menuKey].stock;
-      p.kho = stockMap[menuKey].kho;
+      if (!p.kho) p.kho = stockMap[menuKey].kho;
     }
   }
 
@@ -539,6 +569,16 @@ function updateFinance(body) {
 // ============================================================
 // HELPERS
 // ============================================================
+
+function mapDisplayType(rawType) {
+  var t = rawType.toLowerCase().trim();
+  if (t === "holo prize card") return "Holo Prize Card";
+  if (t === "ex prize card") return "EX Prize Card";
+  if (t === "holo") return "Holo";
+  if (t.includes("ex")) return "EX";
+  if (t.includes("prize")) return "Prize Card";
+  return "Normal";
+}
 
 function json(data) {
   return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(
