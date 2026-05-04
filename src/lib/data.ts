@@ -123,7 +123,7 @@ export function adjustInventory(orderProducts: string, delta: number): void {
 
 export async function fetchProductsLive(): Promise<Product[]> {
   if (STOCK_URL) {
-    const data = await fetchSheet<Product[]>(`${STOCK_URL}&action=products`);
+    const data = await fetchSheet<Product[]>(`${STOCK_URL}?action=products`);
     if (data && Array.isArray(data) && data.length > 0) {
       // Keep local cache in sync so fallbacks always have the latest data
       productsCache = data;
@@ -219,7 +219,7 @@ export function fetchOrders(): Order[] {
 export async function fetchOrdersLive(): Promise<Order[]> {
   if (BUSINESS_URL) {
     const data = await fetchSheet<{ error?: string; data?: Order[]; [key: number]: Order }>(
-      `${BUSINESS_URL}&action=orders`
+      `${BUSINESS_URL}?action=orders`
     );
     if (data && Array.isArray(data)) {
       ordersStore.length = 0;
@@ -417,7 +417,7 @@ export function fetchCustomers(): Customer[] {
 export async function fetchCustomersLive(): Promise<Customer[]> {
   if (BUSINESS_URL) {
     const data = await fetchSheet<Customer[]>(
-      `${BUSINESS_URL}&action=customers`
+      `${BUSINESS_URL}?action=customers`
     );
     if (data && Array.isArray(data)) {
       customersStore.length = 0;
