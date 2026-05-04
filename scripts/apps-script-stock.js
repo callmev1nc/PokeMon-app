@@ -55,15 +55,19 @@ function handlePost(body) {
 }
 
 // ============================================================
-// PRODUCTS - Read from "Tồn Kho t3" sheet
+// PRODUCTS - Read from the first sheet (auto-detects name)
 // Row 0-1: title/headers, Row 2: column headers, Row 3+: data
 // Columns: [0]No/code, [1]Stype/group, [2]Good desc/name,
 //          [3]Series, [4]Type, [5]KHO, [6]Unit Price,
 //          [7]ĐẦU KỲ, [8]XUẤT, [9]NHẬP, [10]TỒN, [11]SUM
 // ============================================================
 
+function getStockSheet() {
+  return SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+}
+
 function getProducts() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Tồn Kho t3");
+  var sheet = getStockSheet();
   if (!sheet) return [];
   var data = sheet.getDataRange().getValues();
   if (data.length < 3) return [];
@@ -126,7 +130,7 @@ function getProducts() {
 }
 
 function updateProducts(products) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Tồn Kho t3");
+  var sheet = getStockSheet();
   if (!sheet) return { error: "Sheet not found" };
 
   var existingData = sheet.getDataRange().getValues();
@@ -153,7 +157,7 @@ function updateProducts(products) {
 }
 
 function updateStock(code, type, quantity) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Tồn Kho t3");
+  var sheet = getStockSheet();
   if (!sheet) return { error: "Sheet not found" };
 
   var data = sheet.getDataRange().getValues();
@@ -215,7 +219,7 @@ function getStats() {
 // ============================================================
 
 function addProduct(product) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Tồn Kho t3");
+  var sheet = getStockSheet();
   if (!sheet) return { error: "Sheet not found" };
 
   var data = sheet.getDataRange().getValues();
