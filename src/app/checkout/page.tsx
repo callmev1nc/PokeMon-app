@@ -26,7 +26,7 @@ export default function CheckoutPage() {
       const customerStr = sessionStorage.getItem("customerInfo");
       const customer = customerStr
         ? JSON.parse(customerStr)
-        : { name: "", phone: "", newAddress: "", oldAddress: "" };
+        : { name: "", phone: "", newAddress: "", oldAddress: "", notes: "" };
 
       const productDesc = items
         .map((item) => {
@@ -44,7 +44,7 @@ export default function CheckoutPage() {
         phone: customer.phone,
         address: customer.newAddress || customer.oldAddress,
         oldAddress: customer.oldAddress || "",
-        notes: "",
+        notes: customer.notes || "",
         sellPrice: total * 1000,
         buyPrice: 0,
         shippingCost: 0,

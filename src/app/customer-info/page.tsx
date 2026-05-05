@@ -18,6 +18,7 @@ export default function CustomerInfoPage() {
   const [phone, setPhone] = useState("");
   const [newAddress, setNewAddress] = useState("");
   const [oldAddress, setOldAddress] = useState("");
+  const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -79,7 +80,7 @@ export default function CustomerInfoPage() {
 
       sessionStorage.setItem(
         "customerInfo",
-        JSON.stringify({ name, phone, newAddress, oldAddress })
+        JSON.stringify({ name, phone, newAddress, oldAddress, notes })
       );
 
       window.location.href = "/checkout";
@@ -212,6 +213,20 @@ export default function CustomerInfoPage() {
             {touched.oldAddress && fieldErrors.oldAddress && (
               <p className="text-xs text-red-400 mt-1 font-medium">{fieldErrors.oldAddress}</p>
             )}
+          </div>
+
+          <div>
+            <label htmlFor="notes" className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5 uppercase tracking-wide">
+              {t("customer.notes", locale)}
+            </label>
+            <textarea
+              id="notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+              className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/30 rounded-xl text-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all hover:border-slate-300 dark:hover:border-slate-600 resize-none"
+              placeholder={t("customer.notesPlaceholder", locale)}
+            />
           </div>
 
           {error && (
