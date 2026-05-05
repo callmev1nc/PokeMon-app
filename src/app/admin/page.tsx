@@ -1,8 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import type { Product } from "@/lib/types";
 import AdminNav from "@/components/AdminNav";
+
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 function formatPrice(price: number | null): string {
   if (price === null) return "—";
@@ -18,7 +29,8 @@ export default function AdminPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [search, setSearch] = useState("");
-  const [showCount, setShowCount] = useState(100);
+  const debouncedSearch = useDebounce(search, 300);
+  const [showCount, setShowCount] = useState(50);
   const [showAddForm, setShowAddForm] = useState(false);
   const [stockFilter, setStockFilter] = useState<"all" | "low" | "out">("all");
   const [newProduct, setNewProduct] = useState({
@@ -224,8 +236,8 @@ export default function AdminPage() {
   };
 
   const filtered = products.filter((p) => {
-    if (!search.trim()) return true;
-    const q = search.toLowerCase();
+    if (!debouncedSearch.trim()) return true;
+    const q = debouncedSearch.toLowerCase();
     return (
       p.name.toLowerCase().includes(q) ||
       p.code.toLowerCase().includes(q) ||
@@ -615,10 +627,10 @@ export default function AdminPage() {
             {stockFiltered.length > showCount && (
               <div className="text-center py-3">
                 <p className="text-xs text-slate-400 mb-2">
-                  Hiển thị {showCount}/{filtered.length} sản phẩm
+                  Hiển thị {showCount}/{stockFiltered.length} sản phẩm
                 </p>
                 <button
-                  onClick={() => setShowCount((c) => c + 100)}
+                  onClick={() => setShowCount((c) => c + 50)}
                   className="px-5 py-2 bg-slate-50 text-slate-600 rounded-xl text-sm font-semibold hover:bg-slate-100 transition-colors border border-slate-200"
                 >
                   Hiển thị thêm

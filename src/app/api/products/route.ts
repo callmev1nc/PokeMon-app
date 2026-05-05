@@ -20,6 +20,10 @@ export async function GET(req: NextRequest) {
     );
   }
 
+  const page = Number(req.nextUrl.searchParams.get("page")) || 1;
+  const limit = Math.min(Number(req.nextUrl.searchParams.get("limit")) || 100, 500);
+  const offset = (page - 1) * limit;
+
   if (cachedResponse && Date.now() - cachedResponse.timestamp < CACHE_TTL) {
     return NextResponse.json(cachedResponse.data, {
       headers: {
@@ -59,7 +63,14 @@ export async function GET(req: NextRequest) {
     }
 
     cachedResponse = { data: withId, timestamp: Date.now() };
-    return NextResponse.json(withId, {
+
+    const paginated = limit > 0 ? withId.slice(offset, offset + limit) : withId;
+    const total = withId.length;
+    
+    return NextResponse.json({
+      data: paginated,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
+    }, {
       headers: {
         "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
         "X-RateLimit-Remaining": String(remaining),
