@@ -293,22 +293,31 @@ export async function POST(req: NextRequest) {
           );
         }
         // Sort by row descending so higher rows are deleted first
-        // (Google Sheets rows shift after each deletion)
         const items = [...rawItems].sort((a, b) => b.row - a.row);
         let deleted = 0;
-        for (const item of items) {
-          // Adjust inventory
-          if (item.products) adjustInventory(item.products, 1);
-
-          // Delete from Google Sheets
-          if (BUSINESS_URL) {
-            await postSheet(BUSINESS_URL, { action: "deleteOrder", row: item.row });
-          }
-
-          // Delete from local data
-          const result = deleteOrder({ _row: item.row, products: item.products });
-          if (result.success) deleted++;
-        }
+        
+        // Process deletions concurrently for better performance
+        const results = await Promise.all(
+          items.map(async (item) => {
+            try {
+              // Adjust inventory
+              if (item.products) adjustInventory(item.products, 1);
+              
+              // Delete from Google Sheets
+              if (BUSINESS_URL) {
+                await postSheet(BUSINESS_URL, { action: "deleteOrder", row: item.row });
+              }
+              
+              // Delete from local data
+              const result = deleteOrder({ _row: item.row, products: item.products });
+              return result.success;
+            } catch {
+              return false;
+            }
+          })
+        );
+        
+        deleted = results.filter(Boolean).length;
         return NextResponse.json({ success: true, deleted });
       }
       case "updateOrder": {
