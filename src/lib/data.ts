@@ -217,18 +217,27 @@ export function fetchOrders(): Order[] {
 }
 
 export async function fetchOrdersLive(): Promise<Order[]> {
+  const localOrders = fetchOrders();
   if (BUSINESS_URL) {
     const data = await fetchSheet<{ error?: string; data?: Order[]; [key: number]: Order }>(
       `${BUSINESS_URL}?action=orders`
     );
     if (data && Array.isArray(data)) {
+      const remoteOrders = data;
+      const merged = mergeOrders(localOrders, remoteOrders);
       ordersStore.length = 0;
-      ordersStore.push(...data);
-      writeJson("orders.json", data);
-      return data;
+      ordersStore.push(...merged);
+      writeJson("orders.json", merged);
+      return merged;
     }
   }
-  return fetchOrders();
+  return localOrders;
+}
+
+function mergeOrders(local: Order[], remote: Order[]): Order[] {
+  const orderCodeSet = new Set(remote.map(o => o.orderCode));
+  const localOnly = local.filter(o => o.orderCode && !orderCodeSet.has(o.orderCode));
+  return [...remote, ...localOnly];
 }
 
 export function addOrder(order: Omit<Order, "_row">): { success: boolean } {
