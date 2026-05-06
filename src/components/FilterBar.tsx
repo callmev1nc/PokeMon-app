@@ -8,6 +8,9 @@ import {
   GROUP_CATEGORIES,
   GROUP_LABELS,
   GROUP_COLORS,
+  POKEMON_TYPES,
+  POKEMON_TYPE_COLORS,
+  POKEMON_TYPE_ICONS,
 } from "@/lib/constants";
 import { useLocaleStore } from "@/store/localeStore";
 import { t } from "@/lib/i18n";
@@ -17,6 +20,8 @@ interface FilterBarProps {
   onToggleType: (type: DisplayType) => void;
   selectedGroups: GroupCategory[];
   onToggleGroup: (group: GroupCategory) => void;
+  selectedPokemonTypes: string[];
+  onTogglePokemonType: (type: string) => void;
   search: string;
   onSearchChange: (value: string) => void;
   sort: SortOption;
@@ -31,6 +36,8 @@ export default function FilterBar({
   onToggleType,
   selectedGroups,
   onToggleGroup,
+  selectedPokemonTypes,
+  onTogglePokemonType,
   search,
   onSearchChange,
   sort,
@@ -143,6 +150,30 @@ export default function FilterBar({
               } ${type === "Holo" && isActive ? "badge-holo" : ""}`}
             >
               {type}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Pokemon Type chips */}
+      <div className="flex gap-1.5 flex-wrap items-center">
+        <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium py-1 mr-1">
+          Type:
+        </span>
+        {POKEMON_TYPES.slice(0, 12).map((type) => {
+          const isActive = selectedPokemonTypes.includes(type);
+          return (
+            <button
+              key={type}
+              onClick={() => onTogglePokemonType(type)}
+              className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold transition-all duration-200 ${
+                isActive
+                  ? POKEMON_TYPE_COLORS[type]
+                  : "bg-white dark:bg-[#0F1629] text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700/50 hover:border-slate-300"
+              }`}
+            >
+              <span>{POKEMON_TYPE_ICONS[type]}</span>
+              <span className="hidden sm:inline">{type}</span>
             </button>
           );
         })}

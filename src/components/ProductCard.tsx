@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import type { Product } from "@/lib/types";
-import { TYPE_COLORS } from "@/lib/constants";
+import { TYPE_COLORS, POKEMON_TYPE_COLORS, POKEMON_TYPE_ICONS } from "@/lib/constants";
 import { useCartStore } from "@/store/cartStore";
 import { useWishlistStore } from "@/store/wishlistStore";
 import { useLocaleStore } from "@/store/localeStore";
@@ -123,7 +123,13 @@ export default function ProductCard({
           <p className="text-[11px] text-slate-400 dark:text-slate-500 font-mono tracking-tight">{product.series}</p>
         )}
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {product.type && POKEMON_TYPE_COLORS[product.type] && (
+            <span className={`pokemon-type-badge ${POKEMON_TYPE_COLORS[product.type]}`}>
+              <span>{POKEMON_TYPE_ICONS[product.type]}</span>
+              <span>{product.type}</span>
+            </span>
+          )}
           <span
             className={`inline-block px-2 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wide ${
               TYPE_COLORS[product.displayType] || "bg-slate-100 text-slate-600"

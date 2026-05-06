@@ -24,6 +24,59 @@ export const TYPE_COLORS: Record<string, string> = {
     "bg-rose-100 text-rose-800 border border-rose-300",
 };
 
+// Pokemon elemental types
+export const POKEMON_TYPES = [
+  "Fire", "Water", "Grass", "Electric", "Psychic", "Fighting",
+  "Normal", "Flying", "Poison", "Ground", "Rock", "Bug",
+  "Ghost", "Dragon", "Steel", "Ice", "Dark", "Fairy"
+] as const;
+
+export type PokemonType = typeof POKEMON_TYPES[number];
+
+// Pokemon elemental type colors - Tailwind classes
+export const POKEMON_TYPE_COLORS: Record<string, string> = {
+  Fire: "bg-orange-500 text-white",
+  Water: "bg-blue-500 text-white",
+  Grass: "bg-green-500 text-white",
+  Electric: "bg-yellow-400 text-black",
+  Psychic: "bg-pink-500 text-white",
+  Fighting: "bg-red-600 text-white",
+  Normal: "bg-stone-400 text-white",
+  Flying: "bg-sky-300 text-slate-800",
+  Poison: "bg-purple-500 text-white",
+  Ground: "bg-amber-600 text-white",
+  Rock: "bg-stone-600 text-white",
+  Bug: "bg-lime-500 text-white",
+  Ghost: "bg-indigo-600 text-white",
+  Dragon: "bg-indigo-700 text-white",
+  Steel: "bg-slate-400 text-white",
+  Ice: "bg-cyan-300 text-slate-800",
+  Dark: "bg-slate-800 text-white",
+  Fairy: "bg-pink-300 text-slate-800",
+};
+
+// Pokemon type icons
+export const POKEMON_TYPE_ICONS: Record<string, string> = {
+  Fire: "🔥",
+  Water: "💧",
+  Grass: "🌿",
+  Electric: "⚡",
+  Psychic: "🔮",
+  Fighting: "🥊",
+  Normal: "⚪",
+  Flying: "🕊️",
+  Poison: "☠️",
+  Ground: "⛰️",
+  Rock: "🪨",
+  Bug: "🐛",
+  Ghost: "👻",
+  Dragon: "🐉",
+  Steel: "⚙️",
+  Ice: "❄️",
+  Dark: "🌑",
+  Fairy: "✨",
+};
+
 export const FACEBOOK_URL = process.env.NEXT_PUBLIC_FACEBOOK_URL || "";
 export const SHOP_NAME = process.env.NEXT_PUBLIC_SHOP_NAME || "";
 export const SHOP_DESCRIPTION = process.env.NEXT_PUBLIC_SHOP_DESCRIPTION || "";

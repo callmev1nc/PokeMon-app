@@ -82,6 +82,36 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Pokemon Type Categories */}
+      <section className="max-w-7xl mx-auto px-4 py-6">
+        <h3 className="text-lg font-bold mb-4 text-slate-700 dark:text-slate-200" style={{ fontFamily: "var(--font-display)" }}>
+          🏷️ Browse by Type
+        </h3>
+        <div className="flex gap-3 flex-wrap">
+          {[
+            { type: "Fire", icon: "🔥", color: "from-orange-500 to-red-500" },
+            { type: "Water", icon: "💧", color: "from-blue-400 to-blue-600" },
+            { type: "Grass", icon: "🌿", color: "from-green-400 to-emerald-600" },
+            { type: "Electric", icon: "⚡", color: "from-yellow-400 to-amber-500" },
+            { type: "Psychic", icon: "🔮", color: "from-pink-400 to-purple-500" },
+            { type: "Dragon", icon: "🐉", color: "from-indigo-500 to-purple-700" },
+          ].map((item) => (
+            <button
+              key={item.type}
+              onClick={() => {
+                const url = new URL(window.location.href);
+                url.searchParams.set('type', item.type);
+                window.location.href = url.toString();
+              }}
+              className={`px-4 py-2 rounded-xl bg-gradient-to-r ${item.color} text-white font-bold text-sm shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300`}
+            >
+              <span className="mr-1">{item.icon}</span>
+              {item.type}
+            </button>
+          ))}
+        </div>
+      </section>
+
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-6 pb-20 sm:pb-6">
         {!loading && (

@@ -16,6 +16,26 @@
   --color-holo-start: #06B6D4;
   --color-holo-mid: #D946EF;
   --color-holo-end: #FBBF24;
+
+  /* Pokemon Type Colors */
+  --type-fire: #F97316;
+  --type-water: #3B82F6;
+  --type-grass: #22C55E;
+  --type-electric: #EAB308;
+  --type-psychic: #EC4899;
+  --type-fighting: #DC2626;
+  --type-normal: #A8A878;
+  --type-flying: #A890F0;
+  --type-poison: #A040A0;
+  --type-ground: #E0C068;
+  --type-rock: #B8A038;
+  --type-bug: #A8B820;
+  --type-ghost: #705898;
+  --type-dragon: #7038F8;
+  --type-steel: #B8B8D0;
+  --type-ice: #98D8D8;
+  --type-dark: #705848;
+  --type-fairy: #EE99AC;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -480,6 +500,19 @@ input:focus, select:focus, textarea:focus {
 /* ─── Badge variants ───────────────────────────────── */
 .badge-stock-low {
   animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Pokemon type badge */
+.pokemon-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 /* ─── Holographic accent text ──────────────────────── */

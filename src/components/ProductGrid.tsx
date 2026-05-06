@@ -38,6 +38,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
     "Normal", "Holo", "Prize Card", "EX", "Holo Prize Card", "EX Prize Card",
   ]);
   const [selectedGroups, setSelectedGroups] = useState<GroupCategory[]>([]);
+  const [selectedPokemonTypes, setSelectedPokemonTypes] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortOption>("name-asc");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -65,11 +66,24 @@ export default function ProductGrid({ products }: { products: Product[] }) {
     resetVisible();
   }, [resetVisible]);
 
+  const togglePokemonType = useCallback((type: string) => {
+    setSelectedPokemonTypes((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+    );
+    resetVisible();
+  }, [resetVisible]);
+
   const filtered = useMemo(() => {
     let result = products;
 
     if (selectedGroups.length > 0) {
       result = result.filter((p) => selectedGroups.includes(p.group as GroupCategory));
+    }
+
+    if (selectedPokemonTypes.length > 0) {
+      result = result.filter((p) =>
+        selectedPokemonTypes.some((t) => p.type?.toLowerCase() === t.toLowerCase())
+      );
     }
 
     if (selectedGroups.length === 0 && selectedTypes.length < DISPLAY_TYPES.length) {
@@ -141,6 +155,8 @@ export default function ProductGrid({ products }: { products: Product[] }) {
         onToggleType={toggleType}
         selectedGroups={selectedGroups}
         onToggleGroup={toggleGroup}
+        selectedPokemonTypes={selectedPokemonTypes}
+        onTogglePokemonType={togglePokemonType}
         search={search}
         onSearchChange={setSearch}
         sort={sort}
