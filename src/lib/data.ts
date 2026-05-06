@@ -436,7 +436,7 @@ export function addCustomer(
   customers.push({ ...customer, _row: customers.length + 1 } as Customer);
   writeJson("customers.json", customers);
 
-  // Also push to Google Sheets in background
+  // Also push to Google Sheets in background (notes goes to column H)
   if (BUSINESS_URL) {
     postSheet(BUSINESS_URL, { action: "addCustomer", customer }).catch(
       () => {}

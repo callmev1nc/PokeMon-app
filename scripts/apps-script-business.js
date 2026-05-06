@@ -342,13 +342,18 @@ function addCustomer(customer) {
   var sheet = getSheet(ss, "Customers");
   if (!sheet) {
     sheet = ss.insertSheet("Customers");
-    sheet.appendRow(["Tên", "Số Điện Thoại", "Địa Chỉ mới", "Địa chỉ cũ"]);
+    // Columns: A=Name, B=Phone, C=NewAddress, D=OldAddress, E-G=empty, H=Notes
+    sheet.appendRow(["Tên", "Số Điện Thoại", "Địa Chỉ mới", "Địa chỉ cũ", "", "", "", "Ghi chú"]);
   }
   sheet.appendRow([
     customer.name || "",
     String(customer.phone || ""),
     customer.newAddress || "",
     customer.oldAddress || "",
+    "",
+    "",
+    "",
+    customer.notes || "",
   ]);
   return { success: true };
 }
@@ -360,6 +365,7 @@ function updateCustomer(row, data) {
   if (data.phone !== undefined) sheet.getRange(row, 2).setValue(String(data.phone));
   if (data.newAddress !== undefined) sheet.getRange(row, 3).setValue(data.newAddress);
   if (data.oldAddress !== undefined) sheet.getRange(row, 4).setValue(data.oldAddress);
+  if (data.notes !== undefined) sheet.getRange(row, 8).setValue(data.notes);
   return { success: true };
 }
 

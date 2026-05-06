@@ -64,7 +64,7 @@ function validateOrigin(req: NextRequest): boolean {
 
 // Whitelist allowed fields for order/customer updates
 const ORDER_UPDATABLE_FIELDS = ["paymentStatus", "deliveryStatus", "shippingCost", "buyPrice", "notes", "orderCode", "products", "sellPrice"];
-const CUSTOMER_UPDATABLE_FIELDS = ["name", "phone", "newAddress", "oldAddress"];
+const CUSTOMER_UPDATABLE_FIELDS = ["name", "phone", "newAddress", "oldAddress", "notes"];
 
 function filterFields(data: Record<string, unknown>, allowed: string[]): Record<string, unknown> {
   return Object.fromEntries(
@@ -196,6 +196,7 @@ export async function POST(req: NextRequest) {
         phone: sanitize(String(customer.phone || "")),
         newAddress: sanitize(String(customer.newAddress || "")),
         oldAddress: sanitize(String(customer.oldAddress || "")),
+        notes: sanitize(String(customer.notes || "")),
       };
       customerSchema.parse(sanitized);
       return NextResponse.json(addCustomer(sanitized));

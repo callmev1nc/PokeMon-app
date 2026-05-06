@@ -40,6 +40,7 @@ export interface Customer {
   phone: string;
   newAddress: string;
   oldAddress: string;
+  notes?: string;
 }
 
 export interface Order {

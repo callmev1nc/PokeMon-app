@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchProductsLive } from "@/lib/data";
+import type { Product } from "@/lib/types";
 import { getImageUrl, resolveImageUrl } from "@/lib/cardImageCache";
 import { createRateLimiter } from "@/lib/rateLimit";
 
@@ -7,7 +8,7 @@ const rateLimiter = createRateLimiter({ maxRequests: 30, windowMs: 60_000 });
 
 export const revalidate = 30;
 
-let cachedResponse: { data: unknown; timestamp: number } | null = null;
+let cachedResponse: { data: Product[]; timestamp: number } | null = null;
 const CACHE_TTL = 30_000;
 
 export async function GET(req: NextRequest) {
@@ -19,10 +20,6 @@ export async function GET(req: NextRequest) {
       { status: 429, headers: { "Retry-After": "60" } }
     );
   }
-
-  const page = Number(req.nextUrl.searchParams.get("page")) || 1;
-  const limit = Math.min(Number(req.nextUrl.searchParams.get("limit")) || 100, 500);
-  const offset = (page - 1) * limit;
 
   if (cachedResponse && Date.now() - cachedResponse.timestamp < CACHE_TTL) {
     return NextResponse.json(cachedResponse.data, {
@@ -64,13 +61,7 @@ export async function GET(req: NextRequest) {
 
     cachedResponse = { data: withId, timestamp: Date.now() };
 
-    const paginated = limit > 0 ? withId.slice(offset, offset + limit) : withId;
-    const total = withId.length;
-    
-    return NextResponse.json({
-      data: paginated,
-      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
-    }, {
+    return NextResponse.json(withId, {
       headers: {
         "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
         "X-RateLimit-Remaining": String(remaining),

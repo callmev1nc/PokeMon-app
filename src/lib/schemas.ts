@@ -23,6 +23,7 @@ export const customerSchema = z.object({
   phone: z.string().min(9).max(11),
   newAddress: z.string().max(500),
   oldAddress: z.string().max(500),
+  notes: z.string().max(1000).optional(),
 });
 
 export const productSchema = z.object({
