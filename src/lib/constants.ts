@@ -24,11 +24,11 @@ export const TYPE_COLORS: Record<string, string> = {
     "bg-rose-100 text-rose-800 border border-rose-300",
 };
 
-// Pokemon elemental types
+// Pokemon elemental types (from TCGdex API)
 export const POKEMON_TYPES = [
-  "Fire", "Water", "Grass", "Electric", "Psychic", "Fighting",
-  "Normal", "Flying", "Poison", "Ground", "Rock", "Bug",
-  "Ghost", "Dragon", "Steel", "Ice", "Dark", "Fairy"
+  "Fire", "Water", "Grass", "Lightning", "Psychic", "Fighting",
+  "Colorless", "Flying", "Poison", "Ground", "Rock", "Bug",
+  "Ghost", "Dragon", "Metal", "Ice", "Darkness", "Fairy"
 ] as const;
 
 export type PokemonType = typeof POKEMON_TYPES[number];
@@ -38,10 +38,10 @@ export const POKEMON_TYPE_COLORS: Record<string, string> = {
   Fire: "bg-orange-500 text-white",
   Water: "bg-blue-500 text-white",
   Grass: "bg-green-500 text-white",
-  Electric: "bg-yellow-400 text-black",
+  Lightning: "bg-yellow-400 text-black",
   Psychic: "bg-pink-500 text-white",
   Fighting: "bg-red-600 text-white",
-  Normal: "bg-stone-400 text-white",
+  Colorless: "bg-stone-400 text-white",
   Flying: "bg-sky-300 text-slate-800",
   Poison: "bg-purple-500 text-white",
   Ground: "bg-amber-600 text-white",
@@ -49,9 +49,9 @@ export const POKEMON_TYPE_COLORS: Record<string, string> = {
   Bug: "bg-lime-500 text-white",
   Ghost: "bg-indigo-600 text-white",
   Dragon: "bg-indigo-700 text-white",
-  Steel: "bg-slate-400 text-white",
+  Metal: "bg-slate-400 text-white",
   Ice: "bg-cyan-300 text-slate-800",
-  Dark: "bg-slate-800 text-white",
+  Darkness: "bg-slate-800 text-white",
   Fairy: "bg-pink-300 text-slate-800",
 };
 
@@ -60,10 +60,10 @@ export const POKEMON_TYPE_ICONS: Record<string, string> = {
   Fire: "🔥",
   Water: "💧",
   Grass: "🌿",
-  Electric: "⚡",
+  Lightning: "⚡",
   Psychic: "🔮",
   Fighting: "🥊",
-  Normal: "⚪",
+  Colorless: "⚪",
   Flying: "🕊️",
   Poison: "☠️",
   Ground: "⛰️",
@@ -71,9 +71,9 @@ export const POKEMON_TYPE_ICONS: Record<string, string> = {
   Bug: "🐛",
   Ghost: "👻",
   Dragon: "🐉",
-  Steel: "⚙️",
+  Metal: "⚙️",
   Ice: "❄️",
-  Dark: "🌑",
+  Darkness: "🌑",
   Fairy: "✨",
 };
 

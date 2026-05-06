@@ -3,8 +3,37 @@ import { fetchProductsLive } from "@/lib/data";
 import type { Product } from "@/lib/types";
 import { getImageUrl, resolveImageUrl } from "@/lib/cardImageCache";
 import { createRateLimiter } from "@/lib/rateLimit";
+import * as fs from "fs";
+import * as path from "path";
 
 const rateLimiter = createRateLimiter({ maxRequests: 30, windowMs: 60_000 });
+
+// Load pokemon types from file - use code|type|series as key (like image map)
+function getPokemonTypes(): Record<string, string> {
+  try {
+    const typesPath = path.join(process.cwd(), "src", "data", "pokemon-types.json");
+    if (fs.existsSync(typesPath)) {
+      const rawData = JSON.parse(fs.readFileSync(typesPath, "utf-8"));
+      // Convert from id-based to composite-key-based
+      const productsPath = path.join(process.cwd(), "src", "data", "products.json");
+      if (fs.existsSync(productsPath)) {
+        const products = JSON.parse(fs.readFileSync(productsPath, "utf-8"));
+        const typeMap: Record<string, string> = {};
+        for (const p of products) {
+          if (rawData[p.id]) {
+            const compositeKey = `${p.code}|${p.type}|${p.series}`;
+            typeMap[compositeKey] = rawData[p.id];
+          }
+        }
+        return typeMap;
+      }
+      return rawData;
+    }
+  } catch (e) {
+    console.warn("Failed to load pokemon-types.json:", e);
+  }
+  return {};
+}
 
 export const revalidate = 30;
 
@@ -36,13 +65,17 @@ export async function GET(req: NextRequest) {
       console.error("fetchProductsLive returned empty.");
     }
 
-    // First pass: assign cached images
+    // Load pokemon types
+    const pokemonTypes = getPokemonTypes();
+
+    // First pass: assign cached images and pokemon types
     const withId = products.map((p, i) => {
       const id = p.id || `${p.code}-${p.type}-${i}`;
       const compositeKey = `${p.code}|${p.type}|${p.series}`;
       return {
         ...p,
         id,
+        type: pokemonTypes[compositeKey] || p.type, // Use pokemon type from file, fallback to existing type
         imageUrl: getImageUrl(id) || getImageUrl(compositeKey) || undefined,
       };
     });
