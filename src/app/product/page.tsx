@@ -50,9 +50,10 @@ function ProductDetailContent() {
   useEffect(() => {
     fetch("/api/products")
       .then((r) => r.json())
-      .then((data: Product[]) => {
-        setAllProducts(data);
-        const found = data.find((p) => p.id === id);
+      .then((data: Product[] | { data: Product[] }) => {
+        const products = Array.isArray(data) ? data : data?.data || [];
+        setAllProducts(products);
+        const found = products.find((p) => p.id === id);
         setProduct(found || null);
         setLoading(false);
       })

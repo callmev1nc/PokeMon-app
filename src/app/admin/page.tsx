@@ -111,12 +111,12 @@ export default function AdminPage() {
         // Fallback to static JSON if Google Sheets not configured
         const fallback = await fetch("/api/products");
         const fallbackData = await fallback.json();
-        setProducts(fallbackData);
+        setProducts(Array.isArray(fallbackData) ? fallbackData : fallbackData?.data || []);
       }
     } catch {
       const fallback = await fetch("/api/products");
       const fallbackData = await fallback.json();
-      setProducts(fallbackData);
+      setProducts(Array.isArray(fallbackData) ? fallbackData : fallbackData?.data || []);
     } finally {
       setLoading(false);
     }

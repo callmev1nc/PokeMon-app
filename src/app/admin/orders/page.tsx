@@ -120,7 +120,7 @@ export default function AdminOrdersPage() {
 
   useEffect(() => {
     fetchOrders();
-    fetch("/api/products").then((r) => r.json()).then(setProducts).catch(() => {});
+    fetch("/api/products").then((r) => r.json()).then((data) => setProducts(Array.isArray(data) ? data : data?.data || [])).catch(() => {});
   }, []);
 
   async function fetchOrders() {

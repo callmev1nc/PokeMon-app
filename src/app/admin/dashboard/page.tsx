@@ -161,10 +161,11 @@ export default function DashboardPage() {
       ),
       fetch("/api/products").then((r) => r.json()),
     ])
-      .then(([orders, products]: [Order[], Product[]]) => {
+      .then(([orders, productsData]: [Order[], Product[] | { data: Product[] }]) => {
+        const products = Array.isArray(productsData) ? productsData : productsData?.data || [];
         setAllOrders(orders || []);
-        setAllProducts(products || []);
-        setStats(computeStats(orders || [], products || []));
+        setAllProducts(products);
+        setStats(computeStats(orders || [], products));
       })
       .catch(() => {})
       .finally(() => setLoading(false));

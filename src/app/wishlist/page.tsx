@@ -27,7 +27,7 @@ export default function WishlistPage() {
   useEffect(() => {
     fetch("/api/products")
       .then((r) => r.json())
-      .then((data: Product[]) => setProducts(data))
+      .then((data: Product[] | { data: Product[] }) => setProducts(Array.isArray(data) ? data : data?.data || []))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
