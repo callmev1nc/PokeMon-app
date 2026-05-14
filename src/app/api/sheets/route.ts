@@ -411,6 +411,20 @@ export async function POST(req: NextRequest) {
         }
         return NextResponse.json(updateCustomer(row, filterFields(data, CUSTOMER_UPDATABLE_FIELDS)));
       }
+      case "nhapKho": {
+        const code = String(body.code || "").trim();
+        const quantity = Number(body.quantity);
+        if (!code || !quantity || quantity <= 0) {
+          return NextResponse.json({ error: "Invalid code or quantity" }, { status: 400 });
+        }
+        const STOCK_URL = process.env.GOOGLE_STOCK_URL || "";
+        if (!STOCK_URL) {
+          return NextResponse.json({ error: "Stock sheet not configured" }, { status: 500 });
+        }
+        logAction("nhapKho", "admin", `${code}: +${quantity}`);
+        const result = await postSheet(STOCK_URL, { action: "nhapKho", code, quantity });
+        return NextResponse.json(result || { error: "Failed to update" });
+      }
       default:
         return NextResponse.json({ error: "Bad request" }, { status: 400 });
     }

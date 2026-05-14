@@ -1,9 +1,11 @@
-export default function AdminNav({ active }: { active: "dashboard" | "products" | "orders" | "customers" | "validate" }) {
+export default function AdminNav({ active }: { active: "dashboard" | "products" | "orders" | "customers" | "validate" | "qr" | "nhap-kho" }) {
   const links = [
     { href: "/admin/dashboard", label: "Dashboard", key: "dashboard" as const },
     { href: "/admin", label: "Sản phẩm", key: "products" as const },
     { href: "/admin/orders", label: "Đơn hàng", key: "orders" as const },
     { href: "/admin/customers", label: "Khách hàng", key: "customers" as const },
+    { href: "/admin/nhap-kho", label: "Nhập kho", key: "nhap-kho" as const },
+    { href: "/admin/qr", label: "QR Code", key: "qr" as const },
     { href: "/admin/validate", label: "Validate", key: "validate" as const },
   ];
 

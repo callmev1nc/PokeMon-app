@@ -49,6 +49,8 @@ function handlePost(body) {
       return json(updateStock(body.code, body.type, body.quantity));
     case "addProduct":
       return json(addProduct(body.product));
+    case "nhapKho":
+      return json(nhapKho(body.code, body.quantity));
     default:
       return json({ error: "Unknown action" });
   }
@@ -257,6 +259,33 @@ function mapDisplayType(rawType) {
   if (t.includes("ex")) return "EX";
   if (t.includes("prize")) return "Prize Card";
   return "Normal";
+}
+
+// NHẬP KHO: Increase NHẬP and TỒN for a product by code
+function nhapKho(code, quantity) {
+  var sheet = getStockSheet();
+  if (!sheet) return { error: "Sheet not found" };
+
+  var data = sheet.getDataRange().getValues();
+  var updated = 0;
+  for (var i = 2; i < data.length; i++) {
+    var rowCode = String(data[i][0] || "").trim();
+    if (rowCode === code) {
+      // Update NHẬP (column J = col 10)
+      var currentNhap = Number(data[i][9]) || 0;
+      sheet.getRange(i + 1, 10).setValue(currentNhap + quantity);
+
+      // Update TỒN (column K = col 11) if not a formula
+      var tonCell = sheet.getRange(i + 1, 11);
+      var formula = tonCell.getFormula();
+      if (!formula) {
+        var currentTon = Number(data[i][10]) || 0;
+        tonCell.setValue(currentTon + quantity);
+      }
+      updated++;
+    }
+  }
+  return { success: true, updated: updated };
 }
 
 function json(data) {
