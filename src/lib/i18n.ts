@@ -66,6 +66,10 @@ const translations: Record<Locale, Record<string, string>> = {
     // Customer info
     "customer.title": "Thông tin giao hàng",
     "customer.subtitle": "Vui lòng điền thông tin trước khi thanh toán",
+    "customer.deliveryMethod": "Hình thức nhận hàng",
+    "customer.shipping": "Giao hàng",
+    "customer.shippingFee": "Phí giao hàng: 15.000 đ",
+    "customer.pickup": "Tự đến lấy",
     "customer.name": "Tên",
     "customer.namePlaceholder": "Họ và tên",
     "customer.nameError": "Vui lòng nhập họ tên",
@@ -229,6 +233,10 @@ const translations: Record<Locale, Record<string, string>> = {
     // Customer info
     "customer.title": "Shipping Information",
     "customer.subtitle": "Please fill in your details before checkout",
+    "customer.deliveryMethod": "Delivery method",
+    "customer.shipping": "Shipping",
+    "customer.shippingFee": "Shipping fee: 15,000 đ",
+    "customer.pickup": "Pick up",
     "customer.name": "Name",
     "customer.namePlaceholder": "Full name",
     "customer.nameError": "Please enter your name",

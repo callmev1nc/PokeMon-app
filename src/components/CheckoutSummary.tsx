@@ -10,6 +10,11 @@ export default function CheckoutSummary() {
   const total = getCartTotal(items);
   const locale = useLocaleStore((s) => s.locale);
 
+  const customerStr = typeof window !== "undefined" ? sessionStorage.getItem("customerInfo") : null;
+  const customer = customerStr ? JSON.parse(customerStr) : null;
+  const isShipping = customer?.deliveryMethod !== "pickup";
+  const shippingCost = isShipping ? 15000 : 0;
+
   const displayPrice = (price: number | null): string => {
     if (price === null) return t("contact.price", locale);
     return formatPrice(price);
@@ -68,10 +73,16 @@ export default function CheckoutSummary() {
         ))}
       </div>
       <div className="px-5 py-4 bg-gradient-to-r from-amber-500/5 to-transparent border-t border-slate-200 dark:border-amber-500/10">
+        {shippingCost > 0 && (
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-slate-500 dark:text-slate-400">{t("customer.shippingFee", locale)}</span>
+            <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">{formatNumber(shippingCost)} đ</span>
+          </div>
+        )}
         <div className="flex items-center justify-between">
           <span className="text-sm font-semibold text-slate-600 dark:text-slate-400">{t("cart.total", locale)}</span>
           <span className="text-2xl font-bold text-amber-600 dark:text-amber-400" style={{ fontFamily: "var(--font-display)", letterSpacing: "0.05em" }}>
-            {formatNumber(total * 1000)} đ
+            {formatNumber(total * 1000 + shippingCost)} đ
           </span>
         </div>
       </div>

@@ -201,7 +201,7 @@ async function main() {
   console.log(dryRun ? "DRY RUN - Preview only" : "UPDATING ORDERS");
   console.log(`${"=".repeat(60)}\n`);
 
-  const updates: { row: number; orderCode: string; buyPrice: number; details: string[] }[] = [];
+  const updates: { row: number; orderCode: string; buyPrice: number; shippingCost: number; details: string[] }[] = [];
   const allUnmatched = new Set<string>();
 
   for (const order of orders) {
@@ -218,12 +218,14 @@ async function main() {
     console.log(`[${order._row}] ${order.orderCode}`);
     console.log(`  GIÁ BÁN: ${order.sellPrice.toLocaleString()}đ`);
     console.log(`  GIÁ SHIP: ${(order.shippingCost || 0).toLocaleString()}đ`);
+    console.log(`  GIÁ SHIP (new): 15,000đ`);
     console.log(`  GIÁ MUA (new): ${buyPrice.toLocaleString()}đ`);
     console.log(`  LỢI NHUẬN (will be): ${profit.toLocaleString()}đ`);
     for (const d of details) console.log(d);
     console.log();
 
-    updates.push({ row: order._row, orderCode: order.orderCode, buyPrice, details });
+    const shippingCost = 15000;
+    updates.push({ row: order._row, orderCode: order.orderCode, buyPrice, shippingCost, details });
   }
 
   if (allUnmatched.size > 0) {
@@ -248,7 +250,7 @@ async function main() {
       const result = await postToSheet<{ success: boolean }>(BUSINESS_URL, {
         action: "updateOrder",
         row: u.row,
-        data: { buyPrice: u.buyPrice },
+        data: { buyPrice: u.buyPrice, shippingCost: u.shippingCost },
       });
 
       if (result?.success) {

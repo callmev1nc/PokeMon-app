@@ -26,7 +26,7 @@ export default function CheckoutPage() {
       const customerStr = sessionStorage.getItem("customerInfo");
       const customer = customerStr
         ? JSON.parse(customerStr)
-        : { name: "", phone: "", newAddress: "", oldAddress: "", notes: "" };
+        : { name: "", phone: "", newAddress: "", oldAddress: "", notes: "", deliveryMethod: "shipping" };
 
       const productDesc = items
         .map((item) => {
@@ -35,6 +35,9 @@ export default function CheckoutPage() {
         })
         .join(", ");
 
+      const isShipping = customer.deliveryMethod !== "pickup";
+      const shippingCost = isShipping ? 15000 : 0;
+
       const order = {
         timestamp: new Date().toISOString(),
         orderDate: new Date().toLocaleDateString("vi-VN"),
@@ -42,12 +45,12 @@ export default function CheckoutPage() {
         products: productDesc,
         customerName: customer.name,
         phone: customer.phone,
-        address: customer.newAddress || customer.oldAddress,
+        address: isShipping ? (customer.newAddress || customer.oldAddress) : "Tự đến lấy",
         oldAddress: customer.oldAddress || "",
         notes: customer.notes || "",
         sellPrice: total * 1000,
         buyPrice: 0,
-        shippingCost: 0,
+        shippingCost,
         profit: 0,
         paymentStatus: "Chưa thanh toán" as const,
       };

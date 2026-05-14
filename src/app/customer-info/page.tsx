@@ -19,6 +19,7 @@ export default function CustomerInfoPage() {
   const [newAddress, setNewAddress] = useState("");
   const [oldAddress, setOldAddress] = useState("");
   const [notes, setNotes] = useState("");
+  const [deliveryMethod, setDeliveryMethod] = useState<"shipping" | "pickup">("shipping");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -55,8 +56,9 @@ export default function CustomerInfoPage() {
     const phoneErr = validatePhone(phone, locale);
     if (phoneErr) errs.phone = phoneErr;
     if (!oldAddress.trim()) errs.oldAddress = t("customer.oldAddressError", locale);
+    if (deliveryMethod === "shipping" && !oldAddress.trim()) errs.oldAddress = t("customer.oldAddressError", locale);
     setFieldErrors(errs);
-    setTouched({ name: true, phone: true, oldAddress: true });
+    setTouched({ name: true, phone: true, oldAddress: deliveryMethod === "shipping" });
 
     if (Object.keys(errs).length > 0) return;
 
@@ -80,7 +82,7 @@ export default function CustomerInfoPage() {
 
       sessionStorage.setItem(
         "customerInfo",
-        JSON.stringify({ name, phone, newAddress, oldAddress, notes })
+        JSON.stringify({ name, phone, newAddress, oldAddress, notes, deliveryMethod })
       );
 
       window.location.href = "/checkout";
@@ -128,6 +130,45 @@ export default function CustomerInfoPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="vault-card p-5 md:p-6 space-y-5">
+          {/* Delivery Method Toggle */}
+          <div>
+            <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-2 uppercase tracking-wide">
+              {t("customer.deliveryMethod", locale)}
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setDeliveryMethod("shipping")}
+                className={`flex flex-col items-center gap-1 py-3 px-3 rounded-xl border-2 transition-all text-sm font-semibold ${
+                  deliveryMethod === "shipping"
+                    ? "border-amber-400 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                    : "border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/30 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600"
+                }`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+                </svg>
+                <span>{t("customer.shipping", locale)}</span>
+                <span className="text-[10px] font-normal opacity-70">+15.000 đ</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => { setDeliveryMethod("pickup"); setNewAddress(""); setOldAddress(""); setNotes(""); }}
+                className={`flex flex-col items-center gap-1 py-3 px-3 rounded-xl border-2 transition-all text-sm font-semibold ${
+                  deliveryMethod === "pickup"
+                    ? "border-amber-400 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                    : "border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/30 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600"
+                }`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z" />
+                </svg>
+                <span>{t("customer.pickup", locale)}</span>
+                <span className="text-[10px] font-normal opacity-70">Miễn phí</span>
+              </button>
+            </div>
+          </div>
+
           <div>
             <label htmlFor="name" className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5 uppercase tracking-wide">
               {t("customer.name", locale)} <span className="text-amber-400">*</span>
@@ -178,6 +219,7 @@ export default function CustomerInfoPage() {
             )}
           </div>
 
+          {deliveryMethod === "shipping" && (<>
           <div>
             <label htmlFor="newAddress" className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5 uppercase tracking-wide">
               {t("customer.newAddress", locale)}
@@ -228,6 +270,7 @@ export default function CustomerInfoPage() {
               placeholder={t("customer.notesPlaceholder", locale)}
             />
           </div>
+          </>)}
 
           {error && (
             <div className="text-sm text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-500/10 px-4 py-3 rounded-xl border border-red-100 dark:border-red-500/20 font-medium">
