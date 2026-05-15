@@ -29,10 +29,12 @@ export default function QRPrintPage() {
   }, []);
 
   const groups = ["all", ...new Set(products.map((p) => p.group))];
+  const exactCodeMatch = search.trim() ? products.find((p) => p.code.toUpperCase() === search.trim().toUpperCase()) : null;
   const filtered = products.filter((p) => {
     if (filter !== "all" && p.group !== filter) return false;
-    if (search && !p.name.toLowerCase().includes(search.toLowerCase()) && !p.code.toLowerCase().includes(search.toLowerCase())) return false;
-    return true;
+    if (!search) return true;
+    if (exactCodeMatch) return p.code === exactCodeMatch.code;
+    return p.name.toLowerCase().includes(search.toLowerCase()) || p.code.toLowerCase().includes(search.toLowerCase());
   });
 
   const generateAllQR = async () => {
@@ -121,12 +123,12 @@ export default function QRPrintPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Tìm theo tên hoặc mã..."
-              className="px-4 py-2 border border-slate-200 rounded-xl text-sm flex-1"
+              className="px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm flex-1 text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-400"
             />
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              className="px-4 py-2 border border-slate-200 rounded-xl text-sm"
+              className="px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-200"
             >
               {groups.map((g) => (
                 <option key={g} value={g}>{g === "all" ? "Tất cả nhóm" : g}</option>
