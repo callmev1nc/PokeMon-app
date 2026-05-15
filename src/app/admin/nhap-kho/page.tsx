@@ -39,6 +39,12 @@ export default function NhapKhoPage() {
           setProducts(map);
         }
       });
+    return () => {
+      if (scannerRef.current) {
+        try { scannerRef.current.stop(); } catch {}
+        scannerRef.current = null;
+      }
+    };
   }, []);
 
   const startScan = async () => {
@@ -121,7 +127,17 @@ export default function NhapKhoPage() {
 
           {/* Scanner */}
           <div className="space-y-3">
-            <div id="qr-reader" className="w-full rounded-xl overflow-hidden bg-black" />
+            <div id="qr-reader" className={`w-full rounded-xl overflow-hidden ${scanning ? "bg-black" : "bg-slate-100 dark:bg-slate-700 flex items-center justify-center min-h-[200px]"}`}>
+              {!scanning && (
+                <div className="text-center text-slate-400 dark:text-slate-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 mx-auto mb-2 opacity-50" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5z" />
+                  </svg>
+                  <p className="text-sm font-medium">Nhấn "Quét QR Code" để bắt đầu</p>
+                </div>
+              )}
+            </div>
 
             <div className="flex gap-2">
               {!scanning ? (

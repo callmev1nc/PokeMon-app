@@ -147,11 +147,13 @@ export default function CheckoutPage() {
           </div>
         )}
 
-        <QRCodeSection
-          onDone={() => {
-            window.location.href = "/";
-          }}
-        />
+        {submitted && (
+          <QRCodeSection
+            onDone={() => {
+              window.location.href = "/";
+            }}
+          />
+        )}
       </main>
     </>
   );
