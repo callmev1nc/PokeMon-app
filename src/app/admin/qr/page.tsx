@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import AdminNav from "@/components/AdminNav";
 import QRCode from "qrcode";
+import html2pdf from "html2pdf.js";
 
 interface Product {
   code: string;
@@ -17,6 +18,7 @@ export default function QRPrintPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
+  const [pdfLoading, setPdfLoading] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -37,7 +39,7 @@ export default function QRPrintPage() {
     return p.name.toLowerCase().includes(search.toLowerCase()) || p.code.toLowerCase().includes(search.toLowerCase());
   });
 
-  const generateAllQR = async () => {
+  const renderQRToCanvas = async () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -86,14 +88,40 @@ export default function QRPrintPage() {
       const name = p.name.length > 20 ? p.name.slice(0, 18) + ".." : p.name;
       ctx.fillText(name, x + qrSize / 2, y + qrSize + 30);
     }
+  };
 
-    // Open print window
+  const handlePrint = async () => {
+    await renderQRToCanvas();
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
     const dataUrl = canvas.toDataURL("image/png");
     const win = window.open("", "_blank");
     if (win) {
       win.document.write(`<html><head><title>QR Codes</title><style>@media print { @page { margin: 10mm; } }</style></head><body style="margin:0;display:flex;justify-content:center;"><img src="${dataUrl}" style="max-width:100%;height:auto;"></body></html>`);
       win.document.close();
       win.onload = () => win.print();
+    }
+  };
+
+  const downloadPDF = async () => {
+    setPdfLoading(true);
+    try {
+      await renderQRToCanvas();
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      await html2pdf()
+        .from(canvas)
+        .set({
+          margin: [5, 5, 5, 5],
+          filename: `qr-codes-${new Date().toISOString().slice(0, 10)}.pdf`,
+          image: { type: "png", quality: 1 },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        })
+        .save();
+    } finally {
+      setPdfLoading(false);
     }
   };
 
@@ -108,13 +136,22 @@ export default function QRPrintPage() {
               <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">QR Codes - In mã sản phẩm</h2>
               <p className="text-sm text-slate-500">{filtered.length} sản phẩm</p>
             </div>
-            <button
-              onClick={generateAllQR}
-              disabled={filtered.length === 0}
-              className="px-5 py-2.5 bg-slate-800 text-white rounded-xl text-sm font-semibold hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              In QR Codes ({filtered.length})
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={handlePrint}
+                disabled={filtered.length === 0}
+                className="px-5 py-2.5 bg-slate-800 text-white rounded-xl text-sm font-semibold hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                🖨️ In QR Codes ({filtered.length})
+              </button>
+              <button
+                onClick={downloadPDF}
+                disabled={filtered.length === 0 || pdfLoading}
+                className="px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {pdfLoading ? "Đang tạo PDF..." : "📄 Tải PDF"}
+              </button>
+            </div>
           </div>
 
           <div className="flex gap-3 mb-4">
