@@ -43,13 +43,12 @@ export default function QRPrintPage() {
     const pageH = 148;
     const margin = 3;
     const usableW = pageW - margin * 2;
-    const usableH = pageH - margin * 2;
     const itemsPerPage = 3;
-    const dpi = 4;
-    const canvasW = Math.round(usableW * dpi * 3.78);
-    const canvasH = Math.round(usableH * dpi * 3.78);
-    const slotH = canvasH / itemsPerPage;
-    const qrSize = Math.min(canvasW * 0.7, slotH * 0.75);
+    const qrPx = 300;
+    const labelPx = 50;
+    const slotH = qrPx + labelPx;
+    const canvasW = qrPx + 40;
+    const scale = usableW / canvasW;
 
     const win = window.open("", "_blank");
     if (!win) return;
@@ -63,47 +62,46 @@ export default function QRPrintPage() {
 
     for (let start = 0; start < filtered.length; start += itemsPerPage) {
       const pageItems = filtered.slice(start, start + itemsPerPage);
+      const rows = pageItems.length;
 
       const canvas = document.createElement("canvas");
       canvas.width = canvasW;
-      canvas.height = Math.ceil(slotH * pageItems.length);
+      canvas.height = slotH * rows;
       const ctx = canvas.getContext("2d")!;
       ctx.fillStyle = "#fff";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      for (let i = 0; i < pageItems.length; i++) {
+      for (let i = 0; i < rows; i++) {
         const p = pageItems[i];
-        const cx = canvasW / 2;
-        const cy = i * slotH + slotH / 2;
-        const qrX = cx - qrSize / 2;
-        const qrY = cy - qrSize / 2 - 10;
+        const x = (canvasW - qrPx) / 2;
+        const y = i * slotH + 8;
 
         try {
-          const qrDataUrl = await QRCode.toDataURL(p.code, { width: Math.round(qrSize), margin: 1 });
+          const qrDataUrl = await QRCode.toDataURL(p.code, { width: qrPx, margin: 1 });
           const img = new Image();
           img.src = qrDataUrl;
           await new Promise<void>((resolve) => {
             img.onload = () => {
-              ctx.drawImage(img, qrX, qrY, qrSize, qrSize);
+              ctx.drawImage(img, x, y, qrPx, qrPx);
               resolve();
             };
           });
         } catch {
           ctx.fillStyle = "#fee";
-          ctx.fillRect(qrX, qrY, qrSize, qrSize);
+          ctx.fillRect(x, y, qrPx, qrPx);
         }
 
         ctx.fillStyle = "#1e293b";
-        ctx.font = `bold ${Math.round(qrSize * 0.08)}px monospace`;
+        ctx.font = "bold 20px monospace";
         ctx.textAlign = "center";
-        ctx.fillText(p.code, cx, qrY + qrSize + qrSize * 0.09);
-        ctx.font = `${Math.round(qrSize * 0.06)}px sans-serif`;
+        ctx.fillText(p.code, canvasW / 2, y + qrPx + 22);
+        ctx.font = "14px sans-serif";
         ctx.fillStyle = "#64748b";
-        const name = p.name.length > 30 ? p.name.slice(0, 28) + ".." : p.name;
-        ctx.fillText(name, cx, qrY + qrSize + qrSize * 0.17);
+        const name = p.name.length > 28 ? p.name.slice(0, 26) + ".." : p.name;
+        ctx.fillText(name, canvasW / 2, y + qrPx + 42);
       }
 
-      win.document.write(`<div class="page"><img src="${canvas.toDataURL("image/png")}" style="width:${usableW}mm;height:${usableH}mm;"></div>`);
+      win.document.write(`<div class="page"><img src="${canvas.toDataURL("image/png")}" style="width:${canvasW * scale}mm;height:${slotH * rows * scale}mm;"></div>`);
     }
 
     win.document.write("</body></html>");
@@ -116,65 +114,62 @@ export default function QRPrintPage() {
     try {
       const { default: jsPDF } = await import("jspdf");
 
-      // A6: 105 × 148 mm — 3 QR codes stacked vertically, full page
       const pageW = 105;
       const pageH = 148;
       const margin = 3;
       const usableW = pageW - margin * 2;
-      const usableH = pageH - margin * 2;
       const itemsPerPage = 3;
-      const dpi = 4;
-      const canvasW = Math.round(usableW * dpi * 3.78);
-      const canvasH = Math.round(usableH * dpi * 3.78);
-      const slotH = canvasH / itemsPerPage;
-      const qrSize = Math.min(canvasW * 0.7, slotH * 0.75);
+      const qrPx = 300;
+      const labelPx = 50;
+      const slotH = qrPx + labelPx;
+      const canvasW = qrPx + 40;
+      const scale = usableW / canvasW;
 
       const doc = new jsPDF({ unit: "mm", format: [pageW, pageH], orientation: "portrait" });
 
       for (let start = 0; start < filtered.length; start += itemsPerPage) {
         const pageItems = filtered.slice(start, start + itemsPerPage);
+        const rows = pageItems.length;
 
         const canvas = document.createElement("canvas");
         canvas.width = canvasW;
-        canvas.height = Math.ceil(slotH * pageItems.length);
+        canvas.height = slotH * rows;
         const ctx = canvas.getContext("2d")!;
         ctx.fillStyle = "#fff";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        for (let i = 0; i < pageItems.length; i++) {
+        for (let i = 0; i < rows; i++) {
           const p = pageItems[i];
-          const cx = canvasW / 2;
-          const cy = i * slotH + slotH / 2;
-          const qrX = cx - qrSize / 2;
-          const qrY = cy - qrSize / 2 - 10;
+          const x = (canvasW - qrPx) / 2;
+          const y = i * slotH + 8;
 
           try {
-            const qrDataUrl = await QRCode.toDataURL(p.code, { width: Math.round(qrSize), margin: 1 });
+            const qrDataUrl = await QRCode.toDataURL(p.code, { width: qrPx, margin: 1 });
             const img = new Image();
             img.src = qrDataUrl;
             await new Promise<void>((resolve) => {
               img.onload = () => {
-                ctx.drawImage(img, qrX, qrY, qrSize, qrSize);
+                ctx.drawImage(img, x, y, qrPx, qrPx);
                 resolve();
               };
             });
           } catch {
             ctx.fillStyle = "#fee";
-            ctx.fillRect(qrX, qrY, qrSize, qrSize);
+            ctx.fillRect(x, y, qrPx, qrPx);
           }
 
           ctx.fillStyle = "#1e293b";
-          ctx.font = `bold ${Math.round(qrSize * 0.08)}px monospace`;
+          ctx.font = "bold 20px monospace";
           ctx.textAlign = "center";
-          ctx.fillText(p.code, cx, qrY + qrSize + qrSize * 0.09);
-          ctx.font = `${Math.round(qrSize * 0.06)}px sans-serif`;
+          ctx.fillText(p.code, canvasW / 2, y + qrPx + 22);
+          ctx.font = "14px sans-serif";
           ctx.fillStyle = "#64748b";
-          const name = p.name.length > 30 ? p.name.slice(0, 28) + ".." : p.name;
-          ctx.fillText(name, cx, qrY + qrSize + qrSize * 0.17);
+          const name = p.name.length > 28 ? p.name.slice(0, 26) + ".." : p.name;
+          ctx.fillText(name, canvasW / 2, y + qrPx + 42);
         }
 
         if (start > 0) doc.addPage();
-        doc.addImage(canvas.toDataURL("image/PNG"), "PNG", margin, margin, usableW, usableH * (pageItems.length / itemsPerPage));
+        doc.addImage(canvas.toDataURL("image/PNG"), "PNG", margin, margin, canvasW * scale, slotH * rows * scale);
       }
 
       doc.save(`qr-codes-A6-${new Date().toISOString().slice(0, 10)}.pdf`);
