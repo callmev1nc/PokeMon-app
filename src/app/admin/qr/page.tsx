@@ -38,17 +38,18 @@ export default function QRPrintPage() {
   });
 
   const handlePrint = async () => {
-    // A6: 105 × 148 mm — 3 QR codes stacked vertically, full page
+    // A6: 105 × 148 mm — 3 QR codes stacked vertically, fit within page
     const pageW = 105;
     const pageH = 148;
     const margin = 3;
-    const usableW = pageW - margin * 2;
+    const usableH = pageH - margin * 2;
     const itemsPerPage = 3;
     const qrPx = 300;
     const labelPx = 50;
     const slotH = qrPx + labelPx;
     const canvasW = qrPx + 40;
-    const scale = usableW / canvasW;
+    // Scale so 3 slots fit within usable height
+    const scale = usableH / (slotH * itemsPerPage);
 
     const win = window.open("", "_blank");
     if (!win) return;
@@ -117,13 +118,13 @@ export default function QRPrintPage() {
       const pageW = 105;
       const pageH = 148;
       const margin = 3;
-      const usableW = pageW - margin * 2;
+      const usableH = pageH - margin * 2;
       const itemsPerPage = 3;
       const qrPx = 300;
       const labelPx = 50;
       const slotH = qrPx + labelPx;
       const canvasW = qrPx + 40;
-      const scale = usableW / canvasW;
+      const scale = usableH / (slotH * itemsPerPage);
 
       const doc = new jsPDF({ unit: "mm", format: [pageW, pageH], orientation: "portrait" });
 
