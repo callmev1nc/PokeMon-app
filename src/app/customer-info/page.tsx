@@ -55,7 +55,6 @@ export default function CustomerInfoPage() {
     if (!name.trim()) errs.name = t("customer.nameError", locale);
     const phoneErr = validatePhone(phone, locale);
     if (phoneErr) errs.phone = phoneErr;
-    if (!oldAddress.trim()) errs.oldAddress = t("customer.oldAddressError", locale);
     if (deliveryMethod === "shipping" && !oldAddress.trim()) errs.oldAddress = t("customer.oldAddressError", locale);
     setFieldErrors(errs);
     setTouched({ name: true, phone: true, oldAddress: deliveryMethod === "shipping" });
