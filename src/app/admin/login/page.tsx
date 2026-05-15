@@ -36,16 +36,16 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
       <div className="w-full max-w-sm animate-fade-in">
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-xl p-8">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-xl p-8">
           <div className="text-center mb-6">
             <img
               src="/logo.png"
               alt="Pokemon"
               className="h-16 w-auto mx-auto mb-3 rounded-xl"
             />
-            <h1 className="text-xl font-bold text-slate-800">
+            <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">
               Quản lý
             </h1>
             <p className="text-sm text-slate-400 mt-1">
@@ -57,7 +57,7 @@ export default function AdminLoginPage() {
             <div>
               <label
                 htmlFor="username"
-                className="block text-sm font-medium text-slate-600 mb-1.5"
+                className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5"
               >
                 Tên đăng nhập
               </label>
@@ -68,14 +68,14 @@ export default function AdminLoginPage() {
                 onChange={(e) => setUsername(e.target.value)}
                 required
                 autoComplete="username"
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
+                className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
               />
             </div>
 
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-slate-600 mb-1.5"
+                className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5"
               >
                 Mật khẩu
               </label>
@@ -86,12 +86,12 @@ export default function AdminLoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 autoComplete="current-password"
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
+                className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors"
               />
             </div>
 
             {error && (
-              <p className="text-sm text-red-600 bg-red-50 px-4 py-2.5 rounded-xl border border-red-100">
+              <p className="text-sm text-red-600 bg-red-50 dark:bg-red-900/20 px-4 py-2.5 rounded-xl border border-red-100 dark:border-red-800/30">
                 {error}
               </p>
             )}
@@ -109,7 +109,7 @@ export default function AdminLoginPage() {
         <div className="text-center mt-4">
           <a
             href="/"
-            className="text-sm text-slate-400 hover:text-slate-600 transition-colors"
+            className="text-sm text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
           >
             &larr; Quay lại cửa hàng
           </a>

@@ -92,7 +92,7 @@ export default function ProductCard({
               priority={priority}
             />
             {/* Hover overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </div>
         </a>
         <button
@@ -168,7 +168,7 @@ export default function ProductCard({
       <div className="px-4 pb-4 flex items-center gap-2">
         {!isOutOfStock && !noPrice && (
           <>
-            <div className="flex items-center bg-slate-100 dark:bg-slate-800/50 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700/50">
+            <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
               <button
                 onClick={() => setQty(Math.max(1, qty - 1))}
                 className="px-3 py-2.5 text-slate-400 hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700/50 text-sm font-bold transition-colors min-w-[36px]"

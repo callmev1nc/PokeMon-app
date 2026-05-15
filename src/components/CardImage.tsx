@@ -78,7 +78,7 @@ export default function CardImage({
   return (
     <div
       ref={ref}
-      className="aspect-[2.5/3.5] bg-slate-100 dark:bg-slate-900 rounded-xl overflow-hidden relative"
+      className="aspect-[2.5/3.5] bg-slate-100 dark:bg-slate-800 rounded-xl overflow-hidden relative"
     >
       {showPlaceholder && (
         <img
@@ -103,7 +103,7 @@ export default function CardImage({
         fetchPriority={priority ? "high" : "auto"}
         onLoad={() => setHighLoaded(true)}
         onError={() => setError(true)}
-        className={`w-full h-full object-contain transition-opacity duration-500 ${
+        className={`w-full h-full object-contain transition-opacity duration-500 dark:brightness-110 ${
           highLoaded ? "opacity-100" : "opacity-0"
         }`}
       />
