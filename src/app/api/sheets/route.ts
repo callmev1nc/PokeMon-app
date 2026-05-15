@@ -414,6 +414,8 @@ export async function POST(req: NextRequest) {
       case "nhapKho": {
         const code = String(body.code || "").trim();
         const quantity = Number(body.quantity);
+        const series = body.series ? String(body.series).trim() : undefined;
+        const type = body.type ? String(body.type).trim() : undefined;
         if (!code || !quantity || quantity <= 0) {
           return NextResponse.json({ error: "Invalid code or quantity" }, { status: 400 });
         }
@@ -421,8 +423,8 @@ export async function POST(req: NextRequest) {
         if (!STOCK_URL) {
           return NextResponse.json({ error: "Stock sheet not configured" }, { status: 500 });
         }
-        logAction("nhapKho", "admin", `${code}: +${quantity}`);
-        const result = await postSheet(STOCK_URL, { action: "nhapKho", code, quantity });
+        logAction("nhapKho", "admin", `${code}${series ? ` (${series}/${type})` : ""}: +${quantity}`);
+        const result = await postSheet(STOCK_URL, { action: "nhapKho", code, quantity, series, type });
         return NextResponse.json(result || { error: "Failed to update" });
       }
       default:

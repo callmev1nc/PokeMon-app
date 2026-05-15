@@ -261,8 +261,8 @@ function mapDisplayType(rawType) {
   return "Normal";
 }
 
-// NHẬP KHO: Increase NHẬP and TỒN for a product by code
-function nhapKho(code, quantity) {
+// NHẬP KHO: Increase NHẬP and TỒN for a product by code (+ optional series/type)
+function nhapKho(code, quantity, series, type) {
   var sheet = getStockSheet();
   if (!sheet) return { error: "Sheet not found" };
 
@@ -270,7 +270,12 @@ function nhapKho(code, quantity) {
   var updated = 0;
   for (var i = 2; i < data.length; i++) {
     var rowCode = String(data[i][0] || "").trim();
-    if (rowCode === code) {
+    var rowSeries = String(data[i][3] || "").trim();
+    var rowType = String(data[i][4] || "").trim().toLowerCase();
+    var match = rowCode === code;
+    if (series) match = match && rowSeries === series;
+    if (type) match = match && rowType === type.toLowerCase();
+    if (match) {
       // Update NHẬP (column J = col 10)
       var currentNhap = Number(data[i][9]) || 0;
       sheet.getRange(i + 1, 10).setValue(currentNhap + quantity);
