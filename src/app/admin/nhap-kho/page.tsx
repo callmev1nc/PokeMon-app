@@ -131,7 +131,7 @@ export default function NhapKhoPage() {
               <div id="qr-reader" />
               {!scanning && (
                 <div className="absolute inset-0 z-10 bg-slate-100 dark:bg-slate-700 flex items-center justify-center rounded-xl">
-                  <div className="text-center text-slate-400 dark:text-slate-500">
+                  <div className="text-center text-slate-400 dark:text-slate-400">
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 mx-auto mb-2 opacity-50" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z" />
                       <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5z" />
@@ -161,7 +161,7 @@ export default function NhapKhoPage() {
               value={manualCode || scannedCode}
               onChange={(e) => { setManualCode(e.target.value.toUpperCase()); setScannedCode(""); }}
               placeholder="Nhập mã sản phẩm (VD: PO-P-01)"
-              className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-center font-mono uppercase"
+              className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-center font-mono uppercase text-slate-800 dark:text-slate-200 placeholder:text-slate-400"
             />
           </div>
 
@@ -190,7 +190,7 @@ export default function NhapKhoPage() {
                 onChange={(e) => setQty(e.target.value)}
                 placeholder="Số lượng nhập"
                 min={1}
-                className="flex-1 px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-center text-lg font-bold"
+                className="flex-1 px-4 py-3 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-center text-lg font-bold text-slate-800 dark:text-slate-200"
                 autoFocus
                 onKeyDown={(e) => { if (e.key === "Enter") handleNhap(); }}
               />
