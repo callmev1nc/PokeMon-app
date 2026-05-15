@@ -50,12 +50,8 @@ export default function QRPrintPage() {
     const pageH = 148;
     const margin = 4;
     const usableW = pageW - margin * 2;
-    const usableH = pageH - margin * 2;
-
     const scale = usableW / (qrPerRow * cellW);
-    const rowH = cellH * scale;
-    const rowsPerPage = Math.max(Math.floor(usableH / rowH), 1);
-    const itemsPerPage = rowsPerPage * qrPerRow;
+    const itemsPerPage = qrPerRow; // 1 row x 3 QR per A6 page
 
     const win = window.open("", "_blank");
     if (!win) return;
@@ -137,14 +133,10 @@ export default function QRPrintPage() {
       const pageH = 148;
       const margin = 4;
       const usableW = pageW - margin * 2;
-      const usableH = pageH - margin * 2;
 
       const canvasW = qrPerRow * cellW;
-      const canvasCellH = cellH;
       const scale = usableW / canvasW;
-      const rowH = canvasCellH * scale;
-      const rowsPerPage = Math.max(Math.floor(usableH / rowH), 1);
-      const itemsPerPage = rowsPerPage * qrPerRow;
+      const itemsPerPage = qrPerRow; // 1 row x 3 QR per A6 page
 
       const doc = new jsPDF({ unit: "mm", format: [pageW, pageH], orientation: "portrait" });
 

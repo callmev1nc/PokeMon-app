@@ -21,6 +21,7 @@ export default function AdminNav({ active }: { active: "dashboard" | "products" 
           {active === "orders" && "Quản lý đơn hàng"}
           {active === "customers" && "Khách hàng"}
           {active === "validate" && "Card Validation"}
+          {active === "nhap-kho" && "Nhập kho"}
         </h1>
       </div>
       <nav className="flex gap-1.5">
