@@ -106,20 +106,76 @@ export default function QRPrintPage() {
   const downloadPDF = async () => {
     setPdfLoading(true);
     try {
-      await renderQRToCanvas();
-      const canvas = canvasRef.current;
-      if (!canvas) return;
+      const { default: jsPDF } = await import("jspdf");
 
-      const html2pdf = (await import("html2pdf.js")).default;
-      await html2pdf()
-        .from(canvas)
-        .set({
-          margin: [5, 5, 5, 5],
-          filename: `qr-codes-${new Date().toISOString().slice(0, 10)}.pdf`,
-          image: { type: "png", quality: 1 },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        })
-        .save();
+      const cols = 4;
+      const qrSize = 120;
+      const padding = 20;
+      const labelHeight = 40;
+      const cellW = qrSize + padding * 2;
+      const cellH = qrSize + labelHeight + padding;
+
+      const margin = 5;
+      const usableWidth = 210 - margin * 2;
+      const usableHeight = 297 - margin * 2;
+
+      const canvasPageWidth = cols * cellW;
+      const scale = usableWidth / canvasPageWidth;
+      const rowHeightMm = cellH * scale;
+      const rowsPerPage = Math.floor(usableHeight / rowHeightMm);
+      const itemsPerPage = Math.max(rowsPerPage * cols, cols);
+
+      const doc = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+
+      for (let start = 0; start < filtered.length; start += itemsPerPage) {
+        const pageItems = filtered.slice(start, start + itemsPerPage);
+        const pageRows = Math.ceil(pageItems.length / cols);
+        const canvasH = pageRows * cellH;
+
+        const canvas = document.createElement("canvas");
+        canvas.width = canvasPageWidth;
+        canvas.height = canvasH;
+        const ctx = canvas.getContext("2d")!;
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = 0; i < pageItems.length; i++) {
+          const col = i % cols;
+          const row = Math.floor(i / cols);
+          const x = col * cellW + padding;
+          const y = row * cellH + padding;
+          const p = pageItems[i];
+
+          try {
+            const qrDataUrl = await QRCode.toDataURL(p.code, { width: qrSize, margin: 1 });
+            const img = new Image();
+            img.src = qrDataUrl;
+            await new Promise<void>((resolve) => {
+              img.onload = () => {
+                ctx.drawImage(img, x, y, qrSize, qrSize);
+                resolve();
+              };
+            });
+          } catch {
+            ctx.fillStyle = "#fee";
+            ctx.fillRect(x, y, qrSize, qrSize);
+          }
+
+          ctx.fillStyle = "#1e293b";
+          ctx.font = "bold 11px monospace";
+          ctx.textAlign = "center";
+          ctx.fillText(p.code, x + qrSize / 2, y + qrSize + 16);
+          ctx.font = "10px sans-serif";
+          ctx.fillStyle = "#64748b";
+          const name = p.name.length > 20 ? p.name.slice(0, 18) + ".." : p.name;
+          ctx.fillText(name, x + qrSize / 2, y + qrSize + 30);
+        }
+
+        if (start > 0) doc.addPage();
+        doc.addImage(canvas.toDataURL("image/PNG"), "PNG", margin, margin, canvasPageWidth * scale, canvasH * scale);
+      }
+
+      doc.save(`qr-codes-${new Date().toISOString().slice(0, 10)}.pdf`);
     } finally {
       setPdfLoading(false);
     }
