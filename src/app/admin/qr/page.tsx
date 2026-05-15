@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import AdminNav from "@/components/AdminNav";
 import QRCode from "qrcode";
-import html2pdf from "html2pdf.js";
 
 interface Product {
   code: string;
@@ -111,6 +110,7 @@ export default function QRPrintPage() {
       const canvas = canvasRef.current;
       if (!canvas) return;
 
+      const html2pdf = (await import("html2pdf.js")).default;
       await html2pdf()
         .from(canvas)
         .set({
