@@ -13,6 +13,7 @@ import Header from "@/components/Header";
 import CardImage from "@/components/CardImage";
 import LowStockBadge from "@/components/LowStockBadge";
 import ProductCard from "@/components/ProductCard";
+import { useToast } from "@/components/NotificationToast";
 
 export default function ProductDetailPage() {
   return (
@@ -33,6 +34,7 @@ function ProductDetailContent() {
   const [added, setAdded] = useState(false);
   const [loading, setLoading] = useState(true);
   const addItem = useCartStore((s) => s.addItem);
+  const { showToast } = useToast();
   const inCart = useCartStore(
     useCallback((s) => {
       const item = s.items.find((i) => i.product.id === id);
@@ -109,6 +111,7 @@ function ProductDetailContent() {
     if (maxQty <= 0 || noPrice) return;
     addItem(product, qty);
     setAdded(true);
+    showToast(`${t("cart.added", locale)} ${qty} × ${product.name}`, "success");
     setTimeout(() => setAdded(false), 1500);
     setQty(1);
   };

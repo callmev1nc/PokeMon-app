@@ -10,6 +10,7 @@ import { t } from "@/lib/i18n";
 import { formatPrice } from "@/lib/format";
 import LowStockBadge from "./LowStockBadge";
 import CardImage from "./CardImage";
+import { useToast } from "./NotificationToast";
 
 function useFadeIn() {
   const ref = useRef<HTMLDivElement>(null);
@@ -54,6 +55,7 @@ export default function ProductCard({
   const toggleWish = useWishlistStore((s) => s.toggle);
   const isWished = useWishlistStore((s) => s.ids.includes(product.id));
   const locale = useLocaleStore((s) => s.locale);
+  const { showToast } = useToast();
   const maxQty = product.stock - inCart;
   const isOutOfStock = product.stock === 0;
   const noPrice = product.price === null;
@@ -67,6 +69,7 @@ export default function ProductCard({
     if (maxQty <= 0 || noPrice) return;
     addItem(product, qty);
     setAdded(true);
+    showToast(`${t("cart.added", locale)} ${qty} × ${product.name}`, "success");
     setTimeout(() => setAdded(false), 1500);
     setQty(1);
   };

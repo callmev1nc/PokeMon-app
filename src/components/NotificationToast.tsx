@@ -27,13 +27,18 @@ export default function NotificationToast({ children }: { children: React.ReactN
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+      <div className="fixed bottom-20 sm:bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
         {toasts.map(toast => (
-          <div key={toast.id} className={`px-4 py-3 rounded-xl shadow-lg text-sm font-medium animate-fade-in ${
+          <div key={toast.id} className={`px-4 py-3 rounded-xl shadow-lg text-sm font-medium animate-toast ${
             toast.type === "success" ? "bg-green-600 text-white" :
             toast.type === "error" ? "bg-red-600 text-white" :
             "bg-slate-800 text-white"
           }`}>
+            {toast.type === "success" && (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 inline-block mr-1.5 -mt-0.5">
+                <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+              </svg>
+            )}
             {toast.message}
           </div>
         ))}

@@ -12,6 +12,7 @@ import Header from "@/components/Header";
 import MobileNav from "@/components/MobileNav";
 import CartDrawer from "@/components/CartDrawer";
 import CardImage from "@/components/CardImage";
+import { useToast } from "@/components/NotificationToast";
 
 export default function WishlistPage() {
   const locale = useLocaleStore((s) => s.locale);
@@ -19,6 +20,7 @@ export default function WishlistPage() {
   const toggleWish = useWishlistStore((s) => s.toggle);
   const clearWish = useWishlistStore((s) => s.clear);
   const addItem = useCartStore((s) => s.addItem);
+  const { showToast } = useToast();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [cartOpen, setCartOpen] = useState(false);
@@ -145,7 +147,7 @@ export default function WishlistPage() {
                     </p>
                     {product.price !== null && product.stock > 0 && (
                       <button
-                        onClick={() => addItem(product, 1)}
+                        onClick={() => { addItem(product, 1); showToast(`${t("cart.added", locale)} 1 × ${product.name}`, "success"); }}
                         className="px-3 py-1.5 bg-amber-500 text-white rounded-lg text-xs font-semibold hover:bg-amber-600 transition-colors btn-press"
                       >
                         {t("cart.add", locale)}
