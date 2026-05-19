@@ -88,6 +88,7 @@ export default function AdminOrdersPage() {
   >({});
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [selectMode, setSelectMode] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<Record<number, string>>({});
   const [productSearch, setProductSearch] = useState<Record<number, string>>({});
   const [showProductSearch, setShowProductSearch] = useState<Record<number, boolean>>({});
   const pdfGenerating = useRef(false);
@@ -155,6 +156,7 @@ export default function AdminOrdersPage() {
   async function updatePaymentStatus(order: Order, newStatus: string) {
     const orderIdx = orders.indexOf(order);
     if (orderIdx === -1) return;
+    setPendingStatus((prev) => ({ ...prev, [orderIdx]: newStatus }));
     try {
       const res = await fetch("/api/sheets", {
         method: "POST",
@@ -172,6 +174,7 @@ export default function AdminOrdersPage() {
       if (data.success) { setMessage(`Thanh toán: ${newStatus}`); await fetchOrders(); }
       else setMessage("Lỗi cập nhật");
     } catch { setMessage("Lỗi kết nối"); }
+    setPendingStatus((prev) => { const next = { ...prev }; delete next[orderIdx]; return next; });
   }
 
   async function updateDeliveryStatus(order: Order, newStatus: string) {
@@ -249,6 +252,67 @@ export default function AdminOrdersPage() {
           if (data.success) { setMessage(`Đã xóa ${data.deleted} đơn hàng`); setSelected(new Set()); setSelectMode(false); await fetchOrders(); }
           else setMessage("Lỗi xóa đơn hàng");
         } catch { setMessage("Lỗi kết nối"); }
+      }
+    );
+  }
+
+  function handleBulkPaymentStatus(status: string) {
+    if (selected.size === 0) return;
+    confirmAction(
+      `Cập nhật thanh toán ${selected.size} đơn hàng?`,
+      `Chuyển ${selected.size} đơn hàng sang "${status}"?`,
+      async () => {
+        await Promise.all(Array.from(selected).map(async (idx) => {
+          const order = filtered[idx];
+          const orderIdx = orders.indexOf(order);
+          if (orderIdx === -1) return;
+          await fetch("/api/sheets", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "confirmOrder",
+              row: orderIdx,
+              orderRow: order._row,
+              orderCode: order.orderCode,
+              data: { paymentStatus: status },
+              products: order.products,
+            }),
+          });
+        }));
+        setMessage(`Đã cập nhật ${selected.size} đơn hàng`);
+        setSelected(new Set());
+        setSelectMode(false);
+        await fetchOrders();
+      }
+    );
+  }
+
+  function handleBulkDeliveryStatus(status: string) {
+    if (selected.size === 0) return;
+    confirmAction(
+      `Cập nhật giao hàng ${selected.size} đơn hàng?`,
+      `Chuyển ${selected.size} đơn hàng sang "${status}"?`,
+      async () => {
+        await Promise.all(Array.from(selected).map(async (idx) => {
+          const order = filtered[idx];
+          const orderIdx = orders.indexOf(order);
+          if (orderIdx === -1) return;
+          await fetch("/api/sheets", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "updateOrder",
+              row: orderIdx,
+              sheetRow: order._row,
+              orderCode: order.orderCode,
+              data: { deliveryStatus: status },
+            }),
+          });
+        }));
+        setMessage(`Đã cập nhật ${selected.size} đơn hàng`);
+        setSelected(new Set());
+        setSelectMode(false);
+        await fetchOrders();
       }
     );
   }
@@ -698,12 +762,38 @@ export default function AdminOrdersPage() {
           </button>
           <button onClick={() => { setSelectMode(!selectMode); setSelected(new Set()); }}
             className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${selectMode ? "bg-amber-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
-            {selectMode ? "Hủy chọn" : "Chọn xóa"}
+            {selectMode ? "Hủy chọn" : "Chọn nhiều"}
           </button>
           {selectMode && selected.size > 0 && (
-            <button onClick={handleBulkDelete} className="px-4 py-1.5 rounded-lg text-sm font-medium bg-red-600 text-white hover:bg-red-700 transition-colors">
-              Xóa ({selected.size})
-            </button>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-xs text-slate-400 font-medium">TT:</span>
+              {(["Chưa thanh toán", "Đã chuyển khoản", "Đã thanh toán"] as const).map((s) => (
+                <button key={s} onClick={() => handleBulkPaymentStatus(s)}
+                  className={`text-xs px-2 py-1 rounded font-semibold transition-colors ${
+                    s === "Đã thanh toán" ? "bg-green-50 text-green-700 hover:bg-green-100"
+                    : s === "Đã chuyển khoản" ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                    : "bg-orange-50 text-orange-700 hover:bg-orange-100"
+                  }`}>
+                  {s === "Chưa thanh toán" ? "Chưa TT" : s === "Đã chuyển khoản" ? "Đã CK" : "Đã TT"}
+                </button>
+              ))}
+              <span className="w-px h-5 bg-slate-200 mx-1"></span>
+              <span className="text-xs text-slate-400 font-medium">GH:</span>
+              {(["Chưa giao", "Đang giao", "Đã giao"] as const).map((s) => (
+                <button key={s} onClick={() => handleBulkDeliveryStatus(s)}
+                  className={`text-xs px-2 py-1 rounded font-semibold transition-colors ${
+                    s === "Đã giao" ? "bg-blue-50 text-blue-700 hover:bg-blue-100"
+                    : s === "Đang giao" ? "bg-yellow-50 text-yellow-700 hover:bg-yellow-100"
+                    : "bg-slate-50 text-slate-500 hover:bg-slate-100"
+                  }`}>
+                  {s}
+                </button>
+              ))}
+              <span className="w-px h-5 bg-slate-200 mx-1"></span>
+              <button onClick={handleBulkDelete} className="text-xs px-2 py-1 rounded font-semibold bg-red-50 text-red-600 hover:bg-red-100 transition-colors">
+                Xóa ({selected.size})
+              </button>
+            </div>
           )}
           <button onClick={handlePrintTable} className="px-4 py-1.5 rounded-lg text-sm font-medium bg-slate-800 text-white hover:bg-slate-700 transition-colors flex items-center gap-1.5">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
@@ -814,7 +904,7 @@ export default function AdminOrdersPage() {
                   </div>
                   <div className="flex items-center gap-2 flex-wrap justify-end">
                     <select
-                      value={order.paymentStatus || "Chưa thanh toán"}
+                      value={pendingStatus[orderIdx] || order.paymentStatus || "Chưa thanh toán"}
                       onChange={(e) => updatePaymentStatus(order, e.target.value)}
                       className={`text-xs px-2 py-1.5 rounded-lg font-semibold border-0 cursor-pointer focus:ring-2 focus:ring-blue-400 ${
                         order.paymentStatus === "Đã thanh toán"
