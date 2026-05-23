@@ -240,9 +240,10 @@ function mergeOrders(local: Order[], remote: Order[]): Order[] {
   return [...remote, ...localOnly];
 }
 
-export function addOrder(order: Omit<Order, "_row">): { success: boolean } {
+export function addOrder(order: Omit<Order, "_row">): { success: boolean; orderCode?: string } {
   const orders = fetchOrders();
-  orders.push({ ...order, _row: orders.length + 1 } as Order);
+  const orderCode = order.orderCode || `DH${Date.now()}`;
+  orders.push({ ...order, orderCode, _row: orders.length + 1 } as Order);
   writeJson("orders.json", orders);
 
   // Also push to Google Sheets in background
@@ -250,7 +251,7 @@ export function addOrder(order: Omit<Order, "_row">): { success: boolean } {
     postSheet(BUSINESS_URL, { action: "addOrder", order }).catch(() => {});
   }
 
-  return { success: true };
+  return { success: true, orderCode };
 }
 
 export function updateOrder(
@@ -259,12 +260,18 @@ export function updateOrder(
   orderCode?: string,
 ): { success: boolean } {
   const orders = fetchOrders();
-  let idx = index;
+  let idx = -1;
+
   if (orderCode) {
-    const found = orders.findIndex(o => o.orderCode === orderCode);
-    if (found !== -1) idx = found;
+    idx = orders.findIndex(o => o.orderCode === orderCode);
   }
-  if (idx < 0 || idx >= orders.length) return { success: false };
+  if (idx === -1) {
+    idx = orders.findIndex(o => o._row === index);
+  }
+  if (idx === -1) {
+    return { success: false };
+  }
+
   orders[idx] = { ...orders[idx], ...data };
   writeJson("orders.json", orders);
 
@@ -292,12 +299,19 @@ export function confirmOrder(
   orderCode?: string,
 ): { success: boolean } {
   const orders = fetchOrders();
-  let idx = index;
+  let idx = -1;
+
   if (orderCode) {
-    const found = orders.findIndex(o => o.orderCode === orderCode);
-    if (found !== -1) idx = found;
+    idx = orders.findIndex(o => o.orderCode === orderCode);
+  }
+  if (idx === -1 && orderRow) {
+    idx = orders.findIndex(o => o._row === orderRow);
+  }
+  if (idx === -1) {
+    return { success: false };
   }
   const order = (idx >= 0 && idx < orders.length) ? orders[idx] : null;
+  if (!order) return { success: false };
 
   // Use provided products string or fall back to local order's products
   const productsStr = orderProducts || (order?.products ?? "");
@@ -367,10 +381,16 @@ export function editOrderProducts(
   orderCode?: string,
 ): { success: boolean } {
   const orders = fetchOrders();
-  let idx = index;
+  let idx = -1;
+
   if (orderCode) {
-    const found = orders.findIndex(o => o.orderCode === orderCode);
-    if (found !== -1) idx = found;
+    idx = orders.findIndex(o => o.orderCode === orderCode);
+  }
+  if (idx === -1) {
+    idx = orders.findIndex(o => o._row === index);
+  }
+  if (idx === -1) {
+    return { success: false };
   }
   const order = (idx >= 0 && idx < orders.length) ? orders[idx] : null;
   if (!order) return { success: false };

@@ -86,7 +86,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
       );
     }
 
-    if (selectedGroups.length === 0 && selectedTypes.length < DISPLAY_TYPES.length) {
+    if (selectedTypes.length < DISPLAY_TYPES.length) {
       result = result.filter((p) => selectedTypes.includes(p.displayType));
     }
 

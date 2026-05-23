@@ -83,6 +83,7 @@ export default function AdminOrdersPage() {
   const [filter, setFilter] = useState<
     "all" | "pending" | "paid" | "delivered" | "undelivered"
   >("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [editValues, setEditValues] = useState<
     Record<number, { buyPrice: string; shippingCost: string; notes: string }>
   >({});
@@ -91,6 +92,7 @@ export default function AdminOrdersPage() {
   const [pendingStatus, setPendingStatus] = useState<Record<number, string>>({});
   const [productSearch, setProductSearch] = useState<Record<number, string>>({});
   const [showProductSearch, setShowProductSearch] = useState<Record<number, boolean>>({});
+  const [expandedOrders, setExpandedOrders] = useState<Record<number, boolean>>({});
   const pdfGenerating = useRef(false);
   const { dialogProps, confirm: confirmAction } = useConfirmDialog();
 
@@ -163,7 +165,7 @@ export default function AdminOrdersPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "confirmOrder",
-          row: orderIdx,
+          row: order._row,
           orderRow: order._row,
           orderCode: order.orderCode,
           data: { paymentStatus: newStatus },
@@ -184,7 +186,7 @@ export default function AdminOrdersPage() {
       const res = await fetch("/api/sheets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "updateOrder", row: orderIdx, sheetRow: order._row, orderCode: order.orderCode, data: { deliveryStatus: newStatus } }),
+        body: JSON.stringify({ action: "updateOrder", row: order._row, sheetRow: order._row, orderCode: order.orderCode, data: { deliveryStatus: newStatus } }),
       });
       const data = await res.json();
       if (data.success) { setMessage(`Giao hàng: ${newStatus}`); await fetchOrders(); }
@@ -262,24 +264,32 @@ export default function AdminOrdersPage() {
       `Cập nhật thanh toán ${selected.size} đơn hàng?`,
       `Chuyển ${selected.size} đơn hàng sang "${status}"?`,
       async () => {
-        await Promise.all(Array.from(selected).map(async (idx) => {
+        const results = await Promise.all(Array.from(selected).map(async (idx) => {
           const order = filtered[idx];
-          const orderIdx = orders.indexOf(order);
-          if (orderIdx === -1) return;
-          await fetch("/api/sheets", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              action: "confirmOrder",
-              row: orderIdx,
-              orderRow: order._row,
-              orderCode: order.orderCode,
-              data: { paymentStatus: status },
-              products: order.products,
-            }),
-          });
+          if (!order) return false;
+          try {
+            const res = await fetch("/api/sheets", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                action: "confirmOrder",
+                row: order._row,
+                orderRow: order._row,
+                orderCode: order.orderCode,
+                data: { paymentStatus: status },
+                products: order.products,
+              }),
+            });
+            const data = await res.json();
+            return data.success;
+          } catch { return false; }
         }));
-        setMessage(`Đã cập nhật ${selected.size} đơn hàng`);
+        const succeeded = results.filter(Boolean).length;
+        if (succeeded === selected.size) {
+          setMessage(`Đã cập nhật ${succeeded} đơn hàng`);
+        } else {
+          setMessage(`Cập nhật ${succeeded}/${selected.size} đơn hàng (${selected.size - succeeded} lỗi)`);
+        }
         setSelected(new Set());
         setSelectMode(false);
         await fetchOrders();
@@ -293,23 +303,31 @@ export default function AdminOrdersPage() {
       `Cập nhật giao hàng ${selected.size} đơn hàng?`,
       `Chuyển ${selected.size} đơn hàng sang "${status}"?`,
       async () => {
-        await Promise.all(Array.from(selected).map(async (idx) => {
+        const results = await Promise.all(Array.from(selected).map(async (idx) => {
           const order = filtered[idx];
-          const orderIdx = orders.indexOf(order);
-          if (orderIdx === -1) return;
-          await fetch("/api/sheets", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              action: "updateOrder",
-              row: orderIdx,
-              sheetRow: order._row,
-              orderCode: order.orderCode,
-              data: { deliveryStatus: status },
-            }),
-          });
+          if (!order) return false;
+          try {
+            const res = await fetch("/api/sheets", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                action: "updateOrder",
+                row: order._row,
+                sheetRow: order._row,
+                orderCode: order.orderCode,
+                data: { deliveryStatus: status },
+              }),
+            });
+            const data = await res.json();
+            return data.success;
+          } catch { return false; }
         }));
-        setMessage(`Đã cập nhật ${selected.size} đơn hàng`);
+        const succeeded = results.filter(Boolean).length;
+        if (succeeded === selected.size) {
+          setMessage(`Đã cập nhật ${succeeded} đơn hàng`);
+        } else {
+          setMessage(`Cập nhật ${succeeded}/${selected.size} đơn hàng (${selected.size - succeeded} lỗi)`);
+        }
         setSelected(new Set());
         setSelectMode(false);
         await fetchOrders();
@@ -392,8 +410,6 @@ export default function AdminOrdersPage() {
   }
 
   async function handleRemoveProduct(order: Order, product: ParsedProduct) {
-    const orderIdx = orders.indexOf(order);
-    if (orderIdx === -1) return;
     const items = parseAndSortProducts(order.products, codeToGroup, productMap);
     const remaining = items.filter((p) => !(p.code === product.code && p.name === product.name));
     const newProducts = remaining.map((p) => `${p.qty}x ${p.name} - ${p.code}${p.price !== null ? `|${p.price}` : ""}`).join(", ");
@@ -403,7 +419,7 @@ export default function AdminOrdersPage() {
       const res = await fetch("/api/sheets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "editOrderProducts", row: orderIdx, sheetRow: order._row, orderCode: order.orderCode, newProducts, removedItems: removedStr, addedItems: "", isPaid }),
+        body: JSON.stringify({ action: "editOrderProducts", row: order._row, sheetRow: order._row, orderCode: order.orderCode, newProducts, removedItems: removedStr, addedItems: "", isPaid }),
       });
       const data = await res.json();
       if (data.success) { setMessage(`Đã xóa ${product.name}`); await fetchOrders(); }
@@ -428,7 +444,7 @@ export default function AdminOrdersPage() {
       const res = await fetch("/api/sheets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "editOrderProducts", row: orderIdx, sheetRow: order._row, orderCode: order.orderCode, newProducts, removedItems: "", addedItems: addedStr, isPaid }),
+        body: JSON.stringify({ action: "editOrderProducts", row: order._row, sheetRow: order._row, orderCode: order.orderCode, newProducts, removedItems: "", addedItems: addedStr, isPaid }),
       });
       const data = await res.json();
       if (data.success) {
@@ -441,8 +457,6 @@ export default function AdminOrdersPage() {
   }
 
   async function handleChangeQty(order: Order, product: ParsedProduct, delta: number) {
-    const orderIdx = orders.indexOf(order);
-    if (orderIdx === -1) return;
     const items = parseAndSortProducts(order.products, codeToGroup, productMap);
     const target = items.find((p) => p.code === product.code && p.name === product.name);
     if (!target) return;
@@ -455,7 +469,6 @@ export default function AdminOrdersPage() {
     let addedItems = "";
 
     if (newQty <= 0) {
-      // Remove the product entirely
       const remaining = items.filter((p) => !(p.code === product.code && p.name === product.name));
       newProducts = remaining.map((p) => `${p.qty}x ${p.name} - ${p.code}${p.price !== null ? `|${p.price}` : ""}`).join(", ");
       removedItems = `${target.qty}x ${target.name} - ${target.code}`;
@@ -470,7 +483,7 @@ export default function AdminOrdersPage() {
       const res = await fetch("/api/sheets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "editOrderProducts", row: orderIdx, sheetRow: order._row, orderCode: order.orderCode, newProducts, removedItems, addedItems, isPaid }),
+        body: JSON.stringify({ action: "editOrderProducts", row: order._row, sheetRow: order._row, orderCode: order.orderCode, newProducts, removedItems, addedItems, isPaid }),
       });
       const data = await res.json();
       if (data.success) {
@@ -486,7 +499,7 @@ export default function AdminOrdersPage() {
         await fetch("/api/sheets", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "updateOrder", row: orderIndex, sheetRow, orderCode, data: { [field]: value } }),
+          body: JSON.stringify({ action: "updateOrder", row: sheetRow || orderIndex, sheetRow, orderCode, data: { [field]: value } }),
         });
       } catch {}
     }, []
@@ -714,6 +727,10 @@ export default function AdminOrdersPage() {
     if (filter === "delivered") return o.deliveryStatus === "Đã giao";
     if (filter === "undelivered") return o.deliveryStatus !== "Đã giao";
     return true;
+  }).filter((o) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return (o.customerName || "").toLowerCase().includes(q) || (o.orderCode || "").toLowerCase().includes(q);
   });
 
   const totalRevenue = orders.filter(isPaid).reduce((sum, o) => sum + calcProductsTotal(o.products), 0);
@@ -746,6 +763,13 @@ export default function AdminOrdersPage() {
 
       {/* Filter + Actions */}
       <div className="flex flex-wrap gap-2 mb-4 items-center">
+        <input
+          type="text"
+          placeholder="Tìm theo tên hoặc mã đơn..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/30 focus:border-blue-400 w-full sm:w-56"
+        />
         {([["all", "Tất cả"], ["pending", "Chưa thanh toán"], ["paid", "Đã thanh toán"], ["delivered", "Đã giao"], ["undelivered", "Chưa giao"]] as const).map(([f, label]) => (
           <button key={f} onClick={() => { setFilter(f); setSelected(new Set()); }}
             className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${filter === f ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
@@ -890,7 +914,7 @@ export default function AdminOrdersPage() {
             const orderIdx = orders.indexOf(order);
             const isSelected = selected.has(idx);
             return (
-              <div key={`${order.orderDate}-${order.customerName}-${orderIdx}`}
+              <div key={order.orderCode || order._row || orderIdx}
                 className={`bg-white rounded-2xl border shadow-sm p-5 animate-fade-in transition-colors ${isSelected ? "border-red-200 bg-red-50/30" : "border-slate-100"}`}>
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-start gap-3">
@@ -958,7 +982,15 @@ export default function AdminOrdersPage() {
 
                 <div className="mb-2">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-slate-400 text-xs uppercase tracking-wide">Sản phẩm</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-slate-400 text-xs uppercase tracking-wide">Sản phẩm</span>
+                      <button
+                        onClick={() => setExpandedOrders((prev) => ({ ...prev, [idx]: !prev[idx] }))}
+                        className="text-xs text-blue-500 hover:text-blue-700 font-medium transition-colors"
+                      >
+                        {expandedOrders[idx] ? "Thu gọn" : `Chi tiết (${parseAndSortProducts(order.products, codeToGroup, productMap).length})`}
+                      </button>
+                    </div>
                     <button
                       onClick={() => setShowProductSearch((prev) => ({ ...prev, [idx]: !prev[idx] }))}
                       className="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-500 hover:bg-slate-200 font-medium transition-colors"
@@ -966,47 +998,49 @@ export default function AdminOrdersPage() {
                       {showProductSearch[idx] ? "Đóng" : "+ Thêm thẻ"}
                     </button>
                   </div>
-                  <div className="space-y-1">
-                    {parseAndSortProducts(order.products, codeToGroup, productMap).map((p, pi) => (
-                      <div key={pi} className="flex items-center gap-2 text-sm bg-slate-50 rounded-lg px-2.5 py-1.5 group">
-                        <div className="flex items-center gap-1 shrink-0">
+                  {expandedOrders[idx] && (
+                    <div className="space-y-1">
+                      {parseAndSortProducts(order.products, codeToGroup, productMap).map((p, pi) => (
+                        <div key={pi} className="flex items-center gap-2 text-sm bg-slate-50 rounded-lg px-2.5 py-1.5 group">
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              onClick={() => handleChangeQty(order, p, -1)}
+                              className="w-6 h-6 rounded bg-slate-200 hover:bg-red-100 hover:text-red-600 text-slate-500 text-xs font-bold flex items-center justify-center transition-colors"
+                              title="Giảm 1"
+                            >-</button>
+                            <span className="w-6 text-center font-semibold text-slate-700">{p.qty}</span>
+                            <button
+                              onClick={() => handleChangeQty(order, p, 1)}
+                              className="w-6 h-6 rounded bg-slate-200 hover:bg-amber-100 hover:text-amber-600 text-slate-500 text-xs font-bold flex items-center justify-center transition-colors"
+                              title="Tăng 1"
+                            >+</button>
+                          </div>
+                          <span className="flex-1 min-w-0">
+                            <span className="text-slate-800">{p.name}</span>{" "}
+                            <span className="text-slate-400 font-mono text-xs">({p.code})</span>
+                            {p.price !== null && (
+                              <span className="text-slate-500 text-xs ml-1">
+                                — {formatPrice(p.price)} × {p.qty} = {formatNumber(p.price * p.qty * 1000)} đ
+                              </span>
+                            )}
+                          </span>
                           <button
-                            onClick={() => handleChangeQty(order, p, -1)}
-                            className="w-6 h-6 rounded bg-slate-200 hover:bg-red-100 hover:text-red-600 text-slate-500 text-xs font-bold flex items-center justify-center transition-colors"
-                            title="Giảm 1"
-                          >-</button>
-                          <span className="w-6 text-center font-semibold text-slate-700">{p.qty}</span>
-                          <button
-                            onClick={() => handleChangeQty(order, p, 1)}
-                            className="w-6 h-6 rounded bg-slate-200 hover:bg-amber-100 hover:text-amber-600 text-slate-500 text-xs font-bold flex items-center justify-center transition-colors"
-                            title="Tăng 1"
-                          >+</button>
+                            onClick={() => handleRemoveProduct(order, p)}
+                            className="text-red-300 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                            title="Xóa thẻ này"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                            </svg>
+                          </button>
                         </div>
-                        <span className="flex-1 min-w-0">
-                          <span className="text-slate-800">{p.name}</span>{" "}
-                          <span className="text-slate-400 font-mono text-xs">({p.code})</span>
-                          {p.price !== null && (
-                            <span className="text-slate-500 text-xs ml-1">
-                              — {formatPrice(p.price)} × {p.qty} = {formatNumber(p.price * p.qty * 1000)} đ
-                            </span>
-                          )}
-                        </span>
-                        <button
-                          onClick={() => handleRemoveProduct(order, p)}
-                          className="text-red-300 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100"
-                          title="Xóa thẻ này"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      </div>
-                    ))}
-                    {parseAndSortProducts(order.products, codeToGroup, productMap).length === 0 && (
-                      <p className="text-xs text-slate-400 italic">Chưa có sản phẩm</p>
-                    )}
-                  </div>
-                  {showProductSearch[idx] && (
+                      ))}
+                      {parseAndSortProducts(order.products, codeToGroup, productMap).length === 0 && (
+                        <p className="text-xs text-slate-400 italic">Chưa có sản phẩm</p>
+                      )}
+                    </div>
+                  )}
+                  {expandedOrders[idx] && showProductSearch[idx] && (
                     <div className="mt-2 relative">
                       <input
                         type="text"

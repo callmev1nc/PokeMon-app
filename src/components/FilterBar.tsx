@@ -48,6 +48,7 @@ export default function FilterBar({
 }: FilterBarProps) {
   const locale = useLocaleStore((s) => s.locale);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -135,6 +136,26 @@ export default function FilterBar({
         )}
       </div>
 
+      {/* Mobile filter toggle */}
+      <div className="sm:hidden">
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className="w-full flex items-center justify-between px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-600 dark:text-slate-300 font-medium"
+        >
+          <span className="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
+            </svg>
+            Bộ lọc
+          </span>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={`w-4 h-4 transition-transform ${showFilters ? "rotate-180" : ""}`}>
+            <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clipRule="evenodd" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Collapsible filters */}
+      <div className={`${showFilters ? "block" : "hidden"} sm:block`}>
       {/* Display Type chips */}
       <div className="flex gap-2 flex-wrap">
         {DISPLAY_TYPES.map((type) => {
@@ -177,6 +198,8 @@ export default function FilterBar({
             </button>
           );
         })}
+      </div>
+
       </div>
 
       {/* Group + Sort + Count */}

@@ -77,7 +77,7 @@ export default function ProductCard({
   return (
     <div
       ref={fadeRef}
-      className={`product-card rounded-2xl border border-transparent overflow-hidden flex flex-col text-slate-700 dark:text-slate-200 transition-all duration-500 ${
+      className={`product-card rounded-2xl border border-transparent overflow-hidden flex flex-col text-slate-700 dark:text-slate-200 transition-all duration-500 hover:shadow-xl hover:shadow-amber-500/5 hover:scale-[1.02] ${
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       }`}
     >
@@ -93,6 +93,13 @@ export default function ProductCard({
             />
             {/* Hover overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            {isOutOfStock && (
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center backdrop-blur-[2px]">
+                <span className="text-white font-bold text-lg tracking-widest -rotate-12 border-2 border-white/80 px-4 py-1.5 rounded-lg" style={{ fontFamily: "var(--font-display)" }}>
+                  SOLD OUT
+                </span>
+              </div>
+            )}
           </div>
         </a>
         <button
@@ -147,7 +154,7 @@ export default function ProductCard({
 
         {/* Price + Stock */}
         <div className="mt-auto pt-3 border-t border-slate-200 dark:border-slate-700/50">
-          <p className={`text-2xl font-bold tracking-tight ${noPrice ? "text-slate-400" : "text-amber-400"}`} style={{ fontFamily: "var(--font-display)" }}>
+          <p className={`text-2xl font-bold tracking-tight ${noPrice ? "text-slate-400" : "text-amber-400 drop-shadow-sm"}`} style={{ fontFamily: "var(--font-display)", letterSpacing: "0.02em" }}>
             {displayPrice(product.price)}
           </p>
           <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
@@ -171,16 +178,16 @@ export default function ProductCard({
             <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
               <button
                 onClick={() => setQty(Math.max(1, qty - 1))}
-                className="px-3 py-2.5 text-slate-400 hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700/50 text-sm font-bold transition-colors min-w-[36px]"
+                className="px-3 py-2.5 text-slate-400 hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700/50 text-sm font-bold transition-colors min-w-[44px] min-h-[44px]"
               >
                 -
               </button>
-              <span className="px-2 py-2.5 text-sm font-semibold min-w-[36px] text-center text-slate-600 dark:text-slate-300">
+              <span className="px-2 py-2.5 text-sm font-semibold min-w-[36px] min-h-[44px] flex items-center justify-center text-slate-600 dark:text-slate-300">
                 {qty}
               </span>
               <button
                 onClick={() => setQty(Math.min(maxQty, qty + 1))}
-                className="px-3 py-2.5 text-slate-400 hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700/50 text-sm font-bold transition-colors min-w-[36px]"
+                className="px-3 py-2.5 text-slate-400 hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700/50 text-sm font-bold transition-colors min-w-[44px] min-h-[44px]"
               >
                 +
               </button>
@@ -188,7 +195,7 @@ export default function ProductCard({
             <button
               onClick={handleAdd}
               disabled={maxQty <= 0}
-              className={`btn-press btn-primary flex-1 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all duration-300 ${
+              className={`btn-press btn-primary flex-1 py-3 px-3 rounded-lg text-sm font-semibold transition-all duration-300 min-h-[44px] ${
                 added
                   ? "bg-emerald-500 text-white shadow-emerald-500/20 shadow-md"
                   : maxQty <= 0
@@ -203,7 +210,7 @@ export default function ProductCard({
         {isOutOfStock && (
           <button
             disabled
-            className="w-full py-2.5 rounded-lg text-sm font-semibold bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-600 cursor-not-allowed"
+            className="w-full py-3 rounded-lg text-sm font-semibold bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-600 cursor-not-allowed min-h-[44px]"
           >
             {t("product.outOfStock", locale)}
           </button>
@@ -211,7 +218,7 @@ export default function ProductCard({
         {noPrice && !isOutOfStock && (
           <button
             disabled
-            className="w-full py-2.5 rounded-lg text-sm font-semibold bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-600 cursor-not-allowed"
+            className="w-full py-3 rounded-lg text-sm font-semibold bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-600 cursor-not-allowed min-h-[44px]"
           >
             {t("product.contact", locale)}
           </button>

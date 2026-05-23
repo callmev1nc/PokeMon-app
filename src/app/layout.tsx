@@ -51,6 +51,8 @@ export default function RootLayout({
   return (
     <html lang="vi" className={`${bebas.variable} ${outfit.variable}`}>
       <head>
+        <link rel="preconnect" href="https://assets.tcgdex.net" />
+        <link rel="dns-prefetch" href="https://assets.tcgdex.net" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="theme-color" content="#050816" media="(prefers-color-scheme: dark)" />
         <meta name="theme-color" content="#F8F6F1" media="(prefers-color-scheme: light)" />

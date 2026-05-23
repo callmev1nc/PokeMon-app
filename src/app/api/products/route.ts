@@ -35,10 +35,10 @@ function getPokemonTypes(): Record<string, string> {
   return {};
 }
 
-export const revalidate = 30;
+export const revalidate = 120;
 
 let cachedResponse: { data: Product[]; timestamp: number } | null = null;
-const CACHE_TTL = 30_000;
+const CACHE_TTL = 120_000;
 
 export async function GET(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
   if (cachedResponse && Date.now() - cachedResponse.timestamp < CACHE_TTL) {
     return NextResponse.json(cachedResponse.data, {
       headers: {
-        "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
+        "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600",
         "X-RateLimit-Remaining": String(remaining),
       },
     });
@@ -96,7 +96,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(withId, {
       headers: {
-        "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
+        "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600",
         "X-RateLimit-Remaining": String(remaining),
       },
     });

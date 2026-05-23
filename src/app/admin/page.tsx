@@ -508,10 +508,6 @@ export default function AdminPage() {
         </div>
       )}
 
-      {message && (
-        <p>{message}</p>
-      )}
-
       {/* Product table */}
       {loading ? (
         <div className="text-center py-12">
@@ -532,6 +528,9 @@ export default function AdminPage() {
                       }}
                       className="w-4 h-4 rounded border-slate-300 text-blue-600"
                     />
+                  </th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-500 text-xs uppercase tracking-wide w-10">
+                    Ảnh
                   </th>
                   <th className="text-left px-4 py-3 font-semibold text-slate-500 text-xs uppercase tracking-wide">
                     Ma
@@ -573,6 +572,15 @@ export default function AdminPage() {
                           }}
                           className="w-4 h-4 rounded border-slate-300 text-blue-600"
                         />
+                      </td>
+                      <td className="px-4 py-3">
+                        {p.imageUrl ? (
+                          <img src={p.imageUrl} alt="" className="w-10 h-14 object-contain rounded-lg bg-slate-50" />
+                        ) : (
+                          <div className="w-10 h-14 bg-slate-100 rounded-lg flex items-center justify-center text-xs text-slate-300 font-bold">
+                            {p.name?.charAt(0) || "?"}
+                          </div>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-slate-400 text-xs font-mono">{p.code}</td>
                       <td className="px-4 py-3 text-slate-800 font-medium max-w-[200px] truncate">

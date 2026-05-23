@@ -28,6 +28,7 @@ interface DashboardStats {
   paidOrders: number;
   pendingOrders: number;
   deliveredOrders: number;
+  todayOrders: number;
   lowStockCount: number;
   outOfStockCount: number;
   topProducts: { name: string; count: number; revenue: number }[];
@@ -41,6 +42,8 @@ function computeStats(orders: Order[], products: Product[]): DashboardStats {
   let paidOrders = 0;
   let pendingOrders = 0;
   let deliveredOrders = 0;
+  let todayOrders = 0;
+  const todayStr = new Date().toLocaleDateString("vi-VN");
   const productMap = new Map<string, { name: string; count: number; revenue: number }>();
   const dateMap = new Map<string, { revenue: number; orders: number }>();
   const paymentMap = new Map<string, number>();
@@ -48,6 +51,8 @@ function computeStats(orders: Order[], products: Product[]): DashboardStats {
   for (const o of orders) {
     totalRevenue += o.sellPrice || 0;
     totalProfit += o.profit || 0;
+
+    if (o.orderDate === todayStr) todayOrders++;
 
     if (o.paymentStatus === "Đã thanh toán" || o.paymentStatus === "Đã chuyển khoản") {
       paidOrders++;
@@ -105,6 +110,7 @@ function computeStats(orders: Order[], products: Product[]): DashboardStats {
     paidOrders,
     pendingOrders,
     deliveredOrders,
+    todayOrders,
     lowStockCount,
     outOfStockCount,
     topProducts,
@@ -201,7 +207,7 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
-      <AdminNav active="products" />
+      <AdminNav active="dashboard" />
 
       <h2 className="text-xl font-bold text-slate-800 mb-4">Dashboard</h2>
 
@@ -244,7 +250,7 @@ export default function DashboardPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Doanh thu</p>
           <p className="text-2xl font-bold text-green-600 mt-1">{formatVND(stats.totalRevenue)}</p>
@@ -259,6 +265,11 @@ export default function DashboardPage() {
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Đơn hàng</p>
           <p className="text-2xl font-bold text-slate-800 mt-1">{stats.totalOrders}</p>
           <p className="text-xs text-slate-400 mt-1">{stats.pendingOrders} chờ xử lý</p>
+        </div>
+        <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Đơn hôm nay</p>
+          <p className="text-2xl font-bold text-amber-500 mt-1">{stats.todayOrders}</p>
+          <p className="text-xs text-slate-400 mt-1">{stats.deliveredOrders} đã giao</p>
         </div>
         <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Tồn kho</p>
@@ -329,11 +340,15 @@ export default function DashboardPage() {
           {stats.paymentBreakdown.map((p) => (
             <div key={p.status} className="flex items-center gap-2">
               <div className={`w-3 h-3 rounded-full ${
-                p.status === "Đã thanh toán" || p.status === "Đã chuyển khoản"
-                  ? "bg-green-500"
-                  : "bg-yellow-400"
+                p.status === "Đã thanh toán" ? "bg-green-500"
+                : p.status === "Đã chuyển khoản" ? "bg-emerald-400"
+                : "bg-yellow-400"
               }`} />
-              <span className="text-sm text-slate-600">{p.status}</span>
+              <span className={`text-sm font-semibold ${
+                p.status === "Đã thanh toán" ? "text-green-700"
+                : p.status === "Đã chuyển khoản" ? "text-emerald-700"
+                : "text-yellow-700"
+              }`}>{p.status}</span>
               <span className="text-sm font-bold text-slate-800">{p.count}</span>
             </div>
           ))}

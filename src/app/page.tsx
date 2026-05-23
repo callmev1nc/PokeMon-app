@@ -82,10 +82,41 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Featured Cards */}
+      {!loading && products.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 py-6">
+          <h3 className="text-lg font-bold mb-4 text-slate-700 dark:text-slate-200 flex items-center gap-2" style={{ fontFamily: "var(--font-display)" }}>
+            <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
+            Featured Cards
+          </h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {products.slice(0, 4).map((product) => (
+              <a
+                key={product.id}
+                href={`/product?id=${encodeURIComponent(product.id)}`}
+                className="group relative bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50 overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
+              >
+                <div className="aspect-[2.5/3.5] bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900">
+                  {product.imageUrl && (
+                    <img src={product.imageUrl} alt={product.name} className="w-full h-full object-contain" loading="eager" />
+                  )}
+                </div>
+                <div className="p-3">
+                  <p className="text-xs font-semibold text-slate-800 dark:text-slate-100 truncate">{product.name}</p>
+                  <p className="text-amber-400 font-bold text-sm mt-1" style={{ fontFamily: "var(--font-display)" }}>
+                    {product.price !== null ? new Intl.NumberFormat("vi-VN").format(product.price) + "k" : "Liên hệ"}
+                  </p>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Pokemon Type Categories */}
       <section className="max-w-7xl mx-auto px-4 py-6">
         <h3 className="text-lg font-bold mb-4 text-slate-700 dark:text-slate-200" style={{ fontFamily: "var(--font-display)" }}>
-          🏷️ Browse by Type
+          Browse by Type
         </h3>
         <div className="flex gap-3 flex-wrap">
           {[
@@ -95,20 +126,24 @@ export default function HomePage() {
             { type: "Electric", icon: "⚡", color: "from-yellow-400 to-amber-500" },
             { type: "Psychic", icon: "🔮", color: "from-pink-400 to-purple-500" },
             { type: "Dragon", icon: "🐉", color: "from-indigo-500 to-purple-700" },
-          ].map((item) => (
-            <button
-              key={item.type}
-              onClick={() => {
-                const url = new URL(window.location.href);
-                url.searchParams.set('type', item.type);
-                window.location.href = url.toString();
-              }}
-              className={`px-4 py-2 rounded-xl bg-gradient-to-r ${item.color} text-white font-bold text-sm shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300`}
-            >
-              <span className="mr-1">{item.icon}</span>
-              {item.type}
-            </button>
-          ))}
+          ].map((item) => {
+            const count = !loading ? products.filter(p => p.type?.toLowerCase() === item.type.toLowerCase()).length : 0;
+            return (
+              <button
+                key={item.type}
+                onClick={() => {
+                  const url = new URL(window.location.href);
+                  url.searchParams.set('type', item.type);
+                  window.location.href = url.toString();
+                }}
+                className={`px-4 py-2 rounded-xl bg-gradient-to-r ${item.color} text-white font-bold text-sm shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center gap-2`}
+              >
+                <span>{item.icon}</span>
+                {item.type}
+                {count > 0 && <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded-full">{count}</span>}
+              </button>
+            );
+          })}
         </div>
       </section>
 

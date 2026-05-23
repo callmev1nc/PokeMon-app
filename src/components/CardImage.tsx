@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
-import { toRenderUrl, toPlaceholderUrl, isTcgdexUrl } from "@/lib/imageUtils";
+import { toRenderUrl } from "@/lib/imageUtils";
 
 interface CardImageProps {
   src?: string | null;
@@ -26,18 +26,13 @@ export default function CardImage({
   priority = false,
 }: CardImageProps) {
   const [error, setError] = useState(false);
-  const [highLoaded, setHighLoaded] = useState(false);
-  const [placeholderLoaded, setPlaceholderLoaded] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   const gradient =
     TYPE_PLACEHOLDER_COLORS[displayType] || "from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800";
 
   const highSrc = useMemo(() => (src ? toRenderUrl(src) : src), [src]);
-  const placeholderSrc = useMemo(
-    () => (src && isTcgdexUrl(src) ? toPlaceholderUrl(src) : null),
-    [src]
-  );
 
   useEffect(() => {
     if (!highSrc || priority) return;
@@ -52,7 +47,7 @@ export default function CardImage({
           observer.disconnect();
         }
       },
-      { rootMargin: "200px" }
+      { rootMargin: "300px" }
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -73,38 +68,21 @@ export default function CardImage({
     );
   }
 
-  const showPlaceholder = placeholderSrc && !highLoaded;
-
   return (
     <div
       ref={ref}
-      className="aspect-[2.5/3.5] bg-slate-100 dark:bg-slate-800 rounded-xl overflow-hidden relative"
+      className={`aspect-[2.5/3.5] bg-gradient-to-br ${gradient} rounded-xl overflow-hidden relative`}
     >
-      {showPlaceholder && (
-        <img
-          src={placeholderSrc}
-          alt=""
-          aria-hidden
-          loading={priority ? "eager" : "lazy"}
-          decoding="async"
-          fetchPriority={priority ? "high" : "low"}
-          onLoad={() => setPlaceholderLoaded(true)}
-          className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-300 blur-sm scale-105 ${
-            placeholderLoaded ? "opacity-100" : "opacity-0"
-          }`}
-        />
-      )}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={highSrc}
         alt={name}
         loading={priority ? "eager" : "lazy"}
         decoding="async"
         fetchPriority={priority ? "high" : "auto"}
-        onLoad={() => setHighLoaded(true)}
+        onLoad={() => setLoaded(true)}
         onError={() => setError(true)}
         className={`w-full h-full object-contain transition-opacity duration-500 dark:brightness-110 ${
-          highLoaded ? "opacity-100" : "opacity-0"
+          loaded ? "opacity-100" : "opacity-0"
         }`}
       />
     </div>
