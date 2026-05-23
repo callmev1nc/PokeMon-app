@@ -5,6 +5,7 @@ import type { Product } from "@/lib/types";
 import { SHOP_NAME, SHOP_DESCRIPTION, FACEBOOK_URL } from "@/lib/constants";
 import { useLocaleStore } from "@/store/localeStore";
 import { t } from "@/lib/i18n";
+import { toRenderUrl } from "@/lib/imageUtils";
 import Header from "@/components/Header";
 import ProductGrid from "@/components/ProductGrid";
 import CartDrawer from "@/components/CartDrawer";
@@ -82,33 +83,41 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Featured Cards */}
+      {/* Hot Items */}
       {!loading && products.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 py-6">
           <h3 className="text-lg font-bold mb-4 text-slate-700 dark:text-slate-200 flex items-center gap-2" style={{ fontFamily: "var(--font-display)" }}>
-            <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
-            Featured Cards
+            <span className="text-orange-500">&#x1F525;</span>
+            Hot Items
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {products.slice(0, 4).map((product) => (
-              <a
-                key={product.id}
-                href={`/product?id=${encodeURIComponent(product.id)}`}
-                className="group relative bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50 overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
-              >
-                <div className="aspect-[2.5/3.5] bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900">
-                  {product.imageUrl && (
-                    <img src={product.imageUrl} alt={product.name} className="w-full h-full object-contain" loading="eager" />
-                  )}
-                </div>
-                <div className="p-3">
-                  <p className="text-xs font-semibold text-slate-800 dark:text-slate-100 truncate">{product.name}</p>
-                  <p className="text-amber-400 font-bold text-sm mt-1" style={{ fontFamily: "var(--font-display)" }}>
-                    {product.price !== null ? new Intl.NumberFormat("vi-VN").format(product.price) + "k" : "Liên hệ"}
-                  </p>
-                </div>
-              </a>
-            ))}
+            {products
+              .filter((p) => (p.stock ?? 0) > 0)
+              .sort((a, b) => (a.stock ?? 0) - (b.stock ?? 0))
+              .slice(0, 4)
+              .map((product) => (
+                <a
+                  key={product.id}
+                  href={`/product?id=${encodeURIComponent(product.id)}`}
+                  className="group relative bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50 overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
+                >
+                  <div className="absolute top-2 right-2 z-10 bg-gradient-to-r from-orange-500 to-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1">
+                    <span>&#x1F525;</span>
+                    Hot
+                  </div>
+                  <div className="aspect-[2.5/3.5] bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900">
+                    {product.imageUrl && (
+                      <img src={toRenderUrl(product.imageUrl)} alt={product.name} className="w-full h-full object-contain" loading="eager" />
+                    )}
+                  </div>
+                  <div className="p-3">
+                    <p className="text-xs font-semibold text-slate-800 dark:text-slate-100 truncate">{product.name}</p>
+                    <p className="text-amber-400 font-bold text-sm mt-1" style={{ fontFamily: "var(--font-display)" }}>
+                      {product.price !== null ? new Intl.NumberFormat("vi-VN").format(product.price) + "k" : "Liên hệ"}
+                    </p>
+                  </div>
+                </a>
+              ))}
           </div>
         </section>
       )}
