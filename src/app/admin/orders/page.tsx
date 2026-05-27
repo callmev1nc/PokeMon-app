@@ -124,6 +124,12 @@ export default function AdminOrdersPage() {
   useEffect(() => {
     fetchOrders();
     fetch("/api/products").then((r) => r.json()).then((data) => setProducts(Array.isArray(data) ? data : data?.data || [])).catch(() => {});
+    const interval = setInterval(fetchOrders, 30000);
+    window.addEventListener("focus", fetchOrders);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", fetchOrders);
+    };
   }, []);
 
   async function fetchOrders() {
@@ -743,9 +749,19 @@ export default function AdminOrdersPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 relative">
           <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">Tổng đơn hàng</p>
           <p className="text-2xl font-bold text-slate-800 mt-1">{orders.length}</p>
+          <button
+            onClick={fetchOrders}
+            disabled={loading}
+            className="absolute top-2 right-2 p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-40"
+            title="Làm mới"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182" />
+            </svg>
+          </button>
         </div>
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
           <p className="text-xs text-slate-400 font-medium uppercase tracking-wide">Chờ thanh toán</p>

@@ -162,7 +162,7 @@ export async function POST(req: NextRequest) {
         notes: sanitize(String(order.notes || "")),
         sellPrice: Number(order.sellPrice) || 0,
         buyPrice: Number(order.buyPrice) || 0,
-        shippingCost: 0,
+        shippingCost: Number(order.shippingCost) || 0,
         profit: 0,
         paymentStatus: "Chưa thanh toán" as const,
       };
@@ -341,7 +341,7 @@ export async function POST(req: NextRequest) {
             action: "updateOrder",
             row: sheetRow,
             data: filtered,
-          }).catch(() => {});
+          }).catch((e) => { console.error("Failed to sync order update to Sheets:", orderCode, e); });
         }
 
         return NextResponse.json(result);

@@ -115,7 +115,7 @@ export function adjustInventory(orderProducts: string, delta: number): void {
           code: product.code,
           type: product.type,
           quantity: -delta * qty,
-        }).catch(() => {});
+        }).catch(() => { console.error("Failed to sync stock to Sheets:", product.code); });
       }
     }
   }
@@ -163,7 +163,7 @@ export function updateProducts(
         return { _row: p._row, code: p.code, series: p.series, type: p.type, price: p.price, stock: p.stock };
       });
     if (sheetUpdates.length > 0) {
-      postSheet(STOCK_URL, { action: "updateProducts", products: sheetUpdates }).catch(() => {});
+      postSheet(STOCK_URL, { action: "updateProducts", products: sheetUpdates }).catch(() => { console.error("Failed to sync product updates to Sheets"); });
     }
   }
 
@@ -186,10 +186,10 @@ export function addProductLocal(
 
   // Push new product to Google Sheets
   if (STOCK_URL) {
-    postSheet(STOCK_URL, { action: "addProduct", product }).catch(() => {});
+    postSheet(STOCK_URL, { action: "addProduct", product }).catch(() => { console.error("Failed to sync new product to Stock Sheets:", product.code); });
   }
   if (BUSINESS_URL) {
-    postSheet(BUSINESS_URL, { action: "addProduct", product }).catch(() => {});
+    postSheet(BUSINESS_URL, { action: "addProduct", product }).catch(() => { console.error("Failed to sync new product to Business Sheets:", product.code); });
   }
 
   return { success: true };
@@ -248,7 +248,7 @@ export function addOrder(order: Omit<Order, "_row">): { success: boolean; orderC
 
   // Also push to Google Sheets in background
   if (BUSINESS_URL) {
-    postSheet(BUSINESS_URL, { action: "addOrder", order }).catch(() => {});
+    postSheet(BUSINESS_URL, { action: "addOrder", order: { ...order, orderCode } }).catch(() => { console.error("Failed to push order to Google Sheets:", orderCode); });
   }
 
   return { success: true, orderCode };
@@ -281,7 +281,7 @@ export function updateOrder(
       action: "updateOrder",
       row: orders[idx]._row || idx + 2,
       data,
-    }).catch(() => {});
+    }).catch(() => { console.error("Failed to sync order update to Sheets:", orders[idx]?.orderCode); });
   }
 
   return { success: true };
@@ -335,7 +335,7 @@ export function confirmOrder(
       action: "confirmOrder",
       row,
       data,
-    }).catch(() => {});
+    }).catch(() => { console.error("Failed to sync confirmOrder to Sheets, row:", row); });
   }
 
   return { success: true };
@@ -428,7 +428,7 @@ export function editOrderProducts(
       action: "updateOrder",
       row: order._row || idx + 2,
       data: { products: newProducts, sellPrice: newTotal },
-    }).catch(() => {});
+    }).catch(() => { console.error("Failed to sync editOrderProducts to Sheets, row:", order._row || idx + 2); });
   }
 
   return { success: true };
@@ -468,7 +468,7 @@ export function addCustomer(
   // Also push to Google Sheets in background (notes goes to column H)
   if (BUSINESS_URL) {
     postSheet(BUSINESS_URL, { action: "addCustomer", customer }).catch(
-      () => {}
+      () => { console.error("Failed to sync new customer to Sheets:", customer.name); }
     );
   }
 
@@ -489,7 +489,7 @@ export function updateCustomer(
       action: "updateCustomer",
       row: customers[index]._row || index + 2,
       data,
-    }).catch(() => {});
+    }).catch(() => { console.error("Failed to sync customer update to Sheets, row:", index); });
   }
 
   return { success: true };
