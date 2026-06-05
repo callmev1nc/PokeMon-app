@@ -77,6 +77,27 @@ export const POKEMON_TYPE_ICONS: Record<string, string> = {
   Fairy: "✨",
 };
 
+export const POKEMON_TYPE_ENERGY_ICONS: Record<string, string> = {
+  Fire: "/energy/fire.svg",
+  Water: "/energy/water.svg",
+  Grass: "/energy/grass.svg",
+  Lightning: "/energy/lightning.svg",
+  Psychic: "/energy/psychic.svg",
+  Fighting: "/energy/fighting.svg",
+  Colorless: "/energy/colorless.svg",
+  Flying: "/energy/colorless.svg",
+  Poison: "/energy/psychic.svg",
+  Ground: "/energy/fighting.svg",
+  Rock: "/energy/fighting.svg",
+  Bug: "/energy/grass.svg",
+  Ghost: "/energy/psychic.svg",
+  Dragon: "/energy/dragon.svg",
+  Metal: "/energy/metal.svg",
+  Ice: "/energy/water.svg",
+  Darkness: "/energy/dark.svg",
+  Fairy: "/energy/fairy.svg",
+};
+
 export const FACEBOOK_URL = process.env.NEXT_PUBLIC_FACEBOOK_URL || "";
 export const SHOP_NAME = process.env.NEXT_PUBLIC_SHOP_NAME || "";
 export const SHOP_DESCRIPTION = process.env.NEXT_PUBLIC_SHOP_DESCRIPTION || "";
