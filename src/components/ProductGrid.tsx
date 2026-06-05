@@ -34,12 +34,14 @@ function useColumnCount(ref: React.RefObject<HTMLDivElement | null>) {
   return cols;
 }
 
-export default function ProductGrid({ products }: { products: Product[] }) {
+export default function ProductGrid({ products, initialTypeFilter }: { products: Product[]; initialTypeFilter?: string | null }) {
   const [selectedTypes, setSelectedTypes] = useState<DisplayType[]>([
     "Normal", "Holo", "Prize Card", "EX", "Holo Prize Card", "EX Prize Card",
   ]);
   const [selectedGroups, setSelectedGroups] = useState<GroupCategory[]>([]);
-  const [selectedPokemonTypes, setSelectedPokemonTypes] = useState<string[]>([]);
+  const [selectedPokemonTypes, setSelectedPokemonTypes] = useState<string[]>(
+    initialTypeFilter ? [initialTypeFilter] : []
+  );
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortOption>("name-asc");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -48,6 +50,12 @@ export default function ProductGrid({ products }: { products: Product[] }) {
   const columns = useColumnCount(parentRef);
 
   useEffect(() => { initSearchIndex(products); }, [products]);
+
+  useEffect(() => {
+    if (initialTypeFilter) {
+      setSelectedPokemonTypes([initialTypeFilter]);
+    }
+  }, [initialTypeFilter]);
 
   const suggestions = useMemo(() => fuzzySearch(search), [search]);
 
