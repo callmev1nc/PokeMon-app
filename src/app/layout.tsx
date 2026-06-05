@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Bebas_Neue, Outfit } from "next/font/google";
 import ThemeSync from "@/components/ThemeSync";
 import NotificationToast from "@/components/NotificationToast";
+import Footer from "@/components/Footer";
 import "./globals.css";
 
 const bebas = Bebas_Neue({
@@ -59,11 +60,12 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
-      <body className="min-h-screen bg-surface-alt antialiased">
+      <body className="min-h-screen bg-[#FAFAFA] dark:bg-[#0F1629] antialiased flex flex-col">
         <NotificationToast>
           <ThemeSync />
           {children}
         </NotificationToast>
+        <Footer />
       </body>
     </html>
   );
