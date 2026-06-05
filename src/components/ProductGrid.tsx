@@ -7,6 +7,7 @@ import { DISPLAY_TYPES } from "@/lib/constants";
 import { useLocaleStore } from "@/store/localeStore";
 import { t } from "@/lib/i18n";
 import { initSearchIndex, fuzzySearch } from "@/lib/search";
+import { parseSearchQuery } from "@/lib/smartSearch";
 import ProductCard from "./ProductCard";
 import { InlineErrorBoundary } from "./ErrorBoundary";
 import FilterBar from "./FilterBar";
@@ -91,13 +92,27 @@ export default function ProductGrid({ products }: { products: Product[] }) {
     }
 
     if (search.trim()) {
-      const q = search.toLowerCase().trim();
-      result = result.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.code.toLowerCase().includes(q) ||
-          p.series.toLowerCase().includes(q)
-      );
+      const parsed = parseSearchQuery(search);
+      if (parsed.pokemonTypes.length > 0) {
+        result = result.filter((p) =>
+          parsed.pokemonTypes.some((t) => p.type?.toLowerCase() === t.toLowerCase())
+        );
+      }
+      if (parsed.displayTypes.length > 0) {
+        result = result.filter((p) => parsed.displayTypes.includes(p.displayType));
+      }
+      if (parsed.groups.length > 0) {
+        result = result.filter((p) => parsed.groups.includes(p.group as GroupCategory));
+      }
+      if (parsed.freeText) {
+        const q = parsed.freeText.toLowerCase();
+        result = result.filter(
+          (p) =>
+            p.name.toLowerCase().includes(q) ||
+            p.code.toLowerCase().includes(q) ||
+            p.series.toLowerCase().includes(q)
+        );
+      }
     }
 
     result = [...result].sort((a, b) => {

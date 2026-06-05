@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import type { Product } from "@/lib/types";
-import { TYPE_COLORS, POKEMON_TYPE_COLORS, POKEMON_TYPE_ICONS } from "@/lib/constants";
+import { TYPE_COLORS, POKEMON_TYPE_COLORS, POKEMON_TYPE_ICONS, POKEMON_TYPE_ENERGY_ICONS } from "@/lib/constants";
 import { useCartStore } from "@/store/cartStore";
 import { useWishlistStore } from "@/store/wishlistStore";
 import { useLocaleStore } from "@/store/localeStore";
@@ -77,7 +77,7 @@ export default function ProductCard({
   return (
     <div
       ref={fadeRef}
-      className={`product-card rounded-2xl border border-transparent overflow-hidden flex flex-col text-slate-700 dark:text-slate-200 transition-all duration-500 hover:shadow-xl hover:shadow-amber-500/5 hover:scale-[1.02] ${
+      className={`product-card rounded-2xl border border-transparent overflow-hidden flex flex-col text-slate-700 dark:text-slate-200 transition-all duration-500 hover:shadow-xl hover:shadow-red-500/10 hover:scale-[1.02] ${
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       }`}
     >
@@ -91,6 +91,12 @@ export default function ProductCard({
               displayType={product.displayType}
               priority={priority}
             />
+            {/* Energy icon badge */}
+            {product.type && POKEMON_TYPE_ENERGY_ICONS[product.type] && (
+              <div className="absolute top-2 right-2 z-10">
+                <img src={POKEMON_TYPE_ENERGY_ICONS[product.type]} alt="" className="w-4 h-4" />
+              </div>
+            )}
             {/* Hover overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             {isOutOfStock && (
@@ -136,7 +142,11 @@ export default function ProductCard({
         <div className="flex items-center gap-2 flex-wrap">
           {product.type && POKEMON_TYPE_COLORS[product.type] && (
             <span className={`pokemon-type-badge ${POKEMON_TYPE_COLORS[product.type]}`}>
-              <span>{POKEMON_TYPE_ICONS[product.type]}</span>
+              {POKEMON_TYPE_ENERGY_ICONS[product.type] ? (
+                <img src={POKEMON_TYPE_ENERGY_ICONS[product.type]} alt="" className="w-3 h-3 brightness-0 invert" />
+              ) : (
+                <span>{POKEMON_TYPE_ICONS[product.type]}</span>
+              )}
               <span>{product.type}</span>
             </span>
           )}
@@ -154,12 +164,12 @@ export default function ProductCard({
 
         {/* Price + Stock */}
         <div className="mt-auto pt-3 border-t border-slate-200 dark:border-slate-700/50">
-          <p className={`text-2xl font-bold tracking-tight ${noPrice ? "text-slate-400" : "text-amber-400 drop-shadow-sm"}`} style={{ fontFamily: "var(--font-display)", letterSpacing: "0.02em" }}>
+          <p className={`text-2xl font-bold tracking-tight ${noPrice ? "text-slate-400" : "text-[#E53E3E] drop-shadow-sm"}`} style={{ fontFamily: "var(--font-display)", letterSpacing: "0.02em" }}>
             {displayPrice(product.price)}
           </p>
           <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
             {t("product.remaining", locale)}{" "}
-            <span className={`font-semibold ${product.stock <= 3 ? "text-amber-500" : "text-slate-500 dark:text-slate-400"}`}>
+            <span className={`font-semibold ${product.stock <= 3 ? "text-[#F6AD55]" : "text-slate-500 dark:text-slate-400"}`}>
               {product.stock}
             </span>
             {inCart > 0 && (

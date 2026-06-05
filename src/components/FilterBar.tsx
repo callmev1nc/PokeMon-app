@@ -11,6 +11,7 @@ import {
   POKEMON_TYPES,
   POKEMON_TYPE_COLORS,
   POKEMON_TYPE_ICONS,
+  POKEMON_TYPE_ENERGY_ICONS,
 } from "@/lib/constants";
 import { useLocaleStore } from "@/store/localeStore";
 import { t } from "@/lib/i18n";
@@ -87,7 +88,7 @@ export default function FilterBar({
           onChange={(e) => onSearchChange(e.target.value)}
           onFocus={() => { if (search.trim() && suggestions.length > 0) setShowDropdown(true); }}
           onKeyDown={(e) => { if (e.key === "Escape") setShowDropdown(false); }}
-          className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-400 focus:border-brand-yellow transition-all"
+          className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-400 focus:border-[#E53E3E] focus:ring-1 focus:ring-[#E53E3E]/30 transition-all"
         />
         {search && (
           <button
@@ -193,7 +194,11 @@ export default function FilterBar({
                   : "bg-white dark:bg-[#0F1629] text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700/50 hover:border-slate-300"
               }`}
             >
-              <span>{POKEMON_TYPE_ICONS[type]}</span>
+              {POKEMON_TYPE_ENERGY_ICONS[type] ? (
+                <img src={POKEMON_TYPE_ENERGY_ICONS[type]} alt="" className="w-3 h-3 brightness-0 invert" />
+              ) : (
+                <span>{POKEMON_TYPE_ICONS[type]}</span>
+              )}
               <span className="hidden sm:inline">{type}</span>
             </button>
           );
