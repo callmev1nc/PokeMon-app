@@ -49,9 +49,9 @@ export default function HeroBanner() {
       </div>
 
       {/* Wave bottom */}
-      <div className="absolute bottom-0 left-0 right-0">
-        <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
-          <path d="M0 60V30C240 0 480 0 720 30C960 60 1200 60 1440 30V60H0Z" fill="#FAFAFA" />
+      <div className="absolute bottom-0 left-0 right-0 h-[30px] bg-[#FAFAFA] dark:bg-[#0F1629]">
+        <svg viewBox="0 0 1440 30" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full absolute -top-[29px]">
+          <path d="M0 30V15C240 0 480 0 720 15C960 30 1200 30 1440 15V30H0Z" fill="currentColor" className="text-[#FAFAFA] dark:text-[#0F1629]" />
         </svg>
       </div>
     </section>

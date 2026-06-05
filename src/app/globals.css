@@ -106,6 +106,9 @@
    DARK MODE
    ═══════════════════════════════════════════════════════ */
 .dark {
+  --color-brand: #FC8181;
+  --color-brand-dark: #E53E3E;
+
   --background: #050816;
   --foreground: #E2E8F0;
   --text-primary: #F1F5F9;
