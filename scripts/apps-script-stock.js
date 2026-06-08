@@ -61,7 +61,7 @@ function handlePost(body) {
 // Row 0-1: title/headers, Row 2: column headers, Row 3+: data
 // Columns: [0]No/code, [1]Stype/group, [2]Good desc/name,
 //          [3]Series, [4]Type, [5]KHO, [6]Unit Price,
-//          [7]ĐẦU KỲ, [8]XUẤT, [9]NHẬP, [10]TỒN, [11]SUM
+//          [7]Stock/ĐẦU KỲ(H), [8]XUẤT(I), [9]NHẬP(J), [10]SUM(K)
 // ============================================================
 
 function getStockSheet() {
@@ -108,7 +108,7 @@ function getProducts() {
     var rawType = String(row[4] || "").trim().toLowerCase();
     var kho = String(row[5] || "").trim();
     var price = row[6] ? Number(row[6]) : null;
-    var stock = row[10] ? Number(row[10]) : 0;
+    var stock = row[7] ? Number(row[7]) : 0;
 
     // Look up buy price from MENU
     var menuKey = code + "|" + series.toUpperCase();
@@ -128,6 +128,16 @@ function getProducts() {
       stock: Math.round(stock),
     });
   }
+
+  // Stock health check: warn if all products have 0 stock
+  var totalStock = 0;
+  for (var j = 0; j < products.length; j++) {
+    totalStock += products[j].stock;
+  }
+  if (totalStock === 0 && products.length > 10) {
+    Logger.log("WARNING: Total stock is 0 across " + products.length + " products. Check Stock/ĐẦU KỲ column (column H).");
+  }
+
   return products;
 }
 
@@ -149,10 +159,10 @@ function updateProducts(products) {
     var prod = products[p];
     var rowNum = prod._row || rowMap[prod.code + "|" + prod.series + "|" + prod.type];
     if (!rowNum) continue;
-    if (prod.price !== undefined) sheet.getRange(rowNum, 7).setValue(prod.price);  // Unit Price
-    if (prod.stock !== undefined) sheet.getRange(rowNum, 11).setValue(prod.stock); // TỒN
-    if (prod.xuat !== undefined) sheet.getRange(rowNum, 9).setValue(prod.xuat);   // XUẤT
-    if (prod.nhap !== undefined) sheet.getRange(rowNum, 10).setValue(prod.nhap);   // NHẬP
+    if (prod.price !== undefined) sheet.getRange(rowNum, 7).setValue(prod.price);   // Unit Price
+    if (prod.stock !== undefined) sheet.getRange(rowNum, 8).setValue(prod.stock);   // Stock/ĐẦU KỲ (H)
+    if (prod.xuat !== undefined) sheet.getRange(rowNum, 9).setValue(prod.xuat);     // XUẤT (I)
+    if (prod.nhap !== undefined) sheet.getRange(rowNum, 10).setValue(prod.nhap);    // NHẬP (J)
     updated++;
   }
   return { success: true, updated: updated };
@@ -167,18 +177,14 @@ function updateStock(code, type, quantity) {
     var rowCode = String(data[i][0] || "").trim();
     var rowType = String(data[i][4] || "").trim().toLowerCase();
     if (rowCode === code && rowType === type.toLowerCase()) {
-      // Always update XUẤT (column I = col 9)
+      // Always update XUẤT (column I = col 9) for audit tracking
       var currentXuat = Number(data[i][8]) || 0;
       sheet.getRange(i + 1, 9).setValue(currentXuat + quantity);
 
-      // Only update TỒN (column K = col 11) if it's not a formula
-      var tonCell = sheet.getRange(i + 1, 11);
-      var formula = tonCell.getFormula();
-      if (!formula) {
-        var currentStock = Number(data[i][10]) || 0;
-        var newStock = Math.max(0, currentStock - quantity);
-        tonCell.setValue(newStock);
-      }
+      // Always update Stock/ĐẦU KỲ (column H = col 8) directly
+      var currentStock = Number(data[i][7]) || 0;
+      var newStock = Math.max(0, currentStock - quantity);
+      sheet.getRange(i + 1, 8).setValue(newStock);
       return { success: true };
     }
   }
@@ -239,10 +245,9 @@ function addProduct(product) {
   sheet.getRange(nextRow, 5).setValue(product.type || "");         // Type
   sheet.getRange(nextRow, 6).setValue("");                         // KHO
   sheet.getRange(nextRow, 7).setValue(product.price || "");        // Unit Price
-  sheet.getRange(nextRow, 8).setValue("");                         // ĐẦU KỲ
-  sheet.getRange(nextRow, 9).setValue("");                         // XUẤT
-  sheet.getRange(nextRow, 10).setValue("");                        // NHẬP
-  sheet.getRange(nextRow, 11).setValue(product.stock || 0);        // TỒN
+  sheet.getRange(nextRow, 8).setValue(product.stock || 0);         // Stock/ĐẦU KỲ (H)
+  sheet.getRange(nextRow, 9).setValue("");                          // XUẤT (I)
+  sheet.getRange(nextRow, 10).setValue("");                         // NHẬP (J)
 
   return { success: true };
 }
@@ -261,7 +266,7 @@ function mapDisplayType(rawType) {
   return "Normal";
 }
 
-// NHẬP KHO: Increase NHẬP and TỒN for a product by code (+ optional series/type)
+// NHẬP KHO: Increase NHẬP and Stock for a product by code (+ optional series/type)
 function nhapKho(code, quantity, series, type) {
   var sheet = getStockSheet();
   if (!sheet) return { error: "Sheet not found" };
@@ -280,13 +285,9 @@ function nhapKho(code, quantity, series, type) {
       var currentNhap = Number(data[i][9]) || 0;
       sheet.getRange(i + 1, 10).setValue(currentNhap + quantity);
 
-      // Update TỒN (column K = col 11) if not a formula
-      var tonCell = sheet.getRange(i + 1, 11);
-      var formula = tonCell.getFormula();
-      if (!formula) {
-        var currentTon = Number(data[i][10]) || 0;
-        tonCell.setValue(currentTon + quantity);
-      }
+      // Update Stock/ĐẦU KỲ (column H = col 8) directly
+      var currentTon = Number(data[i][7]) || 0;
+      sheet.getRange(i + 1, 8).setValue(currentTon + quantity);
       updated++;
     }
   }

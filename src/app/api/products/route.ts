@@ -94,6 +94,15 @@ export async function GET(req: NextRequest) {
 
     cachedResponse = { data: withId, timestamp: Date.now() };
 
+    // Stock health diagnostic: warn if all products have 0 stock
+    const inStockCount = withId.filter((p) => p.stock > 0).length;
+    if (inStockCount === 0 && withId.length > 10) {
+      console.error(
+        `[STOCK HEALTH] All ${withId.length} products have 0 stock — possible data source issue. ` +
+        `Check Google Sheets TỒN column formulas.`
+      );
+    }
+
     return NextResponse.json(withId, {
       headers: {
         "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600",

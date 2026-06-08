@@ -87,8 +87,12 @@ export function adjustInventory(orderProducts: string, delta: number): void {
     if (!match) continue;
     const quantity = parseInt(match[1]) * delta;
     const code = match[3];
+    const name = match[2];
 
-    const product = products.find((p) => p.code === code);
+    // Match by code + name to avoid wrong-variant adjustments
+    // (e.g., same card code exists as both holo and normal)
+    const product = products.find((p) => p.code === code && p.name === name)
+      || products.find((p) => p.code === code);
     if (product) {
       product.stock = Math.max(0, product.stock + quantity);
     }
@@ -105,7 +109,9 @@ export function adjustInventory(orderProducts: string, delta: number): void {
       if (!match) continue;
       const qty = parseInt(match[1]);
       const code = match[3];
-      const product = products.find((p) => p.code === code);
+      const name = match[2];
+      const product = products.find((p) => p.code === code && p.name === name)
+        || products.find((p) => p.code === code);
       if (product) {
         // updateStock: quantity is subtracted from TỒN, added to XUẤT
         // For confirm (delta=-1): send +qty to reduce stock, increase xuất
@@ -121,11 +127,53 @@ export function adjustInventory(orderProducts: string, delta: number): void {
   }
 }
 
+/**
+ * Validate remote stock data against local data to detect anomalies.
+ * Returns { valid: false, reason } if remote data looks wrong.
+ */
+function validateStockData(
+  remote: Product[],
+  local: Product[]
+): { valid: boolean; reason?: string } {
+  const remoteInStock = remote.filter((p) => p.stock > 0).length;
+  const localInStock = local.filter((p) => p.stock > 0).length;
+
+  // All products have 0 stock from remote, but local has stock → definitely wrong
+  if (remoteInStock === 0 && localInStock > 0) {
+    return { valid: false, reason: "all-zero" };
+  }
+
+  // Remote has fewer than 10% of local in-stock count → suspicious data drop
+  if (remoteInStock < localInStock * 0.1 && localInStock > 10) {
+    return {
+      valid: false,
+      reason: `anomalous-drop (remote: ${remoteInStock}/${remote.length}, local: ${localInStock}/${local.length})`,
+    };
+  }
+
+  return { valid: true };
+}
+
 export async function fetchProductsLive(): Promise<Product[]> {
   if (STOCK_URL) {
     const data = await fetchSheet<Product[]>(`${STOCK_URL}?action=products`);
     if (data && Array.isArray(data) && data.length > 0) {
-      // Keep local cache in sync so fallbacks always have the latest data
+      // Validate remote stock data before accepting it
+      const localProducts = fetchProducts();
+      const validation = validateStockData(data, localProducts);
+
+      if (!validation.valid) {
+        console.error(
+          `[STOCK WARNING] Google Sheets stock data appears invalid (${validation.reason}). ` +
+          `Remote in-stock: ${data.filter((p) => p.stock > 0).length}/${data.length}. ` +
+          `Local in-stock: ${localProducts.filter((p) => p.stock > 0).length}/${localProducts.length}. ` +
+          `Falling back to local data.`
+        );
+        // Do NOT overwrite the cache with bad data
+        return localProducts;
+      }
+
+      // Data looks good — keep local cache in sync
       productsCache = data;
       writeJson("products.json", data);
       return data;
@@ -399,17 +447,18 @@ export function editOrderProducts(
 
   // Recalculate sellPrice from stored prices or current prices
   const allProducts = fetchProducts();
-  const pMap = new Map(allProducts.map((p) => [p.code, p]));
   const newTotal = (newProducts || "").split(", ").reduce((sum, item) => {
     const match = item.match(/^(\d+)x\s+(.+?)\s+-\s+([^\s|]+)(?:\|([\d.]+))?$/);
     if (!match) return sum;
     const qty = parseInt(match[1]);
     const code = match[3];
+    const name = match[2];
     const storedPrice = match[4] !== undefined ? parseFloat(match[4]) : null;
     if (storedPrice !== null) {
       return sum + storedPrice * qty * 1000;
     }
-    const prod = pMap.get(code);
+    const prod = allProducts.find((p) => p.code === code && p.name === name)
+      || allProducts.find((p) => p.code === code);
     if (!prod || prod.price === null) return sum;
     return sum + prod.price * qty * 1000;
   }, 0);

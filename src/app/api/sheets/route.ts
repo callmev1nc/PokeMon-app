@@ -363,15 +363,16 @@ export async function POST(req: NextRequest) {
         // Push to Google Sheets with correct row
         if (sheetRow && BUSINESS_URL) {
           const allProducts = await fetchProductsLive();
-          const pMap = new Map(allProducts.map((p) => [p.code, p]));
           const newTotal = (newProducts || "").split(", ").reduce((sum, item) => {
             const match = item.match(/^(\d+)x\s+(.+?)\s+-\s+([^\s|]+)(?:\|([\d.]+))?$/);
             if (!match) return sum;
             const qty = parseInt(match[1]);
             const code = match[3];
+            const name = match[2];
             const storedPrice = match[4] !== undefined ? parseFloat(match[4]) : null;
             if (storedPrice !== null) return sum + storedPrice * qty * 1000;
-            const prod = pMap.get(code);
+            const prod = allProducts.find((p) => p.code === code && p.name === name)
+              || allProducts.find((p) => p.code === code);
             if (!prod || prod.price === null) return sum;
             return sum + prod.price * qty * 1000;
           }, 0);

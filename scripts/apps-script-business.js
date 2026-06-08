@@ -290,13 +290,15 @@ function adjustInventory(productsString, delta) {
       if (!match) continue;
       var quantity = parseInt(match[1]) * delta;
 
-      // Find matching product by code in stock sheet
+      // Find matching product by code + name in stock sheet
+      // (same code can have multiple variants like holo/normal)
       for (var s = 2; s < stockData.length; s++) {
         var stockCode = String(stockData[s][0] || "").trim();
-        if (stockCode === match[3]) {
-          var currentStock = Number(stockData[s][10]) || 0;
+        var stockName = String(stockData[s][2] || "").trim();
+        if (stockCode === match[3] && stockName === match[2]) {
+          var currentStock = Number(stockData[s][7]) || 0;
           var newStock = Math.max(0, currentStock + quantity);
-          stockSheet.getRange(s + 1, 11).setValue(newStock); // TỒN
+          stockSheet.getRange(s + 1, 8).setValue(newStock); // Stock/ĐẦU KỲ (H)
 
           // Update XUẤT column
           var currentXuat = Number(stockData[s][8]) || 0;
@@ -418,7 +420,7 @@ function getAllProducts() {
         var key = code + "|" + series.toUpperCase();
         var kho = String(stockData[i][5] || "").trim();
         var price = stockData[i][6] ? Number(stockData[i][6]) : null;
-        var stock = stockData[i][10] ? Number(stockData[i][10]) : 0;
+        var stock = stockData[i][7] ? Number(stockData[i][7]) : 0;
         stockMap[key] = { kho: kho, stock: stock, price: price };
 
         // Add stock-only products not already in MENU
@@ -482,10 +484,9 @@ function addProductToMenu(product) {
   sheet.getRange(nextRow, 5).setValue(product.type || "");         // Type
   sheet.getRange(nextRow, 6).setValue("");                          // KHO
   sheet.getRange(nextRow, 7).setValue(product.price || "");         // Unit Price
-  sheet.getRange(nextRow, 8).setValue("");                          // ĐẦU KỲ
-  sheet.getRange(nextRow, 9).setValue("");                          // XUẤT
-  sheet.getRange(nextRow, 10).setValue("");                         // NHẬP
-  sheet.getRange(nextRow, 11).setValue(product.stock || 0);         // TỒN
+  sheet.getRange(nextRow, 8).setValue(product.stock || 0);          // Stock/ĐẦU KỲ (H)
+  sheet.getRange(nextRow, 9).setValue("");                          // XUẤT (I)
+  sheet.getRange(nextRow, 10).setValue("");                         // NHẬP (J)
 
   return { success: true };
 }
