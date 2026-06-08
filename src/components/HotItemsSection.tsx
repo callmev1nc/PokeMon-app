@@ -1,19 +1,24 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import type { Product } from "@/lib/types";
+import { useCartStore } from "@/store/cartStore";
 import { POKEMON_TYPE_ENERGY_ICONS } from "@/lib/constants";
 import { formatPrice } from "@/lib/format";
 import CardImage from "./CardImage";
 
-interface HotItemsSectionProps {
-  products: Product[];
-}
+export default function HotItemsSection() {
+  const [hotItems, setHotItems] = useState<Product[]>([]);
+  const addToCart = useCartStore((s) => s.addItem);
 
-export default function HotItemsSection({ products }: HotItemsSectionProps) {
-  const hotItems = [...products]
-    .filter((p) => p.stock > 0 && p.stock <= 5 && p.price !== null)
-    .sort((a, b) => a.stock - b.stock)
-    .slice(0, 4);
+  useEffect(() => {
+    fetch("/api/hot-items")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) setHotItems(data);
+      })
+      .catch(() => {});
+  }, []);
 
   if (hotItems.length === 0) return null;
 
@@ -25,7 +30,7 @@ export default function HotItemsSection({ products }: HotItemsSectionProps) {
             🔥 Hot Items
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Low stock — grab them before they&apos;re gone!
+            Sản phẩm bán chạy nhất 3 tháng qua!
           </p>
         </div>
         <a href="/hot-items" className="text-[#E53E3E] text-xs font-semibold hover:underline">
@@ -68,11 +73,18 @@ export default function HotItemsSection({ products }: HotItemsSectionProps) {
                   <span className="text-[#E53E3E] font-extrabold text-sm" style={{ fontFamily: "var(--font-display)" }}>
                     {formatPrice(product.price)}
                   </span>
-                  <button className="bg-[#E53E3E] text-white w-7 h-7 rounded-lg flex items-center justify-center text-lg font-bold hover:bg-[#C53030] transition-colors">
-                    +
-                  </button>
+                  {product.stock > 0 && product.price !== null ? (
+                    <button
+                      onClick={() => addToCart(product, 1)}
+                      className="bg-[#E53E3E] text-white w-7 h-7 rounded-lg flex items-center justify-center text-lg font-bold hover:bg-[#C53030] transition-colors"
+                    >
+                      +
+                    </button>
+                  ) : (
+                    <span className="text-[10px] text-slate-400 font-medium">Hết hàng</span>
+                  )}
                 </div>
-                {product.stock <= 3 && (
+                {product.stock > 0 && product.stock <= 3 && (
                   <p className="text-[9px] text-[#F6AD55] font-semibold mt-1">
                     ⚠ Only {product.stock} left!
                   </p>

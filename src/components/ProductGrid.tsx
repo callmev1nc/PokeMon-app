@@ -11,6 +11,7 @@ import { parseSearchQuery } from "@/lib/smartSearch";
 import ProductCard from "./ProductCard";
 import { InlineErrorBoundary } from "./ErrorBoundary";
 import FilterBar from "./FilterBar";
+import ProductPreviewModal from "./ProductPreviewModal";
 
 const PAGE_SIZE = 24;
 const CARD_HEIGHT = 420;
@@ -45,6 +46,7 @@ export default function ProductGrid({ products, initialTypeFilter }: { products:
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortOption>("name-asc");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [previewProduct, setPreviewProduct] = useState<Product | null>(null);
   const locale = useLocaleStore((s) => s.locale);
   const parentRef = useRef<HTMLDivElement>(null);
   const columns = useColumnCount(parentRef);
@@ -187,6 +189,7 @@ export default function ProductGrid({ products, initialTypeFilter }: { products:
         filteredTotal={filtered.length}
         filteredStock={totalStock}
         suggestions={suggestions}
+        onSuggestionClick={setPreviewProduct}
       />
 
       {filtered.length === 0 ? (
@@ -244,6 +247,12 @@ export default function ProductGrid({ products, initialTypeFilter }: { products:
           )}
         </>
       )}
+
+      <ProductPreviewModal
+        product={previewProduct}
+        isOpen={!!previewProduct}
+        onClose={() => setPreviewProduct(null)}
+      />
     </div>
   );
 }

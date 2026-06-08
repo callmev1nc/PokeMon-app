@@ -50,7 +50,7 @@ export default function CheckoutPage() {
       const customerStr = sessionStorage.getItem("customerInfo");
       const customer = customerStr
         ? JSON.parse(customerStr)
-        : { name: "", phone: "", newAddress: "", oldAddress: "", notes: "", deliveryMethod: "shipping" };
+        : { name: "", phone: "", newAddress: "", oldAddress: "", notes: "", deliveryMethod: "shopee" };
 
       const productDesc = items
         .map((item) => {
@@ -59,8 +59,9 @@ export default function CheckoutPage() {
         })
         .join(", ");
 
-      const isShipping = customer.deliveryMethod !== "pickup";
-      const shippingCost = isShipping ? 15000 : 0;
+      const deliveryMethod = customer.deliveryMethod || "shopee";
+      const isPickup = deliveryMethod === "pickup";
+      const shippingCost = deliveryMethod === "shopee" ? 15000 : 0;
 
       const order = {
         timestamp: new Date().toISOString(),
@@ -69,9 +70,9 @@ export default function CheckoutPage() {
         products: productDesc,
         customerName: customer.name,
         phone: customer.phone,
-        address: isShipping ? (customer.newAddress || customer.oldAddress) : "Tự đến lấy",
+        address: isPickup ? "Tự đến lấy" : (customer.newAddress || customer.oldAddress),
         oldAddress: customer.oldAddress || "",
-        notes: customer.notes || "",
+        notes: (deliveryMethod === "grab" ? "[Grab - chờ tính phí] " : "") + (customer.notes || ""),
         sellPrice: total * 1000,
         buyPrice: 0,
         shippingCost,

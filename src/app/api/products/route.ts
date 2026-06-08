@@ -51,7 +51,10 @@ export async function GET(req: NextRequest) {
   }
 
   if (cachedResponse && Date.now() - cachedResponse.timestamp < CACHE_TTL) {
-    return NextResponse.json(cachedResponse.data, {
+    const { buyPrice: _, _row: __, ...first } = cachedResponse.data[0] || {};
+    // Strip admin fields for cached response
+    const cached = cachedResponse.data.map(({ buyPrice, _row, ...rest }: Product & { buyPrice?: unknown; _row?: unknown }) => rest);
+    return NextResponse.json(cached, {
       headers: {
         "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600",
         "X-RateLimit-Remaining": String(remaining),
@@ -94,6 +97,9 @@ export async function GET(req: NextRequest) {
 
     cachedResponse = { data: withId, timestamp: Date.now() };
 
+    // Strip admin-only fields from client response to reduce payload
+    const clientProducts = withId.map(({ buyPrice, _row, ...rest }) => rest);
+
     // Stock health diagnostic: warn if all products have 0 stock
     const inStockCount = withId.filter((p) => p.stock > 0).length;
     if (inStockCount === 0 && withId.length > 10) {
@@ -103,7 +109,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    return NextResponse.json(withId, {
+    return NextResponse.json(clientProducts, {
       headers: {
         "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600",
         "X-RateLimit-Remaining": String(remaining),

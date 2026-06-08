@@ -30,6 +30,7 @@ interface FilterBarProps {
   filteredTotal: number;
   filteredStock: number;
   suggestions?: Product[];
+  onSuggestionClick?: (product: Product) => void;
 }
 
 export default function FilterBar({
@@ -46,6 +47,7 @@ export default function FilterBar({
   filteredTotal,
   filteredStock,
   suggestions = [],
+  onSuggestionClick,
 }: FilterBarProps) {
   const locale = useLocaleStore((s) => s.locale);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -68,7 +70,7 @@ export default function FilterBar({
   }, []);
 
   return (
-    <div className="flex flex-col gap-3 mb-6 sticky top-16 z-20 py-3 -mx-4 px-4 bg-[var(--background)]/90 backdrop-blur-md">
+    <div className="flex flex-col gap-1.5 mb-4 sticky top-16 z-20 py-2 -mx-4 px-4 bg-[var(--background)]/90 backdrop-blur-md">
       {/* Search */}
       <div className="relative group" ref={wrapperRef}>
         <svg
@@ -103,13 +105,19 @@ export default function FilterBar({
 
         {/* Autocomplete dropdown */}
         {showDropdown && suggestions.length > 0 && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 rounded-xl shadow-lg overflow-hidden z-50 max-h-80 overflow-y-auto">
+          <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 rounded-xl shadow-lg overflow-hidden z-50 max-h-60 overflow-y-auto">
             {suggestions.map((product) => (
-              <a
+              <button
                 key={product.id}
-                href={`/product?id=${encodeURIComponent(product.id)}`}
-                onMouseDown={(e) => { e.preventDefault(); setShowDropdown(false); }}
-                className="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border-b border-slate-100 dark:border-slate-700/30 last:border-b-0"
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  setShowDropdown(false);
+                  if (onSuggestionClick) {
+                    onSuggestionClick(product);
+                  }
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border-b border-slate-100 dark:border-slate-700/30 last:border-b-0 text-left"
               >
                 {product.imageUrl ? (
                   <img src={product.imageUrl} alt="" className="w-8 h-8 object-contain rounded" />
@@ -131,7 +139,7 @@ export default function FilterBar({
                 }`}>
                   {product.displayType}
                 </span>
-              </a>
+              </button>
             ))}
           </div>
         )}
