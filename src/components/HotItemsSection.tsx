@@ -23,7 +23,7 @@ export default function HotItemsSection() {
   if (hotItems.length === 0) return null;
 
   return (
-    <section className="max-w-7xl mx-auto px-4 py-6">
+    <section className="max-w-7xl mx-auto px-4 py-3">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-xl font-black text-[#E53E3E] flex items-center gap-2" style={{ fontFamily: "var(--font-display)" }}>

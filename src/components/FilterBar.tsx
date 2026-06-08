@@ -70,7 +70,7 @@ export default function FilterBar({
   }, []);
 
   return (
-    <div className="flex flex-col gap-1.5 mb-4 sticky top-16 z-20 py-2 -mx-4 px-4 bg-[var(--background)]/90 backdrop-blur-md">
+    <div className="flex flex-col gap-1.5 mb-2 sticky top-16 z-20 py-1 -mx-4 px-4 bg-[var(--background)]/90 backdrop-blur-md">
       {/* Search */}
       <div className="relative group" ref={wrapperRef}>
         <svg

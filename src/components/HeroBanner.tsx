@@ -7,7 +7,7 @@ export default function HeroBanner() {
       <div className="absolute top-[-80px] right-[-40px] w-[200px] h-[200px] border-[8px] border-white/[0.08] rounded-full" />
       <div className="absolute bottom-[-60px] left-[40px] w-[140px] h-[140px] border-[6px] border-white/[0.06] rounded-full" />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 py-16 sm:py-24 text-center">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 py-10 sm:py-14 text-center">
         {/* Logo mark */}
         <div className="w-[70px] h-[70px] bg-white rounded-full mx-auto mb-5 flex items-center justify-center shadow-lg shadow-black/10">
           <img src="/logo.png" alt="V1NCC" className="w-12 h-12 object-contain rounded-full" />
@@ -20,12 +20,12 @@ export default function HeroBanner() {
         >
           V1NCC TCG
         </h1>
-        <p className="text-white/80 text-sm sm:text-base font-medium mb-8">
+        <p className="text-white/80 text-sm sm:text-base font-medium mb-6">
           Premium Pokemon Trading Cards • Vietnam
         </p>
 
         {/* CTAs */}
-        <div className="flex gap-3 justify-center flex-wrap mb-8">
+        <div className="flex gap-3 justify-center flex-wrap mb-6">
           <a
             href="#shop"
             className="bg-white text-[#E53E3E] px-8 py-3 rounded-full font-extrabold text-sm shadow-lg shadow-black/10 hover:shadow-xl hover:scale-105 transition-all duration-200"

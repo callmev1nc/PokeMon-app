@@ -38,7 +38,7 @@ export default function HomeClient({ products }: { products: Product[] }) {
           </>
         )}
 
-        <div id="shop" className="max-w-7xl mx-auto px-4 py-6 pb-24 sm:pb-8">
+        <div id="shop" className="max-w-7xl mx-auto px-4 pt-2 pb-24 sm:pb-4">
           <ProductGrid products={products} initialTypeFilter={typeFilter} />
         </div>
       </main>
