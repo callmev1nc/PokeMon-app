@@ -13,3 +13,13 @@ src/data/*.json
 !src/data/image-map.json
 !src/data/products.json
 !src/data/groups.json
+
+# Build artifacts
+tsconfig.tsbuildinfo
+
+# Local tool settings
+.claude/settings.local.json
+
+# Temporary data dumps (dev only)
+/*-temp.json
+/all-series.json
