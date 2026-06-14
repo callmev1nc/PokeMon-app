@@ -1,15 +1,21 @@
 import crypto from "crypto";
 import { findAdmin, getAdmins, type AdminRole } from "./adminAccounts";
 
-const SESSION_SECRET =
-  process.env.SESSION_SECRET || (() => {
-    if (process.env.NODE_ENV === "production") {
-      console.error("\x1b[31mSECURITY WARNING: SESSION_SECRET not set! Generating random secret — sessions will not persist across restarts.\x1b[0m");
-    } else {
-      console.warn("\x1b[33mWARNING: Using auto-generated SESSION_SECRET. Set SESSION_SECRET env var for persistent sessions.\x1b[0m");
-    }
-    return crypto.randomBytes(32).toString("hex");
-  })();
+// SESSION_SECRET is resolved lazily (getSecret) rather than at module load, so that
+// `next build` does NOT require it. Vercel stores it as a Sensitive (Encrypted) env
+// var (runtime-only, not available during the build step). The production-required
+// check therefore runs on first use (request time), not at import.
+const DEV_FALLBACK_SECRET = "dev-shared-secret-not-for-production"; // must match src/lib/auth-edge.ts
+
+function getSecret(): string {
+  const s = process.env.SESSION_SECRET;
+  if (s) return s;
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("SESSION_SECRET environment variable is required in production.");
+  }
+  console.warn("\x1b[33mWARNING: Using shared dev SESSION_SECRET. Set SESSION_SECRET env var for persistent/secure sessions.\x1b[0m");
+  return DEV_FALLBACK_SECRET;
+}
 const COOKIE_NAME = "admin-session";
 const SESSION_MAX_AGE = 60 * 60 * 24; // 24 hours
 
@@ -26,7 +32,7 @@ export async function verifyCredentials(
 
 export function createSession(username: string, role: AdminRole): string {
   const payload = `${username}:${role}:${Date.now()}`;
-  const hmac = crypto.createHmac("sha256", SESSION_SECRET);
+  const hmac = crypto.createHmac("sha256", getSecret());
   hmac.update(payload);
   const signature = hmac.digest("hex");
   return Buffer.from(`${payload}:${signature}`).toString("base64");
@@ -46,7 +52,7 @@ export function verifySession(token: string): boolean {
     const age = Date.now() - parseInt(timestamp);
     if (isNaN(age) || age > SESSION_MAX_AGE * 1000) return false;
 
-    const hmac = crypto.createHmac("sha256", SESSION_SECRET);
+    const hmac = crypto.createHmac("sha256", getSecret());
     hmac.update(`${username}:${role}:${timestamp}`);
     const expected = hmac.digest("hex");
     return crypto.timingSafeEqual(
@@ -74,7 +80,7 @@ export function sessionCookieOptions(): string {
     "HttpOnly",
     "Path=/",
     `Max-Age=${SESSION_MAX_AGE}`,
-    "SameSite=Lax",
+    "SameSite=Strict",
     process.env.NODE_ENV === "production" ? "Secure" : "",
   ]
     .filter(Boolean)

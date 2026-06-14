@@ -7,6 +7,18 @@ const SECURITY_HEADERS: Record<string, string> = {
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": "microphone=(), geolocation=()",
   "X-DNS-Prefetch-Control": "on",
+  ...(process.env.NODE_ENV === "production" ? {
+    "Strict-Transport-Security": "max-age=63072000; includeSubDomains",
+  } : {}),
+  "Content-Security-Policy": [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline'",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' https://assets.tcgdex.net https://images.pokemontcg.io data:",
+    "connect-src 'self'",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+  ].join("; "),
 };
 
 const ADMIN_HEADERS: Record<string, string> = {

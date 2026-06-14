@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import {
   fetchProducts,
   fetchProductsLive,
@@ -18,10 +19,10 @@ import {
   postSheet,
   adjustInventory,
 } from "@/lib/data";
-import { verifySession, COOKIE_NAME } from "@/lib/auth-edge";
+import { verifySession, parseSession, COOKIE_NAME } from "@/lib/auth-edge";
 import { logAction, getAuditLog } from "@/lib/auditLog";
 import { getSessionRole } from "@/lib/auth";
-import { orderSchema, customerSchema } from "@/lib/schemas";
+import { orderSchema, customerSchema, productSchema, productUpdateItemSchema } from "@/lib/schemas";
 import { createRateLimiter } from "@/lib/rateLimit";
 
 const BUSINESS_URL = process.env.GOOGLE_BUSINESS_URL || "";
@@ -49,10 +50,13 @@ function sanitize(str: string): string {
 // Simple in-memory rate limiter for public endpoints
 const publicRateLimiter = createRateLimiter({ maxRequests: 10, windowMs: 60_000 });
 
+// Admin write rate limiter (keyed by username, not IP)
+const adminRateLimiter = createRateLimiter({ maxRequests: 60, windowMs: 60_000 });
+
 // Validate origin for admin POST requests (CSRF protection)
 function validateOrigin(req: NextRequest): boolean {
   const origin = req.headers.get("origin");
-  if (!origin) return true;
+  if (!origin) return false;
   const host = req.headers.get("host");
   if (!host) return false;
   try {
@@ -218,6 +222,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
   }
 
+  // Rate limit admin writes by username
+  const sessionToken = req.cookies.get(COOKIE_NAME)?.value;
+  const sessionUser = sessionToken ? parseSession(sessionToken) : null;
+  const adminKey = sessionUser?.username || "unknown";
+  if (!adminRateLimiter(adminKey).allowed) {
+    return NextResponse.json({ error: "Quá nhiều yêu cầu. Vui lòng thử lại sau." }, { status: 429 });
+  }
+
   try {
     switch (action) {
       case "addProduct": {
@@ -228,22 +240,39 @@ export async function POST(req: NextRequest) {
             { status: 400 }
           );
         }
-        logAction("addProduct", "admin", `${product.name} (${product.code})`);
-        return NextResponse.json(
-          addProductLocal({
+        try {
+          const parsed = productSchema.parse({
             code: sanitize(String(product.code || "")),
             group: sanitize(String(product.group || "")),
             name: sanitize(String(product.name || "")),
             series: sanitize(String(product.series || "")),
             type: sanitize(String(product.type || "")),
             price: product.price !== null && product.price !== undefined ? Number(product.price) : null,
-            buyPrice: null,
             stock: Number(product.stock) || 0,
-          })
-        );
+          });
+          logAction("addProduct", "admin", `${parsed.name} (${parsed.code})`);
+          return NextResponse.json(
+            addProductLocal({
+              code: parsed.code,
+              group: parsed.group,
+              name: parsed.name,
+              series: parsed.series,
+              type: parsed.type,
+              price: parsed.price,
+              buyPrice: null,
+              stock: parsed.stock,
+            })
+          );
+        } catch (e) {
+          const message = e instanceof z.ZodError ? e.issues.map(i => i.message).join(", ") : "Invalid product data";
+          return NextResponse.json({ error: message }, { status: 400 });
+        }
       }
       case "confirmOrder": {
         const row = Number(body.row);
+        if (isNaN(row) || row < 2) {
+          return NextResponse.json({ error: "Invalid row number" }, { status: 400 });
+        }
         const data = body.data as Record<string, unknown> | undefined;
         const orderRow = body.orderRow ? Number(body.orderRow) : undefined;
         const products = body.products as string | undefined;
@@ -255,10 +284,14 @@ export async function POST(req: NextRequest) {
         }
         logAction("confirmOrder", "admin", `Row ${row}: ${JSON.stringify(data)}`);
         const orderCode = body.orderCode as string | undefined;
-        return NextResponse.json(confirmOrder(row, data, products, orderRow, orderCode));
+        const result = await confirmOrder(row, data, products, orderRow, orderCode);
+        return NextResponse.json(result);
       }
       case "deleteOrder": {
         const row = Number(body.row);
+        if (isNaN(row) || row < 2) {
+          return NextResponse.json({ error: "Invalid row number" }, { status: 400 });
+        }
         logAction("deleteOrder", "admin", `Row ${row}`);
         const orderData = body.orderData as Record<string, unknown> | undefined;
 
@@ -323,9 +356,12 @@ export async function POST(req: NextRequest) {
       }
       case "updateOrder": {
         const row = Number(body.row);
+        if (isNaN(row) || row < 2) {
+          return NextResponse.json({ error: "Invalid row number" }, { status: 400 });
+        }
         const sheetRow = body.sheetRow ? Number(body.sheetRow) : undefined;
         const data = body.data as Record<string, unknown> | undefined;
-        if (isNaN(row) || !data) {
+        if (!data) {
           return NextResponse.json(
             { error: "Invalid data" },
             { status: 400 }
@@ -348,14 +384,14 @@ export async function POST(req: NextRequest) {
       }
       case "editOrderProducts": {
         const row = Number(body.row);
+        if (isNaN(row) || row < 2) {
+          return NextResponse.json({ error: "Invalid row number" }, { status: 400 });
+        }
         const sheetRow = body.sheetRow ? Number(body.sheetRow) : undefined;
         const newProducts = sanitize(String(body.newProducts || "")).slice(0, 5000);
         const removedItems = sanitize(String(body.removedItems || "")).slice(0, 5000);
         const addedItems = sanitize(String(body.addedItems || "")).slice(0, 5000);
         const isPaid = Boolean(body.isPaid);
-        if (isNaN(row)) {
-          return NextResponse.json({ error: "Invalid data" }, { status: 400 });
-        }
         logAction("editOrderProducts", "admin", `Row ${row}: products updated`);
         const orderCode = body.orderCode as string | undefined;
         const localResult = editOrderProducts(row, newProducts, removedItems, addedItems, isPaid, orderCode);
@@ -396,15 +432,24 @@ export async function POST(req: NextRequest) {
             { status: 400 }
           );
         }
-        logAction("updateProducts", "admin", `${products.length} products updated`);
-        return NextResponse.json(
-          updateProducts(products as Record<string, unknown>[])
-        );
+        try {
+          const parsed = z.array(productUpdateItemSchema).parse(products);
+          logAction("updateProducts", "admin", `${parsed.length} products updated`);
+          return NextResponse.json(
+            updateProducts(parsed)
+          );
+        } catch (e) {
+          const message = e instanceof z.ZodError ? e.issues.map(i => i.message).join(", ") : "Invalid product data";
+          return NextResponse.json({ error: message }, { status: 400 });
+        }
       }
       case "updateCustomer": {
         const row = Number(body.row);
+        if (isNaN(row) || row < 2) {
+          return NextResponse.json({ error: "Invalid row number" }, { status: 400 });
+        }
         const data = body.data as Record<string, unknown> | undefined;
-        if (isNaN(row) || !data) {
+        if (!data) {
           return NextResponse.json(
             { error: "Invalid data" },
             { status: 400 }

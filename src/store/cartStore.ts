@@ -17,6 +17,24 @@ function isExpired(savedAt: number): boolean {
   return Date.now() - savedAt > CART_EXPIRY_MS;
 }
 
+// Parse expiry once on init, not on every read
+let _cartExpiryChecked = false;
+function checkCartExpiry(): void {
+  if (_cartExpiryChecked) return;
+  _cartExpiryChecked = true;
+  try {
+    const raw = localStorage.getItem("pokemon-cart");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed?.state?.savedAt && isExpired(parsed.state.savedAt)) {
+        localStorage.removeItem("pokemon-cart");
+      }
+    }
+  } catch {
+    localStorage.removeItem("pokemon-cart");
+  }
+}
+
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
@@ -70,17 +88,7 @@ export const useCartStore = create<CartState>()(
     {
       name: "pokemon-cart",
       storage: createJSONStorage(() => {
-        try {
-          const raw = localStorage.getItem("pokemon-cart");
-          if (raw) {
-            const parsed = JSON.parse(raw);
-            if (parsed?.state?.savedAt && isExpired(parsed.state.savedAt)) {
-              localStorage.removeItem("pokemon-cart");
-            }
-          }
-        } catch {
-          localStorage.removeItem("pokemon-cart");
-        }
+        checkCartExpiry();
         return localStorage;
       }),
     }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect, useRef, useCallback } from "react";
+import { useMemo, useState, useEffect, useRef, useCallback, useDeferredValue } from "react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import type { Product, DisplayType, SortOption, GroupCategory } from "@/lib/types";
 import { DISPLAY_TYPES } from "@/lib/constants";
@@ -44,6 +44,7 @@ export default function ProductGrid({ products, initialTypeFilter }: { products:
     initialTypeFilter ? [initialTypeFilter] : []
   );
   const [search, setSearch] = useState("");
+  const deferredSearch = useDeferredValue(search);
   const [sort, setSort] = useState<SortOption>("name-asc");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [previewProduct, setPreviewProduct] = useState<Product | null>(null);
@@ -59,7 +60,7 @@ export default function ProductGrid({ products, initialTypeFilter }: { products:
     }
   }, [initialTypeFilter]);
 
-  const suggestions = useMemo(() => fuzzySearch(search), [search]);
+  const suggestions = useMemo(() => fuzzySearch(deferredSearch), [deferredSearch]);
 
   const resetVisible = useCallback(() => setVisibleCount(PAGE_SIZE), []);
 
@@ -101,8 +102,8 @@ export default function ProductGrid({ products, initialTypeFilter }: { products:
       result = result.filter((p) => selectedTypes.includes(p.displayType));
     }
 
-    if (search.trim()) {
-      const parsed = parseSearchQuery(search);
+    if (deferredSearch.trim()) {
+      const parsed = parseSearchQuery(deferredSearch);
       if (parsed.pokemonTypes.length > 0) {
         result = result.filter((p) =>
           parsed.pokemonTypes.some((t) => p.type?.toLowerCase() === t.toLowerCase())
@@ -140,7 +141,7 @@ export default function ProductGrid({ products, initialTypeFilter }: { products:
     });
 
     return result;
-  }, [products, selectedTypes, selectedGroups, search, sort]);
+  }, [products, selectedTypes, selectedGroups, deferredSearch, sort]);
 
   const totalStock = filtered.reduce((sum, p) => sum + p.stock, 0);
   const visible = filtered.slice(0, visibleCount);
@@ -169,7 +170,7 @@ export default function ProductGrid({ products, initialTypeFilter }: { products:
   }, [hasMore]);
 
   // Reset visible count when filters change
-  useEffect(() => { resetVisible(); }, [selectedTypes, selectedGroups, search, sort, resetVisible]);
+  useEffect(() => { resetVisible(); }, [selectedTypes, selectedGroups, deferredSearch, sort, resetVisible]);
 
   const gridClass = columns === 4 ? "grid-cols-4" : columns === 3 ? "grid-cols-3" : columns === 2 ? "grid-cols-2" : "grid-cols-1";
 

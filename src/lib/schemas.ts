@@ -32,8 +32,22 @@ export const productSchema = z.object({
   series: z.string().max(100),
   type: z.string().max(50),
   group: z.enum(["pokemon", "item", "tool", "stadium", "suppoter", "supporter", "energy", "special energy"]),
-  price: z.number().nullable(),
-  stock: z.number().int().min(0),
+  price: z.number().positive("Price must be positive").nullable(),
+  stock: z.number().int("Stock must be an integer").nonnegative("Stock cannot be negative"),
+});
+
+export const productUpdateItemSchema = z.object({
+  id: z.string().min(1),
+  code: z.string().min(1).max(50).optional(),
+  name: z.string().min(1).max(200).optional(),
+  series: z.string().max(100).optional(),
+  type: z.string().max(50).optional(),
+  group: z.string().max(50).optional(),
+  displayType: z.enum(["Normal", "Holo", "Prize Card", "EX", "Holo Prize Card", "EX Prize Card"]).optional(),
+  price: z.number().positive("Price must be positive").nullable().optional(),
+  stock: z.number().int("Stock must be an integer").nonnegative("Stock cannot be negative").optional(),
+  buyPrice: z.number().min(0).nullable().optional(),
+  _row: z.number().int().optional(),
 });
 
 export const trackOrderSchema = z.object({

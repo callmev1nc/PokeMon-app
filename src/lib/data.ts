@@ -8,10 +8,41 @@ const dataDir = path.join(process.cwd(), "src", "data");
 const STOCK_URL = process.env.GOOGLE_STOCK_URL || "";
 const BUSINESS_URL = process.env.GOOGLE_BUSINESS_URL || "";
 
+// Shared secret for the Apps Script webhook (B1). When set, every request to the
+// Apps Script carries ?token=<APPS_SCRIPT_TOKEN> and the script should reject any
+// request whose token doesn't match. Backward-compatible: unset = no token sent.
+const APPS_SCRIPT_TOKEN = process.env.APPS_SCRIPT_TOKEN || "";
+function withToken(url: string): string {
+  if (!APPS_SCRIPT_TOKEN) return url;
+  const sep = url.includes("?") ? "&" : "?";
+  return `${url}${sep}token=${encodeURIComponent(APPS_SCRIPT_TOKEN)}`;
+}
+
 // In-memory stores (fallback for local dev)
 let productsCache: Product[] | null = null;
 const ordersStore: Order[] = [];
 const customersStore: Customer[] = [];
+
+// Simple promise-chain mutex for stock operations (TOCTOU prevention)
+let stockMutex: Promise<void> = Promise.resolve();
+
+function withStockLock<T>(fn: () => Promise<T> | T): Promise<T> {
+  const prev = stockMutex;
+  let release: () => void;
+  stockMutex = new Promise<void>((resolve) => { release = resolve; });
+  return prev.then(async () => {
+    try {
+      return await fn();
+    } finally {
+      release!();
+    }
+  });
+}
+
+// Cache TTL for admin live reads (orders, customers)
+const ADMIN_CACHE_TTL = 30_000; // 30 seconds
+let ordersCache: { data: Order[]; ts: number } | null = null;
+let customersCache: { data: Customer[]; ts: number } | null = null;
 
 const isDev = process.env.NODE_ENV !== "production";
 
@@ -41,7 +72,7 @@ function writeJson<T>(filename: string, data: T[]): void {
 async function fetchSheet<T>(url: string): Promise<T | null> {
   if (!url) return null;
   try {
-    const res = await fetch(url, { redirect: "follow" });
+    const res = await fetch(withToken(url), { redirect: "follow" });
     if (!res.ok) return null;
     return (await res.json()) as T;
   } catch {
@@ -57,7 +88,7 @@ export async function postSheet<T>(baseUrl: string, payload: Record<string, unkn
     const json = JSON.stringify(payload);
     const sep = baseUrl.includes("?") ? "&" : "?";
     const url = `${baseUrl}${sep}payload=${encodeURIComponent(json)}`;
-    const res = await fetch(url, { redirect: "follow" });
+    const res = await fetch(withToken(url), { redirect: "follow" });
     if (!res.ok) return null;
     return (await res.json()) as T;
   } catch {
@@ -265,6 +296,9 @@ export function fetchOrders(): Order[] {
 }
 
 export async function fetchOrdersLive(): Promise<Order[]> {
+  if (ordersCache && Date.now() - ordersCache.ts < ADMIN_CACHE_TTL) {
+    return ordersCache.data;
+  }
   const localOrders = fetchOrders();
   if (BUSINESS_URL) {
     const data = await fetchSheet<{ error?: string; data?: Order[]; [key: number]: Order }>(
@@ -276,9 +310,11 @@ export async function fetchOrdersLive(): Promise<Order[]> {
       ordersStore.length = 0;
       ordersStore.push(...merged);
       writeJson("orders.json", merged);
+      ordersCache = { data: merged, ts: Date.now() };
       return merged;
     }
   }
+  ordersCache = { data: localOrders, ts: Date.now() };
   return localOrders;
 }
 
@@ -293,6 +329,10 @@ export function addOrder(order: Omit<Order, "_row">): { success: boolean; orderC
   const orderCode = order.orderCode || `DH${Date.now()}`;
   orders.push({ ...order, orderCode, _row: orders.length + 1 } as Order);
   writeJson("orders.json", orders);
+
+  // Bust admin read cache so writes are immediately visible (not delayed up to TTL)
+  ordersCache = null;
+  customersCache = null;
 
   // Also push to Google Sheets in background
   if (BUSINESS_URL) {
@@ -323,6 +363,10 @@ export function updateOrder(
   orders[idx] = { ...orders[idx], ...data };
   writeJson("orders.json", orders);
 
+  // Bust admin read cache so writes are immediately visible (not delayed up to TTL)
+  ordersCache = null;
+  customersCache = null;
+
   // Also push to Google Sheets in background
   if (BUSINESS_URL) {
     postSheet(BUSINESS_URL, {
@@ -339,13 +383,13 @@ export function updateOrder(
  * Confirm order: adjust inventory when payment status changes.
  * Reduces stock when confirming to paid, restores when canceling to unpaid.
  */
-export function confirmOrder(
+export async function confirmOrder(
   index: number,
   data: Partial<Order>,
   orderProducts?: string,
   orderRow?: number,
   orderCode?: string,
-): { success: boolean } {
+): Promise<{ success: boolean }> {
   const orders = fetchOrders();
   let idx = -1;
 
@@ -365,9 +409,17 @@ export function confirmOrder(
   const productsStr = orderProducts || (order?.products ?? "");
 
   if (data.paymentStatus === "Đã thanh toán") {
-    adjustInventory(productsStr, -1);
+    await withStockLock(async () => {
+      const freshProducts = STOCK_URL ? await fetchProductsLive() : fetchProducts();
+      productsCache = freshProducts;
+      adjustInventory(productsStr, -1);
+    });
   } else if (data.paymentStatus === "Chưa thanh toán") {
-    adjustInventory(productsStr, 1);
+    await withStockLock(async () => {
+      const freshProducts = STOCK_URL ? await fetchProductsLive() : fetchProducts();
+      productsCache = freshProducts;
+      adjustInventory(productsStr, 1);
+    });
   }
 
   // Update local store if possible
@@ -375,6 +427,10 @@ export function confirmOrder(
     orders[idx] = { ...order, ...data };
     writeJson("orders.json", orders);
   }
+
+  // Bust admin read cache so writes are immediately visible (not delayed up to TTL)
+  ordersCache = null;
+  customersCache = null;
 
   // Push to Google Sheets
   if (BUSINESS_URL) {
@@ -413,6 +469,11 @@ export function deleteOrder(
 
   orders.splice(index, 1);
   writeJson("orders.json", orders);
+
+  // Bust admin read cache so writes are immediately visible (not delayed up to TTL)
+  ordersCache = null;
+  customersCache = null;
+
   return { success: true };
 }
 
@@ -472,6 +533,10 @@ export function editOrderProducts(
 
   writeJson("orders.json", orders);
 
+  // Bust admin read cache so writes are immediately visible (not delayed up to TTL)
+  ordersCache = null;
+  customersCache = null;
+
   if (BUSINESS_URL) {
     postSheet(BUSINESS_URL, {
       action: "updateOrder",
@@ -493,6 +558,9 @@ export function fetchCustomers(): Customer[] {
 }
 
 export async function fetchCustomersLive(): Promise<Customer[]> {
+  if (customersCache && Date.now() - customersCache.ts < ADMIN_CACHE_TTL) {
+    return customersCache.data;
+  }
   if (BUSINESS_URL) {
     const data = await fetchSheet<Customer[]>(
       `${BUSINESS_URL}?action=customers`
@@ -501,10 +569,13 @@ export async function fetchCustomersLive(): Promise<Customer[]> {
       customersStore.length = 0;
       customersStore.push(...data);
       writeJson("customers.json", data);
+      customersCache = { data, ts: Date.now() };
       return data;
     }
   }
-  return fetchCustomers();
+  const customers = fetchCustomers();
+  customersCache = { data: customers, ts: Date.now() };
+  return customers;
 }
 
 export function addCustomer(
@@ -513,6 +584,10 @@ export function addCustomer(
   const customers = fetchCustomers();
   customers.push({ ...customer, _row: customers.length + 1 } as Customer);
   writeJson("customers.json", customers);
+
+  // Bust admin read cache so writes are immediately visible (not delayed up to TTL)
+  ordersCache = null;
+  customersCache = null;
 
   // Also push to Google Sheets in background (notes goes to column H)
   if (BUSINESS_URL) {
@@ -532,6 +607,10 @@ export function updateCustomer(
   if (index < 0 || index >= customers.length) return { success: false };
   customers[index] = { ...customers[index], ...data };
   writeJson("customers.json", customers);
+
+  // Bust admin read cache so writes are immediately visible (not delayed up to TTL)
+  ordersCache = null;
+  customersCache = null;
 
   if (BUSINESS_URL) {
     postSheet(BUSINESS_URL, {

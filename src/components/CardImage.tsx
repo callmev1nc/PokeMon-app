@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
+import Image from "next/image";
 import { toRenderUrl } from "@/lib/imageUtils";
 
 interface CardImageProps {
@@ -27,31 +28,11 @@ export default function CardImage({
 }: CardImageProps) {
   const [error, setError] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
 
   const gradient =
     TYPE_PLACEHOLDER_COLORS[displayType] || "from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800";
 
   const highSrc = useMemo(() => (src ? toRenderUrl(src) : src), [src]);
-
-  useEffect(() => {
-    if (!highSrc || priority) return;
-    const el = ref.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          const img = new Image();
-          img.src = highSrc;
-          observer.disconnect();
-        }
-      },
-      { rootMargin: "300px" }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [highSrc, priority]);
 
   if (!highSrc || error) {
     return (
@@ -70,18 +51,18 @@ export default function CardImage({
 
   return (
     <div
-      ref={ref}
       className={`aspect-[2.5/3.5] bg-gradient-to-br ${gradient} rounded-xl overflow-hidden relative`}
     >
-      <img
+      <Image
         src={highSrc}
         alt={name}
-        loading={priority ? "eager" : "lazy"}
-        decoding="async"
-        fetchPriority={priority ? "high" : "auto"}
+        fill
+        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+        priority={priority}
+        loading={priority ? undefined : "lazy"}
         onLoad={() => setLoaded(true)}
         onError={() => setError(true)}
-        className={`w-full h-full object-contain transition-opacity duration-500 dark:brightness-110 ${
+        className={`object-contain transition-opacity duration-500 dark:brightness-110 ${
           loaded ? "opacity-100" : "opacity-0"
         }`}
       />

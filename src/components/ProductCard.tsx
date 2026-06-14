@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import type { Product } from "@/lib/types";
 import { TYPE_COLORS, POKEMON_TYPE_COLORS, POKEMON_TYPE_ICONS, POKEMON_TYPE_ENERGY_ICONS } from "@/lib/constants";
 import { useCartStore } from "@/store/cartStore";
@@ -35,7 +35,7 @@ function useFadeIn() {
   return { ref, visible };
 }
 
-export default function ProductCard({
+export default React.memo(function ProductCard({
   product,
   priority = false,
 }: {
@@ -53,6 +53,8 @@ export default function ProductCard({
     }, [product.id])
   );
   const toggleWish = useWishlistStore((s) => s.toggle);
+  // Primitive selector → only this card re-renders when its own wish state flips
+  // (selecting the whole `ids` array would re-render every card on any wishlist change).
   const isWished = useWishlistStore((s) => s.ids.includes(product.id));
   const locale = useLocaleStore((s) => s.locale);
   const { showToast } = useToast();
@@ -236,4 +238,4 @@ export default function ProductCard({
       </div>
     </div>
   );
-}
+});

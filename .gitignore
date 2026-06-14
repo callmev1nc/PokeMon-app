@@ -3,3 +3,13 @@
 .superpowers/
 node_modules/
 .vercel
+
+# Runtime data files (contain hashes / PII)
+src/data/*.json
+!src/data/constants.json
+!src/data/pokemon-types.json
+!src/data/energy-icons.json
+!src/data/card-mapping.json
+!src/data/image-map.json
+!src/data/products.json
+!src/data/groups.json

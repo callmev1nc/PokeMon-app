@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
+import useSWR from "swr";
 import type { Product } from "@/lib/types";
 import { TYPE_COLORS, GROUP_LABELS } from "@/lib/constants";
 import { useCartStore } from "@/store/cartStore";
@@ -15,6 +16,8 @@ import LowStockBadge from "@/components/LowStockBadge";
 import ProductCard from "@/components/ProductCard";
 import { useToast } from "@/components/NotificationToast";
 
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
 export default function ProductDetailPage() {
   return (
     <Suspense fallback={<><Header onCartClick={() => {}} /><div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-3 border-amber-500 border-t-transparent rounded-full animate-spin" /></div></>}>
@@ -27,12 +30,12 @@ function ProductDetailContent() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
   const locale = useLocaleStore((s) => s.locale);
-  const [product, setProduct] = useState<Product | null>(null);
-  const [related, setRelated] = useState<Product[]>([]);
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const { data, isLoading } = useSWR("/api/products", fetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 120000,
+  });
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
-  const [loading, setLoading] = useState(true);
   const addItem = useCartStore((s) => s.addItem);
   const { showToast } = useToast();
   const inCart = useCartStore(
@@ -42,35 +45,28 @@ function ProductDetailContent() {
     }, [id])
   );
   const toggleWish = useWishlistStore((s) => s.toggle);
-  const isWished = useWishlistStore((s) => product ? s.ids.includes(product.id) : false);
+  const wishIds = useWishlistStore((s) => s.ids);
+
+  const allProducts = Array.isArray(data) ? data : data?.data || [];
+  const product = allProducts.find((p: Product) => p.id === id) || null;
+  const isWished = product ? wishIds.includes(product.id) : false;
 
   const displayPrice = (price: number | null): string => {
     if (price === null) return t("contact.price", locale);
     return formatPrice(price);
   };
 
-  useEffect(() => {
-    fetch("/api/products")
-      .then((r) => r.json())
-      .then((data: Product[] | { data: Product[] }) => {
-        const products = Array.isArray(data) ? data : data?.data || [];
-        setAllProducts(products);
-        const found = products.find((p) => p.id === id);
-        setProduct(found || null);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, [id]);
+  const [related, setRelated] = useState<Product[]>([]);
 
   useEffect(() => {
     if (!product || allProducts.length === 0) return;
     const sameGroup = allProducts.filter(
-      (p) => p.group === product.group && p.id !== product.id
+      (p: Product) => p.group === product.group && p.id !== product.id
     ).slice(0, 4);
     setRelated(sameGroup);
   }, [product, allProducts]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <>
         <Header onCartClick={() => {}} />

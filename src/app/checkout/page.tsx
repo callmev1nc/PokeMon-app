@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Header from "@/components/Header";
 import CheckoutSummary from "@/components/CheckoutSummary";
 import QRCodeSection from "@/components/QRCodeSection";
@@ -10,7 +10,7 @@ import { t } from "@/lib/i18n";
 
 export default function CheckoutPage() {
   const items = useCartStore((s) => s.items);
-  const total = getCartTotal(items);
+  const total = useMemo(() => getCartTotal(items), [items]);
   const clearCart = useCartStore((s) => s.clearCart);
   const locale = useLocaleStore((s) => s.locale);
   const [submitting, setSubmitting] = useState(false);

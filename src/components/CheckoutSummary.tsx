@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useCartStore, getCartTotal } from "@/store/cartStore";
 import { useLocaleStore } from "@/store/localeStore";
 import { t } from "@/lib/i18n";
@@ -7,7 +8,7 @@ import { formatPrice, formatNumber } from "@/lib/format";
 
 export default function CheckoutSummary() {
   const items = useCartStore((s) => s.items);
-  const total = getCartTotal(items);
+  const total = useMemo(() => getCartTotal(items), [items]);
   const locale = useLocaleStore((s) => s.locale);
 
   const customerStr = typeof window !== "undefined" ? sessionStorage.getItem("customerInfo") : null;
