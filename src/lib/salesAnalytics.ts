@@ -84,11 +84,39 @@ function computeSalesRanking(
   return salesMap;
 }
 
+/** Pick the representative variant for one product code.
+ *  Preference: in-stock, then lowest price, then highest stock. */
+function pickRepresentativeVariant(variants: Product[]): Product | null {
+  const sellable = variants.filter((p) => p.stock > 0 && p.price !== null);
+  if (sellable.length === 0) return null;
+  sellable.sort((a, b) => {
+    if ((a.price ?? 0) !== (b.price ?? 0)) return (a.price ?? 0) - (b.price ?? 0);
+    return b.stock - a.stock;
+  });
+  return sellable[0];
+}
+
+/** Collapse catalog rows to one representative Product per code. */
+function dedupeByCode(products: Product[]): Product[] {
+  const groups = new Map<string, Product[]>();
+  for (const p of products) {
+    const arr = groups.get(p.code);
+    if (arr) arr.push(p); else groups.set(p.code, [p]);
+  }
+  const reps: Product[] = [];
+  for (const variants of groups.values()) {
+    const rep = pickRepresentativeVariant(variants);
+    if (rep) reps.push(rep);
+  }
+  return reps;
+}
+
 /**
  * Fallback: current stock-based logic (low stock = hot)
  */
 function getStockBasedHot(products: Product[], count: number): Product[] {
-  return [...products]
+  const candidates = dedupeByCode(products);
+  return candidates
     .filter((p) => p.stock > 0 && p.stock <= 5 && p.price !== null)
     .sort((a, b) => a.stock - b.stock)
     .slice(0, count);
@@ -105,6 +133,12 @@ export function getHotProducts(
 ): Product[] {
   const salesRanking = computeSalesRanking(orders);
 
+  // Build per-code sales score map for dedup ranking
+  const scoreByCode = new Map<string, number>();
+  for (const entry of salesRanking.values()) {
+    scoreByCode.set(entry.productCode, (scoreByCode.get(entry.productCode) ?? 0) + entry.weightedScore);
+  }
+
   // Need at least 3 orders with data to use sales-based ranking
   const ordersWithProducts = orders.filter(
     (o) => o.products && o.products.trim().length > 0
@@ -113,14 +147,10 @@ export function getHotProducts(
     return getStockBasedHot(products, count);
   }
 
-  // Sort products by weighted sales score (descending)
-  const ranked = [...products]
-    .filter((p) => p.stock > 0 && p.price !== null)
-    .map((p) => {
-      const key = `${p.code}|${p.name}`;
-      const sales = salesRanking.get(key);
-      return { product: p, score: sales?.weightedScore || 0 };
-    })
+  // Sort unique products by weighted sales score (descending)
+  const candidates = dedupeByCode(products);
+  const ranked = candidates
+    .map((p) => ({ product: p, score: scoreByCode.get(p.code) ?? 0 }))
     .sort((a, b) => b.score - a.score);
 
   // If top products have no sales data at all, fall back

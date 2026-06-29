@@ -39,14 +39,14 @@ export default function TypeBrowser({ products, onTypeClick }: TypeBrowserProps)
   );
 
   return (
-    <section className="max-w-7xl mx-auto px-4 py-3">
-      <div className="flex items-center gap-2 mb-4">
+    <section className="max-w-7xl mx-auto px-4 py-1.5 sm:py-2">
+      <div className="flex items-center gap-2 mb-1">
         <img src="/energy/lightning.svg" alt="" className="w-5 h-5" />
         <h2 className="text-xl font-black text-slate-800 dark:text-slate-100" style={{ fontFamily: "var(--font-display)" }}>
           Browse by Type
         </h2>
       </div>
-      <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+      <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
         Find cards by Pokemon elemental type
       </p>
       <div className="flex gap-2 flex-wrap">
