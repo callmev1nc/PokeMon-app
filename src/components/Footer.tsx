@@ -2,16 +2,16 @@
 
 export default function Footer() {
   return (
-    <footer className="bg-[#1A1A2E] text-white mt-auto">
-      <div className="max-w-7xl mx-auto px-6 py-10">
+    <footer className="bg-[var(--color-surface)] text-white mt-auto border-t-2 border-brand/40">
+      <div className="max-w-7xl mx-auto px-6 pt-10 pb-24 sm:pb-10">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2.5 mb-3">
-              <div className="bg-[#E53E3E] text-white font-black text-sm px-2.5 py-1 rounded-lg tracking-wide" style={{ fontFamily: "var(--font-display)" }}>
+              <div className="bg-brand text-white font-black text-sm px-2.5 py-1 rounded-lg tracking-wide font-display">
                 V1NCC
               </div>
-              <span className="text-[#E53E3E] font-semibold text-xs">TCG SHOP</span>
+              <span className="text-brand font-semibold text-xs">TCG SHOP</span>
             </div>
             <p className="text-white/40 text-xs leading-relaxed">
               Premium Pokemon Trading Cards &bull; Vietnam<br />
@@ -21,7 +21,7 @@ export default function Footer() {
 
           {/* Shop Links */}
           <div>
-            <h4 className="font-bold text-sm mb-3" style={{ fontFamily: "var(--font-display)" }}>SHOP</h4>
+            <h4 className="font-bold text-sm mb-3 font-display">SHOP</h4>
             <div className="flex flex-col gap-2">
               <a href="/" className="text-white/50 hover:text-white text-xs transition-colors">All Cards</a>
               <a href="/hot-items" className="text-white/50 hover:text-white text-xs transition-colors">Hot Items</a>
@@ -33,7 +33,7 @@ export default function Footer() {
 
           {/* Info */}
           <div>
-            <h4 className="font-bold text-sm mb-3" style={{ fontFamily: "var(--font-display)" }}>INFO</h4>
+            <h4 className="font-bold text-sm mb-3 font-display">INFO</h4>
             <div className="flex flex-col gap-2">
               <a href="/order-tracking" className="text-white/50 hover:text-white text-xs transition-colors">Track Order</a>
               <a href="/account" className="text-white/50 hover:text-white text-xs transition-colors">My Account</a>

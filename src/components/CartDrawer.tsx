@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import { useCartStore, getCartTotal, getCartItemCount } from "@/store/cartStore";
+import { useSwipeDismiss } from "@/hooks/useSwipeDismiss";
 import { useLocaleStore } from "@/store/localeStore";
 import { t } from "@/lib/i18n";
 import { formatNumber } from "@/lib/format";
@@ -19,26 +21,41 @@ export default function CartDrawer({
   const count = getCartItemCount(items);
   const locale = useLocaleStore((s) => s.locale);
 
+  // Lock body scroll while the drawer is open
+  useEffect(() => {
+    if (!isOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [isOpen]);
+
+  // Swipe right to dismiss
+  const swipe = useSwipeDismiss({ axis: "x", dismissDirection: 1, enabled: isOpen, onDismiss: onClose });
+
   return (
     <>
       {/* Backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 transition-opacity"
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 transition-opacity duration-[var(--dur-drawer)] ease-[var(--ease-out)]"
           onClick={onClose}
         />
       )}
 
       {/* Drawer */}
       <div
-        className={`cart-drawer fixed top-0 right-0 h-full w-full max-w-md shadow-2xl z-50 flex flex-col transition-transform duration-300 ease-out ${
+        {...swipe.handlers}
+        style={{ touchAction: "pan-y", ...swipe.style }}
+        className={`cart-drawer fixed top-0 right-0 h-full w-full max-w-md shadow-[var(--elev-4)] z-50 flex flex-col ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-[#E53E3E]/10">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border-subtle)]">
           <div>
-            <h2 className="text-xl text-[#E53E3E] dark:text-[#E53E3E] tracking-wider" style={{ fontFamily: "var(--font-display)" }}>
+            <h2 className="font-display text-xl text-brand tracking-wider">
               {t("cart.title", locale)}
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-500 mt-0.5">
@@ -47,7 +64,7 @@ export default function CartDrawer({
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-500 hover:text-[#E53E3E] dark:hover:text-[#E53E3E] transition-colors"
+            className="pressable p-2 rounded-xl hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-brand transition-colors"
             aria-label="Close"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
@@ -79,10 +96,10 @@ export default function CartDrawer({
 
         {/* Footer */}
         {items.length > 0 && (
-          <div className="border-t border-slate-200 dark:border-[#E53E3E]/10 p-5 pb-6 space-y-3 bg-[var(--bg-sunken)] safe-bottom">
+          <div className="border-t border-[var(--border-subtle)] p-5 pb-6 space-y-3 bg-[var(--bg-sunken)] safe-bottom">
             <div className="flex items-center justify-between">
               <span className="text-sm text-slate-600 dark:text-slate-500 font-medium">{t("cart.total", locale)}</span>
-              <span className="text-2xl font-bold text-[#E53E3E] dark:text-[#E53E3E]" style={{ fontFamily: "var(--font-display)", letterSpacing: "0.05em" }}>
+              <span className="font-display text-2xl font-bold text-brand tracking-[0.05em]">
                 {formatNumber(total * 1000)} đ
               </span>
             </div>

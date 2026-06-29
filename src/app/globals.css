@@ -93,13 +93,39 @@
   --shadow-float: 0 24px 64px rgba(0,0,0,0.08), 0 0 40px rgba(245,158,11,0.04);
   --shadow-inner-glow: inset 0 1px 0 rgba(255,255,255,0.8), inset 0 -1px 0 rgba(0,0,0,0.04);
 
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
 
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 24px;
+  --radius-2xl: 28px;
+  --radius-pill: 9999px;
+
+  /* ─── Neo-Collector motion, elevation & tracking scale ─── */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --dur-press: 140ms;
+  --dur-fast: 180ms;
+  --dur-ui: 240ms;
+  --dur-dropdown: 220ms;
+  --dur-drawer: 320ms;
+  --dur-sheet: 360ms;
+  --dur-page: 520ms;
+
+  --elev-1: 0 1px 2px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.06);
+  --elev-2: 0 4px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
+  --elev-3: 0 12px 32px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.06);
+  --elev-4: 0 24px 64px rgba(0,0,0,0.14), 0 8px 24px rgba(0,0,0,0.08);
+  --elev-brand: 0 8px 24px rgba(229,62,62,0.18), 0 0 0 1px rgba(229,62,62,0.06);
+
+  --tracking-tight: -0.01em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.04em;
+  --tracking-display: 0.06em;
+  --tracking-caps: 0.12em;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -155,6 +181,13 @@
   --shadow-card-hover: 0 12px 40px rgba(245,158,11,0.15), 0 0 60px rgba(245,158,11,0.08), 0 4px 12px rgba(0,0,0,0.4);
   --shadow-float: 0 24px 64px rgba(0,0,0,0.5), 0 0 40px rgba(245,158,11,0.06);
   --shadow-inner-glow: inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -1px 0 rgba(0,0,0,0.3);
+
+  /* stronger/longer elevation fades read correctly on the cosmic background */
+  --elev-1: 0 1px 2px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.5);
+  --elev-2: 0 4px 12px rgba(0,0,0,0.45), 0 1px 3px rgba(0,0,0,0.3);
+  --elev-3: 0 16px 40px rgba(0,0,0,0.55), 0 4px 12px rgba(0,0,0,0.4), 0 0 60px rgba(229,62,62,0.06);
+  --elev-4: 0 32px 80px rgba(0,0,0,0.65), 0 8px 24px rgba(0,0,0,0.45);
+  --elev-brand: 0 8px 24px rgba(252,129,129,0.20), 0 0 0 1px rgba(252,129,129,0.08);
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -224,9 +257,10 @@ input:focus, select:focus, textarea:focus {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: var(--radius-xl);
-  transition: transform 0.4s var(--ease-spring),
-              box-shadow 0.4s var(--ease-smooth),
-              border-color 0.4s ease;
+  transition: transform var(--dur-ui) var(--ease-out),
+              box-shadow var(--dur-ui) var(--ease-out),
+              border-color var(--dur-ui) var(--ease-out),
+              opacity var(--dur-ui) var(--ease-out);
   box-shadow: var(--card-shadow);
   will-change: transform;
   position: relative;
@@ -274,15 +308,18 @@ input:focus, select:focus, textarea:focus {
   border-radius: inherit;
 }
 
-.product-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: var(--card-shadow-hover);
-  border-color: var(--border-accent);
-}
-.product-card:hover::before {
-  opacity: 1;
-  background-position: 100% 100%;
-  animation: holo-border-sweep 3s linear infinite;
+/* Hover lift only on hover-capable pointers — touch never triggers it */
+@media (hover: hover) and (pointer: fine) {
+  .product-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--elev-3);
+    border-color: var(--border-accent);
+  }
+  .product-card:hover::before {
+    opacity: 1;
+    background-position: 100% 100%;
+    animation: holo-border-sweep 3s linear infinite;
+  }
 }
 
 @keyframes holo-border-sweep {
@@ -384,10 +421,10 @@ input:focus, select:focus, textarea:focus {
 }
 
 .animate-toast {
-  animation: toastIn 0.35s var(--ease-spring) both;
+  animation: toastIn 0.35s var(--ease-out) both;
 }
 .animate-badge-pop {
-  animation: badgePop 0.35s var(--ease-spring) both;
+  animation: badgePop 0.35s var(--ease-out) both;
 }
 
 .stagger-1 { animation-delay: 0.04s; }
@@ -399,22 +436,77 @@ input:focus, select:focus, textarea:focus {
 .stagger-7 { animation-delay: 0.28s; }
 .stagger-8 { animation-delay: 0.32s; }
 
+.animate-slide-up {
+  animation: slideUp var(--dur-sheet) var(--ease-drawer) both;
+}
+
+/* ─── Neo-Collector utilities ─────────────────────── */
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* GPU-only press feedback for any tappable element */
+.pressable {
+  transition: transform var(--dur-press) var(--ease-out),
+              background-color var(--dur-fast) var(--ease-out),
+              color var(--dur-fast) var(--ease-out);
+}
+.pressable:active {
+  transform: scale(0.97);
+}
+
+/* Hover lift, gated to hover-capable pointers (touch never triggers it) */
+@media (hover: hover) and (pointer: fine) {
+  .hover-lift {
+    transition: transform var(--dur-ui) var(--ease-out);
+  }
+  .hover-lift:hover {
+    transform: translateY(-4px);
+  }
+}
+
+/* Bottom-sheet drag handle */
+.grab-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--text-muted);
+  opacity: 0.45;
+}
+
+/* Respect reduced motion: collapse movement, keep color/opacity shifts */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* ─── Buttons ──────────────────────────────────────── */
+.btn-press {
+  transition: transform var(--dur-press) var(--ease-out);
+}
 .btn-press:active {
   transform: scale(0.96);
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #E53E3E, #C53030);
-  color: white;
+  background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark));
+  color: #fff;
   font-weight: 700;
   border-radius: var(--radius-md);
-  transition: all 0.2s var(--ease-smooth);
-  box-shadow: 0 2px 8px rgba(229,62,62,0.25), 0 0 20px rgba(229,62,62,0.1);
+  transition: transform var(--dur-press) var(--ease-out),
+              box-shadow var(--dur-ui) var(--ease-out),
+              background var(--dur-fast) var(--ease-out);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-brand) 28%, transparent),
+              0 0 20px color-mix(in srgb, var(--color-brand) 12%, transparent);
 }
 .btn-primary:hover {
-  background: linear-gradient(135deg, #C53030, #9B2C2C);
-  box-shadow: 0 4px 20px rgba(229,62,62,0.35), 0 0 40px rgba(229,62,62,0.15);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-brand) 88%, #000), color-mix(in srgb, var(--color-brand-dark) 82%, #000));
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--color-brand) 38%, transparent),
+              0 0 40px color-mix(in srgb, var(--color-brand) 16%, transparent);
   transform: translateY(-1px);
 }
 
@@ -422,7 +514,7 @@ input:focus, select:focus, textarea:focus {
 .cart-drawer {
   background: var(--drawer-bg);
   border-left: 1px solid var(--drawer-border);
-  transition: transform 0.4s var(--ease-spring);
+  transition: transform var(--dur-drawer) var(--ease-drawer);
 }
 
 /* ─── Hero ─────────────────────────────────────────── */
@@ -540,21 +632,6 @@ input:focus, select:focus, textarea:focus {
   border-radius: 6px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-}
-
-/* ─── Holographic accent text ──────────────────────── */
-.holo-text {
-  background: linear-gradient(
-    90deg,
-    var(--color-holo-start),
-    var(--color-holo-mid),
-    var(--color-holo-end)
-  );
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: holo-gradient-shift 4s ease infinite;
 }
 
 /* ─── Card image glow effect ───────────────────────── */

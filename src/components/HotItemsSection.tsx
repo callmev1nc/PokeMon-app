@@ -26,31 +26,31 @@ export default function HotItemsSection() {
     <section className="max-w-7xl mx-auto px-4 py-1.5 sm:py-2">
       <div className="flex items-center justify-between mb-2">
         <div>
-          <h2 className="text-xl font-black text-[#E53E3E] flex items-center gap-2" style={{ fontFamily: "var(--font-display)" }}>
+          <h2 className="font-display text-xl font-black text-brand flex items-center gap-2">
             🔥 Hot Items
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Sản phẩm bán chạy nhất 3 tháng qua!
           </p>
         </div>
-        <a href="/hot-items" className="text-[#E53E3E] text-xs font-semibold hover:underline">
+        <a href="/hot-items" className="pressable text-brand text-xs font-semibold hover:underline">
           View All →
         </a>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {hotItems.map((product) => {
+        {hotItems.map((product, index) => {
           const energyIcon = product.type ? POKEMON_TYPE_ENERGY_ICONS[product.type] : null;
           return (
             <div
               key={product.id}
-              className="bg-white dark:bg-slate-800/50 rounded-xl overflow-hidden border border-slate-100 dark:border-slate-700/50 hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
+              className={`bg-[var(--card-bg)] rounded-2xl overflow-hidden border border-[var(--card-border)] shadow-[var(--elev-2)] hover-lift animate-fade-in stagger-${Math.min(index + 1, 4)}`}
             >
               <div className="relative">
                 <div className="p-2 pb-0">
                   <CardImage src={product.imageUrl} name={product.name} displayType={product.displayType} />
                 </div>
-                <div className="absolute top-3 left-3 bg-[#E53E3E] text-white text-[9px] px-1.5 py-0.5 rounded font-bold">
+                <div className="absolute top-3 left-3 bg-brand text-white text-[9px] px-1.5 py-0.5 rounded font-bold">
                   🔥 HOT
                 </div>
                 {energyIcon && (
@@ -70,13 +70,13 @@ export default function HotItemsSection() {
                   </span>
                 </div>
                 <div className="flex items-center justify-between mt-2">
-                  <span className="text-[#E53E3E] font-extrabold text-sm" style={{ fontFamily: "var(--font-display)" }}>
+                  <span className="font-display text-brand font-extrabold text-sm">
                     {formatPrice(product.price)}
                   </span>
                   {product.stock > 0 && product.price !== null ? (
                     <button
                       onClick={() => addToCart(product, 1)}
-                      className="bg-[#E53E3E] text-white w-7 h-7 rounded-lg flex items-center justify-center text-lg font-bold hover:bg-[#C53030] transition-colors"
+                      className="pressable bg-brand text-white w-10 h-10 rounded-lg flex items-center justify-center text-lg font-bold hover:bg-brand-dark transition-colors"
                     >
                       +
                     </button>
@@ -85,7 +85,7 @@ export default function HotItemsSection() {
                   )}
                 </div>
                 {product.stock > 0 && product.stock <= 3 && (
-                  <p className="text-[9px] text-[#F6AD55] font-semibold mt-1">
+                  <p className="text-[9px] text-accent font-semibold mt-1">
                     ⚠ Only {product.stock} left!
                   </p>
                 )}

@@ -28,7 +28,7 @@ export default function HomeClient({ products }: { products: Product[] }) {
       <Header onCartClick={() => setCartOpen(true)} />
       <NavigationBar />
 
-      <main className="flex-1 bg-[#FAFAFA] dark:bg-[#0F1629]">
+      <main className="flex-1 bg-[var(--bg-surface-alt)]">
         <HeroBanner />
 
         {products.length > 0 && (

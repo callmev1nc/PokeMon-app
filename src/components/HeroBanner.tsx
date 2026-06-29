@@ -9,39 +9,39 @@ export default function HeroBanner() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 py-6 sm:py-8 text-center">
         {/* Logo mark */}
-        <div className="w-[70px] h-[70px] bg-white rounded-full mx-auto mb-3 flex items-center justify-center shadow-lg shadow-black/10">
+        <div className="w-[70px] h-[70px] bg-white rounded-full mx-auto mb-3 flex items-center justify-center shadow-lg shadow-black/10 animate-fade-in stagger-1">
           <img src="/logo.png" alt="V1NCC" className="w-12 h-12 object-contain rounded-full" />
         </div>
 
         {/* Title */}
         <h1
-          className="text-white text-5xl sm:text-6xl font-black tracking-[3px] mb-2"
-          style={{ fontFamily: "var(--font-display)", textShadow: "2px 3px 6px rgba(0,0,0,0.2)" }}
+          className="font-display text-white text-5xl sm:text-6xl font-black tracking-[3px] mb-2 animate-fade-in stagger-2"
+          style={{ textShadow: "2px 3px 6px rgba(0,0,0,0.2)" }}
         >
           V1NCC TCG
         </h1>
-        <p className="text-white/80 text-sm sm:text-base font-medium mb-4">
+        <p className="text-white/80 text-sm sm:text-base font-medium mb-4 animate-fade-in stagger-3">
           Premium Pokemon Trading Cards • Vietnam
         </p>
 
         {/* CTAs */}
-        <div className="flex gap-3 justify-center flex-wrap mb-4">
+        <div className="flex gap-3 justify-center flex-wrap mb-4 animate-fade-in stagger-4">
           <a
             href="#shop"
-            className="bg-white text-[#E53E3E] px-8 py-3 rounded-full font-extrabold text-sm shadow-lg shadow-black/10 hover:shadow-xl hover:scale-105 transition-all duration-200"
+            className="pressable hover-lift bg-white text-brand px-8 py-3 rounded-full font-extrabold text-sm shadow-lg shadow-black/10"
           >
             SHOP NOW →
           </a>
           <a
             href="/sets"
-            className="bg-white/15 text-white border-2 border-white/30 px-8 py-3 rounded-full font-semibold text-sm hover:bg-white/25 hover:border-white/50 transition-all duration-200"
+            className="pressable bg-white/15 text-white border-2 border-white/30 px-8 py-3 rounded-full font-semibold text-sm hover:bg-white/25 hover:border-white/50 transition-colors duration-[var(--dur-fast)] ease-[var(--ease-out)]"
           >
             VIEW SETS
           </a>
         </div>
 
         {/* Trust badges */}
-        <div className="flex gap-6 justify-center flex-wrap text-white/80 text-xs sm:text-sm">
+        <div className="flex gap-6 justify-center flex-wrap text-white/80 text-xs sm:text-sm animate-fade-in stagger-5">
           <span>✅ 100% Authentic</span>
           <span>🚚 Fast Shipping</span>
           <span>🃏 980+ Cards</span>

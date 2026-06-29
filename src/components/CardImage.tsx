@@ -62,7 +62,7 @@ export default function CardImage({
         loading={priority ? undefined : "lazy"}
         onLoad={() => setLoaded(true)}
         onError={() => setError(true)}
-        className={`object-contain transition-opacity duration-500 dark:brightness-110 ${
+        className={`object-contain transition-opacity duration-[var(--dur-page)] ease-[var(--ease-out)] dark:brightness-110 ${
           loaded ? "opacity-100" : "opacity-0"
         }`}
       />

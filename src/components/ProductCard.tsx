@@ -79,7 +79,7 @@ export default React.memo(function ProductCard({
   return (
     <div
       ref={fadeRef}
-      className={`product-card rounded-2xl border border-transparent overflow-hidden flex flex-col text-slate-700 dark:text-slate-200 transition-all duration-500 hover:shadow-xl hover:shadow-red-500/10 hover:scale-[1.02] ${
+      className={`product-card rounded-2xl border border-transparent overflow-hidden flex flex-col text-slate-700 dark:text-slate-200 ${
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       }`}
     >
@@ -103,7 +103,7 @@ export default React.memo(function ProductCard({
             <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             {isOutOfStock && (
               <div className="absolute inset-0 bg-black/50 flex items-center justify-center backdrop-blur-[2px]">
-                <span className="text-white font-bold text-lg tracking-widest -rotate-12 border-2 border-white/80 px-4 py-1.5 rounded-lg" style={{ fontFamily: "var(--font-display)" }}>
+                <span className="font-display text-white font-bold text-lg tracking-widest -rotate-12 border-2 border-white/80 px-4 py-1.5 rounded-lg">
                   SOLD OUT
                 </span>
               </div>
@@ -115,10 +115,10 @@ export default React.memo(function ProductCard({
             e.stopPropagation();
             toggleWish(product.id);
           }}
-          className={`absolute top-5 right-5 p-2.5 rounded-full shadow-md transition-all duration-300 z-10 ${
+          className={`pressable absolute top-5 right-5 p-2.5 rounded-full shadow-md transition-[transform,background-color,color] duration-[var(--dur-fast)] ease-[var(--ease-out)] z-10 ${
             isWished
               ? "bg-red-500/10 text-red-400 scale-110"
-              : "bg-slate-100 dark:bg-slate-800/50 backdrop-blur-sm text-slate-400 dark:text-slate-500 hover:text-red-400 hover:bg-red-500/10 sm:opacity-0 sm:group-hover:opacity-100"
+              : "bg-slate-100 dark:bg-slate-800/50 backdrop-blur-sm text-slate-600 dark:text-slate-300 hover:text-red-400 hover:bg-red-500/10 sm:opacity-0 sm:group-hover:opacity-100"
           }`}
           aria-label={isWished ? "Bỏ yêu thích" : "Yêu thích"}
         >
@@ -166,12 +166,12 @@ export default React.memo(function ProductCard({
 
         {/* Price + Stock */}
         <div className="mt-auto pt-3 border-t border-slate-200 dark:border-slate-700/50">
-          <p className={`text-2xl font-bold tracking-tight ${noPrice ? "text-slate-400" : "text-[#E53E3E] drop-shadow-sm"}`} style={{ fontFamily: "var(--font-display)", letterSpacing: "0.02em" }}>
+          <p className={`font-display text-2xl font-bold tracking-[0.02em] ${noPrice ? "text-slate-400" : "text-brand drop-shadow-sm"}`}>
             {displayPrice(product.price)}
           </p>
           <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
             {t("product.remaining", locale)}{" "}
-            <span className={`font-semibold ${product.stock <= 3 ? "text-[#F6AD55]" : "text-slate-500 dark:text-slate-400"}`}>
+            <span className={`font-semibold ${product.stock <= 3 ? "text-accent" : "text-slate-500 dark:text-slate-400"}`}>
               {product.stock}
             </span>
             {inCart > 0 && (
@@ -190,7 +190,7 @@ export default React.memo(function ProductCard({
             <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
               <button
                 onClick={() => setQty(Math.max(1, qty - 1))}
-                className="px-3 py-2.5 text-slate-400 hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700/50 text-sm font-bold transition-colors min-w-[44px] min-h-[44px]"
+                className="pressable px-3 py-2.5 text-slate-400 hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700/50 text-sm font-bold transition-colors min-w-[44px] min-h-[44px]"
               >
                 -
               </button>
@@ -199,7 +199,7 @@ export default React.memo(function ProductCard({
               </span>
               <button
                 onClick={() => setQty(Math.min(maxQty, qty + 1))}
-                className="px-3 py-2.5 text-slate-400 hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700/50 text-sm font-bold transition-colors min-w-[44px] min-h-[44px]"
+                className="pressable px-3 py-2.5 text-slate-400 hover:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700/50 text-sm font-bold transition-colors min-w-[44px] min-h-[44px]"
               >
                 +
               </button>
@@ -207,7 +207,7 @@ export default React.memo(function ProductCard({
             <button
               onClick={handleAdd}
               disabled={maxQty <= 0}
-              className={`btn-press btn-primary flex-1 py-3 px-3 rounded-lg text-sm font-semibold transition-all duration-300 min-h-[44px] ${
+              className={`btn-press btn-primary flex-1 py-3 px-3 rounded-lg text-sm font-semibold min-h-[44px] ${
                 added
                   ? "bg-emerald-500 text-white shadow-emerald-500/20 shadow-md"
                   : maxQty <= 0

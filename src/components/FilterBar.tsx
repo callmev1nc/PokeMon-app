@@ -69,6 +69,70 @@ export default function FilterBar({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Lock body scroll while the mobile filter sheet is open
+  useEffect(() => {
+    if (!showFilters) return;
+    const mq = window.matchMedia("(max-width: 639px)");
+    if (!mq.matches) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [showFilters]);
+
+  const filterChips = (
+    <>
+      {/* Display Type chips */}
+      <div className="flex gap-2 flex-wrap">
+        {DISPLAY_TYPES.map((type) => {
+          const isActive = selectedTypes.includes(type);
+          return (
+            <button
+              key={type}
+              onClick={() => onToggleType(type)}
+              className={`btn-press px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 ${
+                isActive
+                  ? TYPE_COLORS[type] + " filter-chip-active shadow-sm"
+                  : "bg-white dark:bg-[#0F1629] text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600 hover:text-slate-700 dark:hover:text-slate-300"
+              } ${type === "Holo" && isActive ? "badge-holo" : ""}`}
+            >
+              {type}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Pokemon Type chips */}
+      <div className="flex gap-1.5 flex-wrap items-center">
+        <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium py-1 mr-1">
+          Type:
+        </span>
+        {POKEMON_TYPES.slice(0, 12).map((type) => {
+          const isActive = selectedPokemonTypes.includes(type);
+          return (
+            <button
+              key={type}
+              onClick={() => onTogglePokemonType(type)}
+              className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold transition-all duration-200 ${
+                isActive
+                  ? POKEMON_TYPE_COLORS[type]
+                  : "bg-white dark:bg-[#0F1629] text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700/50 hover:border-slate-300"
+              }`}
+            >
+              {POKEMON_TYPE_ENERGY_ICONS[type] ? (
+                <img src={POKEMON_TYPE_ENERGY_ICONS[type]} alt="" className="w-3 h-3 brightness-0 invert" />
+              ) : (
+                <span>{POKEMON_TYPE_ICONS[type]}</span>
+              )}
+              <span className="hidden sm:inline">{type}</span>
+            </button>
+          );
+        })}
+      </div>
+    </>
+  );
+
   return (
     <div className="flex flex-col gap-1.5 mb-2 sticky top-16 z-20 py-1 -mx-4 px-4 bg-[var(--background)]/90 backdrop-blur-md">
       {/* Search */}
@@ -90,7 +154,7 @@ export default function FilterBar({
           onChange={(e) => onSearchChange(e.target.value)}
           onFocus={() => { if (search.trim() && suggestions.length > 0) setShowDropdown(true); }}
           onKeyDown={(e) => { if (e.key === "Escape") setShowDropdown(false); }}
-          className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-400 focus:border-[#E53E3E] focus:ring-1 focus:ring-[#E53E3E]/30 transition-all"
+          className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-400 focus:border-brand focus:ring-1 focus:ring-brand/30 transition-[border-color,box-shadow] duration-[var(--dur-fast)] ease-[var(--ease-out)]"
         />
         {search && (
           <button
@@ -149,7 +213,7 @@ export default function FilterBar({
       <div className="sm:hidden">
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="w-full flex items-center justify-between px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-600 dark:text-slate-300 font-medium"
+          className="pressable w-full flex items-center justify-between px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-600 dark:text-slate-300 font-medium"
         >
           <span className="flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
@@ -163,57 +227,34 @@ export default function FilterBar({
         </button>
       </div>
 
-      {/* Collapsible filters */}
-      <div className={`${showFilters ? "block" : "hidden"} sm:block`}>
-      {/* Display Type chips */}
-      <div className="flex gap-2 flex-wrap">
-        {DISPLAY_TYPES.map((type) => {
-          const isActive = selectedTypes.includes(type);
-          return (
-            <button
-              key={type}
-              onClick={() => onToggleType(type)}
-              className={`btn-press px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 ${
-                isActive
-                  ? TYPE_COLORS[type] + " filter-chip-active shadow-sm"
-                  : "bg-white dark:bg-[#0F1629] text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600 hover:text-slate-700 dark:hover:text-slate-300"
-              } ${type === "Holo" && isActive ? "badge-holo" : ""}`}
-            >
-              {type}
-            </button>
-          );
-        })}
-      </div>
+      {/* Desktop filters (always inline) */}
+      <div className="hidden sm:flex flex-col gap-1.5">{filterChips}</div>
 
-      {/* Pokemon Type chips */}
-      <div className="flex gap-1.5 flex-wrap items-center">
-        <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium py-1 mr-1">
-          Type:
-        </span>
-        {POKEMON_TYPES.slice(0, 12).map((type) => {
-          const isActive = selectedPokemonTypes.includes(type);
-          return (
-            <button
-              key={type}
-              onClick={() => onTogglePokemonType(type)}
-              className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold transition-all duration-200 ${
-                isActive
-                  ? POKEMON_TYPE_COLORS[type]
-                  : "bg-white dark:bg-[#0F1629] text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700/50 hover:border-slate-300"
-              }`}
-            >
-              {POKEMON_TYPE_ENERGY_ICONS[type] ? (
-                <img src={POKEMON_TYPE_ENERGY_ICONS[type]} alt="" className="w-3 h-3 brightness-0 invert" />
-              ) : (
-                <span>{POKEMON_TYPE_ICONS[type]}</span>
-              )}
-              <span className="hidden sm:inline">{type}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      </div>
+      {/* Mobile filter sheet */}
+      {showFilters && (
+        <div className="sm:hidden fixed inset-0 z-50">
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"
+            onClick={() => setShowFilters(false)}
+          />
+          <div className="absolute bottom-0 inset-x-0 bg-[var(--bg-surface)] rounded-t-3xl p-4 pb-8 max-h-[80vh] overflow-y-auto animate-slide-up safe-bottom shadow-[var(--elev-4)]">
+            <div className="grab-handle mx-auto mb-3" />
+            <div className="flex items-center justify-between mb-3">
+              <span className="font-display text-sm text-[var(--text-primary)]">Bộ lọc</span>
+              <button
+                onClick={() => setShowFilters(false)}
+                className="pressable p-1.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-colors"
+                aria-label="Close filters"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                  <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+                </svg>
+              </button>
+            </div>
+            <div className="flex flex-col gap-3">{filterChips}</div>
+          </div>
+        </div>
+      )}
 
       {/* Group + Sort + Count */}
       <div className="flex flex-wrap items-center gap-2">

@@ -42,7 +42,7 @@ export default function TypeBrowser({ products, onTypeClick }: TypeBrowserProps)
     <section className="max-w-7xl mx-auto px-4 py-1.5 sm:py-2">
       <div className="flex items-center gap-2 mb-1">
         <img src="/energy/lightning.svg" alt="" className="w-5 h-5" />
-        <h2 className="text-xl font-black text-slate-800 dark:text-slate-100" style={{ fontFamily: "var(--font-display)" }}>
+        <h2 className="font-display text-xl font-black text-[var(--text-primary)]">
           Browse by Type
         </h2>
       </div>
@@ -50,7 +50,7 @@ export default function TypeBrowser({ products, onTypeClick }: TypeBrowserProps)
         Find cards by Pokemon elemental type
       </p>
       <div className="flex gap-2 flex-wrap">
-        {sortedTypes.map((type) => {
+        {sortedTypes.map((type, i) => {
           const gradient = TYPE_GRADIENTS[type] || "from-gray-500 to-gray-600";
           const icon = POKEMON_TYPE_ENERGY_ICONS[type];
           const count = typeCounts[type] || 0;
@@ -58,7 +58,7 @@ export default function TypeBrowser({ products, onTypeClick }: TypeBrowserProps)
             <button
               key={type}
               onClick={() => onTypeClick?.(type)}
-              className={`bg-gradient-to-r ${gradient} text-white pl-2 pr-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 shadow-sm hover:shadow-md hover:scale-105 transition-all duration-200`}
+              className={`pressable bg-gradient-to-r ${gradient} text-white pl-2 pr-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 shadow-sm hover:shadow-md transition-[transform,box-shadow] duration-[var(--dur-fast)] ease-[var(--ease-out)] animate-fade-in ${i < 8 ? `stagger-${i + 1}` : ""}`}
             >
               {icon && <img src={icon} alt="" className="w-4 h-4 brightness-0 invert" />}
               {type}
