@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "motion/react";
 import type { Product } from "@/lib/types";
 import Header from "@/components/Header";
 import NavigationBar from "@/components/NavigationBar";
@@ -11,15 +10,6 @@ import TypeBrowser from "@/components/TypeBrowser";
 import ProductGrid from "@/components/ProductGrid";
 import CartDrawer from "@/components/CartDrawer";
 import MobileNav from "@/components/MobileNav";
-
-const sectionVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { staggerChildren: 0.08, duration: 0.4, ease: [0.23, 1, 0.32, 1] as const },
-  },
-};
 
 export default function HomeClient({ products }: { products: Product[] }) {
   const [cartOpen, setCartOpen] = useState(false);
@@ -42,15 +32,10 @@ export default function HomeClient({ products }: { products: Product[] }) {
         <HeroBanner />
 
         {products.length > 0 && (
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
-            variants={sectionVariants}
-          >
+          <>
             <HotItemsSection />
             <TypeBrowser products={products} onTypeClick={handleTypeClick} />
-          </motion.div>
+          </>
         )}
 
         <div id="shop" className="max-w-7xl mx-auto px-4 pt-1 pb-24 sm:pb-4">
