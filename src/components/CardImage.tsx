@@ -8,6 +8,7 @@ interface CardImageProps {
   src?: string | null;
   name: string;
   displayType: string;
+  type?: string | null;
   priority?: boolean;
 }
 
@@ -24,6 +25,7 @@ export default function CardImage({
   src,
   name,
   displayType,
+  type,
   priority = false,
 }: CardImageProps) {
   const [error, setError] = useState(false);
@@ -37,7 +39,9 @@ export default function CardImage({
   if (!highSrc || error) {
     return (
       <div
-        className={`aspect-[2.5/3.5] bg-gradient-to-br ${gradient} rounded-xl flex flex-col items-center justify-center gap-1 p-2`}
+        data-type={type || undefined}
+        className={`aspect-[2.5/3.5] bg-gradient-to-br ${gradient} rounded-2xl flex flex-col items-center justify-center gap-1 p-2`}
+        style={type ? { background: "var(--tint, transparent)" } : undefined}
       >
         <span className="text-3xl font-bold text-amber-400/50 drop-shadow-sm">
           {name.charAt(0)}
@@ -51,7 +55,9 @@ export default function CardImage({
 
   return (
     <div
-      className={`aspect-[2.5/3.5] bg-gradient-to-br ${gradient} rounded-xl overflow-hidden relative`}
+      data-type={type || undefined}
+      className={`aspect-[2.5/3.5] bg-gradient-to-br ${gradient} rounded-2xl overflow-hidden relative`}
+      style={type ? { background: "var(--tint, transparent)" } : undefined}
     >
       <Image
         src={highSrc}

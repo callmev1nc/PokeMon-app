@@ -1,12 +1,16 @@
 "use client";
 
 import { useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { useCartStore, getCartTotal, getCartItemCount } from "@/store/cartStore";
 import { useSwipeDismiss } from "@/hooks/useSwipeDismiss";
 import { useLocaleStore } from "@/store/localeStore";
 import { t } from "@/lib/i18n";
 import { formatNumber } from "@/lib/format";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import CartItem from "./CartItem";
+
+const drawerSpring = { type: "spring" as const, damping: 30, stiffness: 300 };
 
 export default function CartDrawer({
   isOpen,
@@ -20,6 +24,7 @@ export default function CartDrawer({
   const total = getCartTotal(items);
   const count = getCartItemCount(items);
   const locale = useLocaleStore((s) => s.locale);
+  const reduced = useReducedMotion();
 
   // Lock body scroll while the drawer is open
   useEffect(() => {
@@ -35,23 +40,29 @@ export default function CartDrawer({
   const swipe = useSwipeDismiss({ axis: "x", dismissDirection: 1, enabled: isOpen, onDismiss: onClose });
 
   return (
-    <>
-      {/* Backdrop */}
+    <AnimatePresence>
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 transition-opacity duration-[var(--dur-drawer)] ease-[var(--ease-out)]"
+        <motion.div
+          key="backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: reduced ? 0 : 0.25 }}
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40"
           onClick={onClose}
         />
       )}
-
-      {/* Drawer */}
-      <div
-        {...swipe.handlers}
-        style={{ touchAction: "pan-y", ...swipe.style }}
-        className={`cart-drawer fixed top-0 right-0 h-full w-full max-w-md shadow-[var(--elev-4)] z-50 flex flex-col ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
+      {isOpen && (
+        <motion.div
+          key="drawer"
+          {...swipe.handlers}
+          initial={{ x: "100%" }}
+          animate={{ x: 0 }}
+          exit={{ x: "100%" }}
+          transition={reduced ? { duration: 0 } : drawerSpring}
+          style={{ touchAction: "pan-y", ...swipe.style }}
+          className="cart-drawer fixed top-0 right-0 h-full w-full max-w-md shadow-[var(--elev-4)] z-50 flex flex-col"
+        >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border-subtle)]">
           <div>
@@ -117,7 +128,8 @@ export default function CartDrawer({
             </button>
           </div>
         )}
-      </div>
-    </>
+      </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

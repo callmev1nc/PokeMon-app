@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { motion } from "motion/react";
 import { useRecentlyViewedStore } from "@/store/recentlyViewedStore";
 import { useLocaleStore } from "@/store/localeStore";
 import { t } from "@/lib/i18n";
@@ -78,15 +79,18 @@ export default function RecentlyViewedBar({
   if (viewedProducts.length === 0) return null;
 
   return (
-    <section className="py-4 animate-fade-in">
+    <section className="py-4">
       <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3" style={{ fontFamily: "var(--font-display)", letterSpacing: "0.15em" }}>
         {t("recent.title", locale)}
       </h3>
       <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
-        {viewedProducts.map((product) => (
-          <a
+        {viewedProducts.map((product, i) => (
+          <motion.a
             key={product.id}
             href={`/product?id=${encodeURIComponent(product.id)}`}
+            initial={{ opacity: 0, x: -12 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, delay: i * 0.05, ease: [0.23, 1, 0.32, 1] }}
             className="flex-shrink-0 flex items-center gap-3 bg-white dark:bg-[#0F1629] border border-slate-200 dark:border-slate-700/30 rounded-xl p-2 pr-4 shadow-sm hover:shadow-amber-500/10 hover:border-amber-500/20 transition-all duration-300 min-w-[200px] max-w-[260px] group"
           >
             <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-slate-100 dark:bg-slate-900">
@@ -100,7 +104,7 @@ export default function RecentlyViewedBar({
                 {displayPrice(product.price)}
               </p>
             </div>
-          </a>
+          </motion.a>
         ))}
       </div>
     </section>

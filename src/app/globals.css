@@ -42,7 +42,7 @@
    LIGHT MODE (default)
    ═══════════════════════════════════════════════════════ */
 :root {
-  --background: #F8F6F1;
+  --background: #F4F7FB;
   --foreground: #1E293B;
   --text-primary: #0F172A;
   --text-secondary: #475569;
@@ -50,10 +50,10 @@
   --text-inverse: #F8FAFC;
 
   --bg-surface: #FFFFFF;
-  --bg-surface-alt: #F1EEE8;
-  --bg-sunken: #E8E4DC;
-  --bg-hover: #F5F3EE;
-  --bg-input: #F1EEE8;
+  --bg-surface-alt: #EEF2F8;
+  --bg-sunken: #E6ECF4;
+  --bg-hover: #F0F4FA;
+  --bg-input: #EEF2F8;
 
   --border-subtle: rgba(0,0,0,0.06);
   --border-accent: rgba(245,158,11,0.2);
@@ -63,8 +63,8 @@
 
   --card-bg: #FFFFFF;
   --card-border: rgba(0,0,0,0.06);
-  --card-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 0 1px rgba(245,158,11,0.08);
-  --card-shadow-hover: 0 12px 40px rgba(245,158,11,0.1), 0 4px 12px rgba(0,0,0,0.08);
+  --card-shadow: 0 2px 8px rgba(20,30,60,0.06), 0 0 1px rgba(20,30,60,0.04);
+  --card-shadow-hover: 0 12px 40px rgba(20,30,60,0.08), 0 4px 12px rgba(20,30,60,0.06);
 
   --hero-base: #F8F6F1;
   --hero-gradient-1: rgba(245,158,11,0.08);
@@ -88,18 +88,18 @@
   --font-body: 'Outfit', 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'Consolas', monospace;
 
-  --shadow-card: 0 2px 8px rgba(0,0,0,0.06), 0 0 1px rgba(245,158,11,0.08);
-  --shadow-card-hover: 0 12px 40px rgba(245,158,11,0.1), 0 4px 12px rgba(0,0,0,0.08);
-  --shadow-float: 0 24px 64px rgba(0,0,0,0.08), 0 0 40px rgba(245,158,11,0.04);
+  --shadow-card: 0 2px 8px rgba(20,30,60,0.06), 0 0 1px rgba(20,30,60,0.04);
+  --shadow-card-hover: 0 12px 40px rgba(20,30,60,0.08), 0 4px 12px rgba(20,30,60,0.06);
+  --shadow-float: 0 24px 64px rgba(20,30,60,0.07), 0 0 40px rgba(20,30,60,0.03);
   --shadow-inner-glow: inset 0 1px 0 rgba(255,255,255,0.8), inset 0 -1px 0 rgba(0,0,0,0.04);
 
   --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
 
   --radius-sm: 8px;
   --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
-  --radius-2xl: 28px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-2xl: 32px;
   --radius-pill: 9999px;
 
   /* ─── Neo-Collector motion, elevation & tracking scale ─── */
@@ -115,11 +115,20 @@
   --dur-sheet: 360ms;
   --dur-page: 520ms;
 
-  --elev-1: 0 1px 2px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.06);
-  --elev-2: 0 4px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
-  --elev-3: 0 12px 32px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.06);
-  --elev-4: 0 24px 64px rgba(0,0,0,0.14), 0 8px 24px rgba(0,0,0,0.08);
-  --elev-brand: 0 8px 24px rgba(229,62,62,0.18), 0 0 0 1px rgba(229,62,62,0.06);
+  --elev-1: 0 1px 2px rgba(0,0,0,0.03), 0 1px 3px rgba(0,0,0,0.04);
+  --elev-2: 0 4px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.03);
+  --elev-3: 0 12px 32px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.04);
+  --elev-4: 0 24px 64px rgba(0,0,0,0.10), 0 8px 24px rgba(0,0,0,0.06);
+  --elev-brand: 0 8px 24px rgba(229,62,62,0.14), 0 0 0 1px rgba(229,62,62,0.04);
+
+  /* ═══ TCG Pocket tokens ═══ */
+  --radius-card: 26px;
+  --press-depth: translateY(1px) scale(0.985);
+  --tilt-max: 8deg;
+  --type-tint-alpha: 0.14;
+  --type-tint-alpha-strong: 0.22;
+  --type-tint-alpha-dark: 0.18;
+  --holo-intensity: 0;
 
   --tracking-tight: -0.01em;
   --tracking-normal: 0;
@@ -127,6 +136,33 @@
   --tracking-display: 0.06em;
   --tracking-caps: 0.12em;
 }
+
+/* ═══════════════════════════════════════════════════════
+   TYPE-TINT SYSTEM — pastel backgrounds derived from
+   the 18 type hues via color-mix (single source of truth)
+   ═══════════════════════════════════════════════════════ */
+[data-type="fire"]    { --tint: color-mix(in srgb, var(--type-fire)    var(--type-tint-alpha), transparent); --tint-strong: color-mix(in srgb, var(--type-fire)    var(--type-tint-alpha-strong), transparent); }
+[data-type="water"]   { --tint: color-mix(in srgb, var(--type-water)   var(--type-tint-alpha), transparent); --tint-strong: color-mix(in srgb, var(--type-water)   var(--type-tint-alpha-strong), transparent); }
+[data-type="grass"]   { --tint: color-mix(in srgb, var(--type-grass)   var(--type-tint-alpha), transparent); --tint-strong: color-mix(in srgb, var(--type-grass)   var(--type-tint-alpha-strong), transparent); }
+[data-type="electric"]{ --tint: color-mix(in srgb, var(--type-electric)var(--type-tint-alpha), transparent); --tint-strong: color-mix(in srgb, var(--type-electric)var(--type-tint-alpha-strong), transparent); }
+[data-type="psychic"] { --tint: color-mix(in srgb, var(--type-psychic) var(--type-tint-alpha), transparent); --tint-strong: color-mix(in srgb, var(--type-psychic) var(--type-tint-alpha-strong), transparent); }
+[data-type="fighting"]{ --tint: color-mix(in srgb, var(--type-fighting)var(--type-tint-alpha), transparent); --tint-strong: color-mix(in srgb, var(--type-fighting)var(--type-tint-alpha-strong), transparent); }
+[data-type="normal"]  { --tint: color-mix(in srgb, var(--type-normal)  var(--type-tint-alpha), transparent); --tint-strong: color-mix(in srgb, var(--type-normal)  var(--type-tint-alpha-strong), transparent); }
+[data-type="flying"]  { --tint: color-mix(in srgb, var(--type-flying)  var(--type-tint-alpha), transparent); --tint-strong: color-mix(in srgb, var(--type-flying)  var(--type-tint-alpha-strong), transparent); }
+[data-type="poison"]  { --tint: color-mix(in srgb, var(--type-poison)  var(--type-tint-alpha), transparent); --tint-strong: color-mix(in srgb, var(--type-poison)  var(--type-tint-alpha-strong), transparent); }
+[data-type="ground"]  { --tint: color-mix(in srgb, var(--type-ground)  var(--type-tint-alpha), transparent); --tint-strong: color-mix(in srgb, var(--type-ground)  var(--type-tint-alpha-strong), transparent); }
+[data-type="rock"]    { --tint: color-mix(in srgb, var(--type-rock)    var(--type-tint-alpha), transparent); --tint-strong: color-mix(in srgb, var(--type-rock)    var(--type-tint-alpha-strong), transparent); }
+[data-type="bug"]     { --tint: color-mix(in srgb, var(--type-bug)     var(--type-tint-alpha), transparent); --tint-strong: color-mix(in srgb, var(--type-bug)     var(--type-tint-alpha-strong), transparent); }
+[data-type="ghost"]   { --tint: color-mix(in srgb, var(--type-ghost)   var(--type-tint-alpha), transparent); --tint-strong: color-mix(in srgb, var(--type-ghost)   var(--type-tint-alpha-strong), transparent); }
+[data-type="dragon"]  { --tint: color-mix(in srgb, var(--type-dragon)  var(--type-tint-alpha), transparent); --tint-strong: color-mix(in srgb, var(--type-dragon)  var(--type-tint-alpha-strong), transparent); }
+[data-type="steel"]   { --tint: color-mix(in srgb, var(--type-steel)   var(--type-tint-alpha), transparent); --tint-strong: color-mix(in srgb, var(--type-steel)   var(--type-tint-alpha-strong), transparent); }
+[data-type="ice"]     { --tint: color-mix(in srgb, var(--type-ice)     var(--type-tint-alpha), transparent); --tint-strong: color-mix(in srgb, var(--type-ice)     var(--type-tint-alpha-strong), transparent); }
+[data-type="dark"]    { --tint: color-mix(in srgb, var(--type-dark)    var(--type-tint-alpha), transparent); --tint-strong: color-mix(in srgb, var(--type-dark)    var(--type-tint-alpha-strong), transparent); }
+[data-type="fairy"]   { --tint: color-mix(in srgb, var(--type-fairy)   var(--type-tint-alpha), transparent); --tint-strong: color-mix(in srgb, var(--type-fairy)   var(--type-tint-alpha-strong), transparent); }
+[data-type="lightning"]{ --tint: color-mix(in srgb, var(--type-electric)var(--type-tint-alpha), transparent); --tint-strong: color-mix(in srgb, var(--type-electric)var(--type-tint-alpha-strong), transparent); }
+[data-type="colorless"]{ --tint: color-mix(in srgb, var(--type-normal)  var(--type-tint-alpha), transparent); --tint-strong: color-mix(in srgb, var(--type-normal)  var(--type-tint-alpha-strong), transparent); }
+[data-type="metal"]   { --tint: color-mix(in srgb, var(--type-steel)   var(--type-tint-alpha), transparent); --tint-strong: color-mix(in srgb, var(--type-steel)   var(--type-tint-alpha-strong), transparent); }
+[data-type="darkness"]{ --tint: color-mix(in srgb, var(--type-dark)    var(--type-tint-alpha), transparent); --tint-strong: color-mix(in srgb, var(--type-dark)    var(--type-tint-alpha-strong), transparent); }
 
 /* ═══════════════════════════════════════════════════════
    DARK MODE
@@ -183,11 +219,15 @@
   --shadow-inner-glow: inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -1px 0 rgba(0,0,0,0.3);
 
   /* stronger/longer elevation fades read correctly on the cosmic background */
-  --elev-1: 0 1px 2px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.5);
-  --elev-2: 0 4px 12px rgba(0,0,0,0.45), 0 1px 3px rgba(0,0,0,0.3);
-  --elev-3: 0 16px 40px rgba(0,0,0,0.55), 0 4px 12px rgba(0,0,0,0.4), 0 0 60px rgba(229,62,62,0.06);
-  --elev-4: 0 32px 80px rgba(0,0,0,0.65), 0 8px 24px rgba(0,0,0,0.45);
-  --elev-brand: 0 8px 24px rgba(252,129,129,0.20), 0 0 0 1px rgba(252,129,129,0.08);
+  --elev-1: 0 1px 2px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.42);
+  --elev-2: 0 4px 12px rgba(0,0,0,0.38), 0 1px 3px rgba(0,0,0,0.25);
+  --elev-3: 0 16px 40px rgba(0,0,0,0.47), 0 4px 12px rgba(0,0,0,0.34), 0 0 60px rgba(229,62,62,0.05);
+  --elev-4: 0 32px 80px rgba(0,0,0,0.55), 0 8px 24px rgba(0,0,0,0.38);
+  --elev-brand: 0 8px 24px rgba(252,129,129,0.17), 0 0 0 1px rgba(252,129,129,0.07);
+
+  /* darker bg needs stronger type-tint to be visible */
+  --type-tint-alpha: var(--type-tint-alpha-dark);
+  --type-tint-alpha-strong: 0.28;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -256,7 +296,7 @@ input:focus, select:focus, textarea:focus {
 .product-card {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-card);
   transition: transform var(--dur-ui) var(--ease-out),
               box-shadow var(--dur-ui) var(--ease-out),
               border-color var(--dur-ui) var(--ease-out),
@@ -315,7 +355,11 @@ input:focus, select:focus, textarea:focus {
     box-shadow: var(--elev-3);
     border-color: var(--border-accent);
   }
-  .product-card:hover::before {
+  .product-card[data-display-type="Holo"]:hover::before,
+  .product-card[data-display-type="EX"]:hover::before,
+  .product-card[data-display-type="Prize Card"]:hover::before,
+  .product-card[data-display-type="Holo Prize Card"]:hover::before,
+  .product-card[data-display-type="EX Prize Card"]:hover::before {
     opacity: 1;
     background-position: 100% 100%;
     animation: holo-border-sweep 3s linear infinite;
@@ -452,7 +496,7 @@ input:focus, select:focus, textarea:focus {
               color var(--dur-fast) var(--ease-out);
 }
 .pressable:active {
-  transform: scale(0.97);
+  transform: var(--press-depth);
 }
 
 /* Hover lift, gated to hover-capable pointers (touch never triggers it) */
@@ -489,7 +533,7 @@ input:focus, select:focus, textarea:focus {
   transition: transform var(--dur-press) var(--ease-out);
 }
 .btn-press:active {
-  transform: scale(0.96);
+  transform: var(--press-depth);
 }
 
 .btn-primary {
@@ -642,7 +686,7 @@ input:focus, select:focus, textarea:focus {
   content: '';
   position: absolute;
   inset: -8px;
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-card);
   background: radial-gradient(ellipse at center, rgba(245,158,11,0.06) 0%, transparent 70%);
   pointer-events: none;
   z-index: -1;
@@ -657,7 +701,7 @@ input:focus, select:focus, textarea:focus {
 .vault-card {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-card);
   box-shadow: var(--card-shadow);
 }
 

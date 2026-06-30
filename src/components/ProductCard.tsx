@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import type { Product } from "@/lib/types";
 import { TYPE_COLORS, POKEMON_TYPE_COLORS, POKEMON_TYPE_ICONS, POKEMON_TYPE_ENERGY_ICONS } from "@/lib/constants";
 import { useCartStore } from "@/store/cartStore";
@@ -79,7 +80,9 @@ export default React.memo(function ProductCard({
   return (
     <div
       ref={fadeRef}
-      className={`product-card rounded-2xl border border-transparent overflow-hidden flex flex-col text-slate-700 dark:text-slate-200 ${
+      data-display-type={product.displayType}
+      data-type={product.type}
+      className={`product-card border border-transparent overflow-hidden flex flex-col text-slate-700 dark:text-slate-200 ${
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       }`}
     >
@@ -91,6 +94,7 @@ export default React.memo(function ProductCard({
               src={product.imageUrl}
               name={product.name}
               displayType={product.displayType}
+              type={product.type}
               priority={priority}
             />
             {/* Energy icon badge */}
@@ -115,16 +119,29 @@ export default React.memo(function ProductCard({
             e.stopPropagation();
             toggleWish(product.id);
           }}
-          className={`pressable absolute top-5 right-5 p-2.5 rounded-full shadow-md transition-[transform,background-color,color] duration-[var(--dur-fast)] ease-[var(--ease-out)] z-10 ${
+          className={`pressable absolute top-5 right-5 p-2.5 rounded-full shadow-md transition-[background-color,color] duration-[var(--dur-fast)] ease-[var(--ease-out)] z-10 ${
             isWished
-              ? "bg-red-500/10 text-red-400 scale-110"
+              ? "bg-red-500/10 text-red-400"
               : "bg-slate-100 dark:bg-slate-800/50 backdrop-blur-sm text-slate-600 dark:text-slate-300 hover:text-red-400 hover:bg-red-500/10 sm:opacity-0 sm:group-hover:opacity-100"
           }`}
           aria-label={isWished ? "Bỏ yêu thích" : "Yêu thích"}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={`w-4 h-4 transition-colors ${isWished ? "fill-red-400" : "fill-none"}`} strokeWidth={2} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-          </svg>
+          <AnimatePresence mode="wait">
+            <motion.svg
+              key={isWished ? "wished" : "unwished"}
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              className="w-4 h-4"
+              strokeWidth={2}
+              stroke="currentColor"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0 }}
+              transition={{ type: "spring", damping: 15, stiffness: 300 }}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" className={isWished ? "fill-red-400" : "fill-none"} />
+            </motion.svg>
+          </AnimatePresence>
         </button>
       </div>
 

@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
+import { motion } from "motion/react";
 import useSWR from "swr";
 import type { Product } from "@/lib/types";
 import { TYPE_COLORS, GROUP_LABELS } from "@/lib/constants";
@@ -10,6 +11,7 @@ import { useWishlistStore } from "@/store/wishlistStore";
 import { useLocaleStore } from "@/store/localeStore";
 import { t } from "@/lib/i18n";
 import { formatPrice } from "@/lib/format";
+import { useCardTilt } from "@/hooks/useCardTilt";
 import Header from "@/components/Header";
 import CardImage from "@/components/CardImage";
 import LowStockBadge from "@/components/LowStockBadge";
@@ -56,6 +58,7 @@ function ProductDetailContent() {
     return formatPrice(price);
   };
 
+  const { ref: tiltRef, handleMouseMove, handleMouseLeave } = useCardTilt();
   const [related, setRelated] = useState<Product[]>([]);
 
   useEffect(() => {
@@ -128,15 +131,29 @@ function ProductDetailContent() {
         <div className="vault-card overflow-hidden">
           <div className="md:flex">
             {/* Image */}
-            <div className="md:w-2/5 p-4 md:p-6 md:md:p-8 flex items-center justify-center bg-[var(--bg-sunken)] relative">
-              <div className="w-full max-w-[280px] md:max-w-[300px] relative card-glow">
-                <CardImage
-                  src={product.imageUrl}
-                  name={product.name}
-                  displayType={product.displayType}
-                />
-                <div className="absolute -inset-3 bg-gradient-to-br from-amber-500/5 via-transparent to-cyan-500/5 rounded-2xl -z-10 blur-sm" />
-              </div>
+            <div
+              className="md:w-2/5 p-4 md:p-6 md:md:p-8 flex items-center justify-center bg-[var(--bg-sunken)] relative"
+              ref={tiltRef}
+              onMouseMove={handleMouseMove}
+              onMouseLeave={handleMouseLeave}
+              style={{ perspective: "600px" }}
+            >
+              <motion.div
+                data-type={product.type}
+                data-display-type={product.displayType}
+                className="w-full max-w-[280px] md:max-w-[300px] relative"
+                style={{ transformStyle: "preserve-3d" }}
+              >
+                <div className="card-glow">
+                  <CardImage
+                    src={product.imageUrl}
+                    name={product.name}
+                    displayType={product.displayType}
+                    type={product.type}
+                  />
+                </div>
+                <div className="absolute -inset-3 bg-gradient-to-br from-amber-500/5 via-transparent to-cyan-500/5 rounded-2xl -z-10 blur-sm" style={{ transform: "translateZ(-10px)" }} />
+              </motion.div>
             </div>
 
             {/* Details */}

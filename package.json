@@ -26,6 +26,7 @@
     "fuse.js": "^7.3.0",
     "html2pdf.js": "^0.14.0",
     "html5-qrcode": "^2.3.8",
+    "motion": "^12.42.0",
     "next": "^16.2.3",
     "postcss": "^8.5.9",
     "qrcode": "^1.5.4",
