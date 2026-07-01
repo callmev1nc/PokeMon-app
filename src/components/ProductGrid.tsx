@@ -35,7 +35,17 @@ function useColumnCount(ref: React.RefObject<HTMLDivElement | null>) {
   return cols;
 }
 
-export default function ProductGrid({ products, initialTypeFilter }: { products: Product[]; initialTypeFilter?: string | null }) {
+export default function ProductGrid({
+  products,
+  initialTypeFilter,
+  search: controlledSearch,
+  onSearchChange,
+}: {
+  products: Product[];
+  initialTypeFilter?: string | null;
+  search?: string;
+  onSearchChange?: (value: string) => void;
+}) {
   const [selectedTypes, setSelectedTypes] = useState<DisplayType[]>([
     "Normal", "Holo", "Prize Card", "EX", "Holo Prize Card", "EX Prize Card",
   ]);
@@ -43,7 +53,10 @@ export default function ProductGrid({ products, initialTypeFilter }: { products:
   const [selectedPokemonTypes, setSelectedPokemonTypes] = useState<string[]>(
     initialTypeFilter ? [initialTypeFilter] : []
   );
-  const [search, setSearch] = useState("");
+  // Controlled from outside (hero search) when provided; otherwise internal state.
+  const [internalSearch, setInternalSearch] = useState("");
+  const search = controlledSearch ?? internalSearch;
+  const setSearch = onSearchChange ?? setInternalSearch;
   const deferredSearch = useDeferredValue(search);
   const [sort, setSort] = useState<SortOption>("name-asc");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);

@@ -1,6 +1,7 @@
 "use client";
 
-import { POKEMON_TYPES, POKEMON_TYPE_ENERGY_ICONS } from "@/lib/constants";
+import { POKEMON_TYPES } from "@/lib/constants";
+import EnergyIcon from "./EnergyIcon";
 
 const TYPE_GRADIENTS: Record<string, string> = {
   Fire: "from-[#F97316] to-[#EA580C]",
@@ -41,7 +42,7 @@ export default function TypeBrowser({ products, onTypeClick }: TypeBrowserProps)
   return (
     <section className="max-w-7xl mx-auto px-4 py-1.5 sm:py-2">
       <div className="flex items-center gap-2 mb-1">
-        <img src="/energy/lightning.svg" alt="" className="w-5 h-5" />
+        <EnergyIcon type="Lightning" className="w-5 h-5" />
         <h2 className="font-display text-xl font-black text-[var(--text-primary)]">
           Browse by Type
         </h2>
@@ -52,7 +53,6 @@ export default function TypeBrowser({ products, onTypeClick }: TypeBrowserProps)
       <div className="flex gap-2 flex-wrap">
         {sortedTypes.map((type, i) => {
           const gradient = TYPE_GRADIENTS[type] || "from-gray-500 to-gray-600";
-          const icon = POKEMON_TYPE_ENERGY_ICONS[type];
           const count = typeCounts[type] || 0;
           return (
             <button
@@ -60,7 +60,7 @@ export default function TypeBrowser({ products, onTypeClick }: TypeBrowserProps)
               onClick={() => onTypeClick?.(type)}
               className={`pressable bg-gradient-to-r ${gradient} text-white pl-2 pr-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 shadow-sm hover:shadow-md transition-[transform,box-shadow] duration-[var(--dur-fast)] ease-[var(--ease-out)] animate-fade-in ${i < 8 ? `stagger-${i + 1}` : ""}`}
             >
-              {icon && <img src={icon} alt="" className="w-4 h-4 brightness-0 invert" />}
+              <EnergyIcon type={type} className="w-5 h-5" />
               {type}
               <span className="bg-white/20 px-1.5 py-0.5 rounded-full text-[10px] ml-0.5">
                 {count}

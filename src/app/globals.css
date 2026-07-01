@@ -6,10 +6,16 @@
   --color-brand-light: #FEE2E2;
   --color-brand-yellow: #F6AD55;
   --color-brand-blue: #3B82F6;
-  --color-brand-gold: #F6AD55;
-  --color-accent: #F6AD55;
-  --color-accent-dark: #D97706;
-  --color-surface: #0F1629;
+  --color-brand-gold: #C8964A;
+  /* ═══ Collector's Vault — gold ramp (primary luxury accent) ═══ */
+  --color-gold-deep: #A16207;
+  --color-gold: #C8964A;
+  --color-gold-bright: #E6C168;
+  --color-gold-glow: #FBE9B0;
+  /* accent defaults to a contrast-safe gold for light mode; .dark flips it brighter */
+  --color-accent: #B45309;
+  --color-accent-dark: #92400E;
+  --color-surface: #0F1117;
   --color-surface-alt: #050816;
   --color-surface-hover: #1A2240;
   --color-surface-sunken: #0A0F1E;
@@ -67,9 +73,15 @@
   --card-shadow-hover: 0 12px 40px rgba(20,30,60,0.08), 0 4px 12px rgba(20,30,60,0.06);
 
   --hero-base: #F8F6F1;
-  --hero-gradient-1: rgba(245,158,11,0.08);
-  --hero-gradient-2: rgba(6,182,212,0.05);
-  --hero-gradient-3: rgba(217,70,239,0.04);
+  --hero-gradient-1: rgba(200,150,74,0.10);
+  --hero-gradient-2: rgba(161,98,7,0.06);
+  --hero-gradient-3: rgba(230,193,104,0.05);
+
+  /* ─── Collector's Vault spotlight + pedestal ─── */
+  --spotlight: radial-gradient(ellipse 80% 60% at 50% 35%, rgba(230,193,104,0.16) 0%, transparent 70%);
+  --pedestal-glow: radial-gradient(ellipse 60% 40% at 50% 100%, rgba(200,150,74,0.20) 0%, transparent 75%);
+  --vault-stage: #0B0C10;
+  --vault-stage-edge: #050608;
 
   --drawer-bg: #FFFFFF;
   --drawer-border: rgba(245,158,11,0.1);
@@ -84,8 +96,8 @@
   --badge-holo-base: #F1EEE8;
   --badge-holo-text: #0a0a0a;
 
-  --font-display: 'Bebas Neue', 'Segoe UI', sans-serif;
-  --font-body: 'Outfit', 'Segoe UI', sans-serif;
+  --font-display: 'Playfair Display', 'Georgia', serif;
+  --font-body: 'Inter', 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'Consolas', monospace;
 
   --shadow-card: 0 2px 8px rgba(20,30,60,0.06), 0 0 1px rgba(20,30,60,0.04);
@@ -170,53 +182,62 @@
 .dark {
   --color-brand: #FC8181;
   --color-brand-dark: #E53E3E;
+  /* bright gold accent on the vault dark */
+  --color-accent: #E6C168;
+  --color-accent-dark: #C8964A;
 
-  --background: #050816;
-  --foreground: #E2E8F0;
-  --text-primary: #F1F5F9;
-  --text-secondary: #94A3B8;
-  --text-muted: #64748B;
-  --text-inverse: #0F172A;
+  --background: #08090D;
+  --foreground: #E6E8EE;
+  --text-primary: #F4F1E8;
+  --text-secondary: #A9AEC0;
+  --text-muted: #6B7080;
+  --text-inverse: #0F1117;
 
-  --bg-surface: #0F1629;
-  --bg-surface-alt: #050816;
-  --bg-sunken: #0A0F1E;
-  --bg-hover: #1A2240;
-  --bg-input: #1A2240;
+  --bg-surface: #0F1117;
+  --bg-surface-alt: #0B0C10;
+  --bg-sunken: #050608;
+  --bg-hover: #181A22;
+  --bg-input: #14161C;
 
-  --border-subtle: rgba(255,255,255,0.04);
-  --border-accent: rgba(245,158,11,0.15);
+  --border-subtle: rgba(230,193,104,0.06);
+  --border-accent: rgba(230,193,104,0.22);
 
-  --glass-bg: rgba(15, 22, 41, 0.75);
-  --glass-border: rgba(245,158,11,0.08);
+  /* ─── Collector's Vault spotlight + pedestal (dark) ─── */
+  --spotlight: radial-gradient(ellipse 75% 55% at 50% 32%, rgba(230,193,104,0.18) 0%, rgba(230,193,104,0.04) 45%, transparent 72%);
+  --pedestal-glow: radial-gradient(ellipse 55% 38% at 50% 100%, rgba(200,150,74,0.28) 0%, transparent 75%);
+  --vault-stage: #08090D;
+  --vault-stage-edge: #030405;
 
-  --card-bg: #0F1629;
-  --card-border: rgba(255,255,255,0.04);
-  --card-shadow: 0 2px 8px rgba(0,0,0,0.4), 0 0 1px rgba(245,158,11,0.1);
-  --card-shadow-hover: 0 12px 40px rgba(245,158,11,0.15), 0 0 60px rgba(245,158,11,0.08), 0 4px 12px rgba(0,0,0,0.4);
+  --glass-bg: rgba(12, 13, 18, 0.72);
+  --glass-border: rgba(230,193,104,0.12);
 
-  --hero-base: #0A0F1E;
-  --hero-gradient-1: rgba(245,158,11,0.12);
-  --hero-gradient-2: rgba(6,182,212,0.08);
-  --hero-gradient-3: rgba(217,70,239,0.06);
+  --card-bg: #0F1117;
+  --card-border: rgba(230,193,104,0.07);
+  --card-shadow: 0 2px 8px rgba(0,0,0,0.5), 0 0 1px rgba(230,193,104,0.08);
+  --card-shadow-hover: 0 18px 48px rgba(0,0,0,0.55), 0 0 70px rgba(230,193,104,0.14), 0 4px 12px rgba(0,0,0,0.45);
 
-  --drawer-bg: #0A0F1E;
-  --drawer-border: rgba(245,158,11,0.1);
+  --hero-base: #08090D;
+  --hero-gradient-1: rgba(230,193,104,0.14);
+  --hero-gradient-2: rgba(161,98,7,0.08);
+  --hero-gradient-3: rgba(200,150,74,0.06);
 
-  --skeleton-from: #0F1629;
-  --skeleton-via: #1A2240;
-  --skeleton-to: #0F1629;
+  --drawer-bg: #0B0C10;
+  --drawer-border: rgba(230,193,104,0.12);
 
-  --grain-opacity: 0.03;
-  --grid-opacity: 0.015;
+  --skeleton-from: #0F1117;
+  --skeleton-via: #181A22;
+  --skeleton-to: #0F1117;
 
-  --badge-holo-base: #1a1a2e;
+  --grain-opacity: 0.04;
+  --grid-opacity: 0.018;
+
+  --badge-holo-base: #15151F;
   --badge-holo-text: #0a0a0a;
 
-  --shadow-card: 0 2px 8px rgba(0,0,0,0.4), 0 0 1px rgba(245,158,11,0.1);
-  --shadow-card-hover: 0 12px 40px rgba(245,158,11,0.15), 0 0 60px rgba(245,158,11,0.08), 0 4px 12px rgba(0,0,0,0.4);
-  --shadow-float: 0 24px 64px rgba(0,0,0,0.5), 0 0 40px rgba(245,158,11,0.06);
-  --shadow-inner-glow: inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -1px 0 rgba(0,0,0,0.3);
+  --shadow-card: 0 2px 8px rgba(0,0,0,0.5), 0 0 1px rgba(230,193,104,0.08);
+  --shadow-card-hover: 0 18px 48px rgba(0,0,0,0.55), 0 0 70px rgba(230,193,104,0.14), 0 4px 12px rgba(0,0,0,0.45);
+  --shadow-float: 0 24px 64px rgba(0,0,0,0.6), 0 0 48px rgba(230,193,104,0.10);
+  --shadow-inner-glow: inset 0 1px 0 rgba(230,193,104,0.10), inset 0 -1px 0 rgba(0,0,0,0.4);
 
   /* stronger/longer elevation fades read correctly on the cosmic background */
   --elev-1: 0 1px 2px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.42);
@@ -263,8 +284,8 @@ body::after {
   z-index: -1;
   opacity: var(--grid-opacity);
   background-image:
-    linear-gradient(rgba(245,158,11,0.3) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(245,158,11,0.3) 1px, transparent 1px);
+    linear-gradient(rgba(230,193,104,0.3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(230,193,104,0.3) 1px, transparent 1px);
   background-size: 60px 60px;
   pointer-events: none;
 }
@@ -279,17 +300,20 @@ body::after {
 ::-webkit-scrollbar-thumb:hover { background: var(--color-brand-dark); }
 
 /* ─── Typography ───────────────────────────────────── */
+/* Editorial Playfair headings: mixed case, tight tracking (vault aesthetic).
+   Components that need uppercase/labels apply Tailwind utilities directly. */
 h1, h2, h3 {
   font-family: var(--font-display);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  font-weight: 600;
+  line-height: 1.08;
 }
 
 /* ─── Focus ────────────────────────────────────────── */
 input:focus, select:focus, textarea:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
-  border-color: var(--color-brand) !important;
+  box-shadow: 0 0 0 3px rgba(230, 193, 104, 0.28);
+  border-color: var(--color-accent) !important;
 }
 
 /* ─── Product Card ─────────────────────────────────── */
@@ -704,6 +728,68 @@ input:focus, select:focus, textarea:focus {
   border-radius: var(--radius-card);
   box-shadow: var(--card-shadow);
 }
+
+/* ─── Collector's Vault stage utilities ─────────────── */
+/* Spotlight vignette behind a featured element */
+.vault-spotlight { position: relative; }
+.vault-spotlight::before {
+  content: '';
+  position: absolute;
+  inset: -20% -10% -10%;
+  background: var(--spotlight);
+  pointer-events: none;
+  z-index: 0;
+}
+/* Grounded glow under a card ("on a pedestal") */
+.pedestal { position: relative; }
+.pedestal::after {
+  content: '';
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: -14%;
+  height: 40%;
+  background: var(--pedestal-glow);
+  pointer-events: none;
+  z-index: -1;
+  filter: blur(8px);
+}
+/* Cinematic letterbox bars (optional wrapper) */
+.letterbox {
+  position: relative;
+}
+.letterbox::before,
+.letterbox::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 10px;
+  background: var(--vault-stage-edge);
+  pointer-events: none;
+  z-index: 2;
+}
+.letterbox::before { top: 0; }
+.letterbox::after { bottom: 0; }
+/* Cursor-tracked holographic glare layer (Phase 2 live holo cards).
+   Pointer position injected via --mx/--my (0..1) from useCardTilt. */
+.holo-glare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 30%),
+              rgba(255,255,255,0.28) 0%,
+              rgba(230,193,104,0.18) 18%,
+              rgba(6,182,212,0.12) 34%,
+              rgba(217,70,239,0.10) 52%,
+              transparent 70%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  transition: opacity var(--dur-ui) var(--ease-out);
+  z-index: 2;
+}
+/* glare lights up while the card is tilting (pointer hovering) */
+.is-tilting .holo-glare { opacity: 1; }
 
 /* ─── Accent separator ─────────────────────────────── */
 .accent-line {

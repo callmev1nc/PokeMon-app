@@ -13,6 +13,7 @@ import {
   POKEMON_TYPE_ICONS,
   POKEMON_TYPE_ENERGY_ICONS,
 } from "@/lib/constants";
+import EnergyIcon from "./EnergyIcon";
 import { useLocaleStore } from "@/store/localeStore";
 import { t } from "@/lib/i18n";
 
@@ -121,7 +122,7 @@ export default function FilterBar({
               }`}
             >
               {POKEMON_TYPE_ENERGY_ICONS[type] ? (
-                <img src={POKEMON_TYPE_ENERGY_ICONS[type]} alt="" className="w-3 h-3 brightness-0 invert" />
+                <EnergyIcon type={type} className="w-3.5 h-3.5" />
               ) : (
                 <span>{POKEMON_TYPE_ICONS[type]}</span>
               )}

@@ -27,18 +27,18 @@ export default function Header({
 
   return (
     <header
-      className={`sticky top-0 z-40 bg-[var(--bg-surface)]/85 backdrop-blur-md supports-[backdrop-filter]:bg-[var(--bg-surface)]/70 border-b-[3px] transition-[box-shadow,border-color,background-color] duration-[var(--dur-ui)] ease-[var(--ease-out)] ${
-        scrolled ? "shadow-[var(--elev-2)] border-brand" : "border-brand/60"
+      className={`sticky top-0 z-40 bg-[var(--bg-surface)]/85 backdrop-blur-md supports-[backdrop-filter]:bg-[var(--bg-surface)]/70 border-b transition-[box-shadow,border-color,background-color] duration-[var(--dur-ui)] ease-[var(--ease-out)] ${
+        scrolled ? "shadow-[var(--elev-2)] border-[var(--border-accent)]" : "border-[var(--border-subtle)]"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
         {/* Logo */}
         <a href="/" className="flex items-center gap-2.5 group">
-          <div className="bg-brand text-white font-black text-sm px-2.5 py-1 rounded-lg tracking-wide font-display transition-transform group-hover:scale-105">
+          <div className="text-[var(--color-gold-bright)] font-semibold text-sm px-2.5 py-1 rounded-lg tracking-[0.15em] font-display border border-[var(--border-accent)] transition-transform group-hover:scale-105">
             V1NCC
           </div>
-          <span className="text-brand font-semibold text-xs hidden sm:block">
-            TCG SHOP
+          <span className="text-[var(--text-muted)] font-mono uppercase tracking-[0.15em] text-[10px] hidden sm:block">
+            TCG Shop
           </span>
         </a>
 
@@ -67,9 +67,9 @@ export default function Header({
               const store = useLocaleStore.getState();
               store.setLocale(locale === "vi" ? "en" : "vi");
             }}
-            className="pressable p-2 rounded-lg hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] text-xs font-bold transition-colors"
+            className="pressable px-2 py-1.5 rounded-lg hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] text-[11px] font-bold font-mono tracking-wider transition-colors min-w-[40px]"
           >
-            {locale === "vi" ? "\u{1F1FB}\u{1F1F3}" : "\u{1F1EC}\u{1F1E7}"}
+            {locale === "vi" ? "VN" : "EN"}
           </button>
 
           {/* Wishlist */}

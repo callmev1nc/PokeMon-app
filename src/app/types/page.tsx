@@ -101,7 +101,7 @@ export default function TypesPage() {
                     >
                       <div className="relative z-10">
                         {icon && (
-                          <img src={icon} alt="" className="w-10 h-10 brightness-0 invert mb-3" />
+                          <img src={icon} alt="" className="w-12 h-12 rounded-full object-cover ring-1 ring-black/15 mb-3" />
                         )}
                         <h3 className="text-white font-black text-lg" style={{ fontFamily: "var(--font-display)" }}>
                           {type}
@@ -127,7 +127,7 @@ export default function TypesPage() {
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                       {POKEMON_TYPE_ENERGY_ICONS[selectedType] && (
-                        <img src={POKEMON_TYPE_ENERGY_ICONS[selectedType]} alt="" className="w-5 h-5" />
+                        <img src={POKEMON_TYPE_ENERGY_ICONS[selectedType]} alt="" className="w-6 h-6 rounded-full object-cover ring-1 ring-black/15" />
                       )}
                       {selectedType} — {filteredProducts.length} cards
                     </h2>

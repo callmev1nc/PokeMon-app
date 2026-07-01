@@ -32,6 +32,7 @@ const translations: Record<Locale, Record<string, string>> = {
 
     // Product
     "product.outOfStock": "Hết hàng",
+    "product.viewDetails": "Xem chi tiết",
     "product.contact": "Liên hệ để mua",
     "product.remaining": "Còn lại:",
     "product.inCart": "Trong giỏ:",
@@ -138,6 +139,7 @@ const translations: Record<Locale, Record<string, string>> = {
 
     // Filter
     "filter.search": "Tìm kiếm theo tên...",
+    "hero.searchPlaceholder": "Tìm thẻ, bộ, mã thẻ…",
     "filter.clear": "Xóa bộ lọc",
     "filter.noResults": "Không tìm thấy sản phẩm nào",
     "filter.noResultsSub": "Thay đổi bộ lọc hoặc từ khóa tìm kiếm",
@@ -203,6 +205,7 @@ const translations: Record<Locale, Record<string, string>> = {
 
     // Product
     "product.outOfStock": "Out of stock",
+    "product.viewDetails": "View details",
     "product.contact": "Contact to buy",
     "product.remaining": "Remaining:",
     "product.inCart": "In cart:",
@@ -309,6 +312,7 @@ const translations: Record<Locale, Record<string, string>> = {
 
     // Filter
     "filter.search": "Search by name...",
+    "hero.searchPlaceholder": "Search cards, sets, codes…",
     "filter.clear": "Clear filters",
     "filter.noResults": "No products found",
     "filter.noResultsSub": "Try changing filters or search terms",

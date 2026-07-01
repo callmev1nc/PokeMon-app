@@ -58,7 +58,7 @@ function ProductDetailContent() {
     return formatPrice(price);
   };
 
-  const { ref: tiltRef, handleMouseMove, handleMouseLeave } = useCardTilt();
+  const { ref: tiltRef, handleMouseEnter, handleMouseMove, handleMouseLeave } = useCardTilt();
   const [related, setRelated] = useState<Product[]>([]);
 
   useEffect(() => {
@@ -105,6 +105,9 @@ function ProductDetailContent() {
   const maxQty = product.stock - inCart;
   const isOutOfStock = product.stock === 0;
   const noPrice = product.price === null;
+  const isHolo = ["Holo", "EX", "Prize Card", "Holo Prize Card", "EX Prize Card"].includes(
+    product.displayType
+  );
 
   const handleAdd = () => {
     if (maxQty <= 0 || noPrice) return;
@@ -132,25 +135,27 @@ function ProductDetailContent() {
           <div className="md:flex">
             {/* Image */}
             <div
-              className="md:w-2/5 p-4 md:p-6 md:md:p-8 flex items-center justify-center bg-[var(--bg-sunken)] relative"
+              className="vault-spotlight md:w-2/5 p-4 md:p-6 md:md:p-8 flex items-center justify-center bg-[var(--bg-sunken)] relative overflow-hidden"
               ref={tiltRef}
+              onMouseEnter={handleMouseEnter}
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
-              style={{ perspective: "600px" }}
+              style={{ perspective: "700px" }}
             >
               <motion.div
                 data-type={product.type}
                 data-display-type={product.displayType}
-                className="w-full max-w-[280px] md:max-w-[300px] relative"
+                className="pedestal w-full max-w-[280px] md:max-w-[300px] relative"
                 style={{ transformStyle: "preserve-3d" }}
               >
-                <div className="card-glow">
+                <div className="card-glow relative overflow-hidden rounded-[var(--radius-card)]">
                   <CardImage
                     src={product.imageUrl}
                     name={product.name}
                     displayType={product.displayType}
                     type={product.type}
                   />
+                  {isHolo && <div className="holo-glare" aria-hidden />}
                 </div>
                 <div className="absolute -inset-3 bg-gradient-to-br from-amber-500/5 via-transparent to-cyan-500/5 rounded-2xl -z-10 blur-sm" style={{ transform: "translateZ(-10px)" }} />
               </motion.div>

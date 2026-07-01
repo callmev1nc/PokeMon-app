@@ -33,7 +33,9 @@ interface SwipeDismissResult {
  * Drag-to-dismiss for drawers / bottom sheets — no animation dependency.
  *
  * - Animates only `transform` (GPU-friendly).
- * - Pointer capture + primary-pointer guard so multi-touch can't hijack it.
+ * - Pointer capture is taken LAZILY (only once a real drag exceeds `armPx`),
+ *   so taps/clicks on child buttons (close X, steppers, links) are never stolen.
+ * - Primary-pointer guard so multi-touch can't hijack it.
  * - Dismisses when dragged past `threshold` OR flicked above `velocityThreshold`,
  *   with rubber-band damping past the threshold.
  * - `style` is only returned while dragging; otherwise the surface's CSS class
@@ -52,8 +54,13 @@ export function useSwipeDismiss({
   const startRef = useRef<number | null>(null);
   const offsetRef = useRef(0);
   const lastRef = useRef<{ pos: number; t: number } | null>(null);
+  /** Synchronous dragging flag (the useState value is stale inside callbacks). */
+  const armedRef = useRef(false);
+  /** Movement (px) that must be exceeded before we capture + treat as a drag. */
+  const armPx = 4;
 
   const reset = useCallback(() => {
+    armedRef.current = false;
     setDragging(false);
     setOffset(0);
     offsetRef.current = 0;
@@ -67,12 +74,9 @@ export function useSwipeDismiss({
       const pos = axis === "x" ? e.clientX : e.clientY;
       startRef.current = pos;
       lastRef.current = { pos, t: e.timeStamp };
-      setDragging(true);
-      try {
-        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-      } catch {
-        /* pointer capture not supported — ignore */
-      }
+      // Deliberately do NOT setPointerCapture here — capturing on every pointer
+      // down would steal the click from child buttons (close X, steppers, links).
+      // We arm/capture lazily in onPointerMove once a real drag is detected.
     },
     [enabled, axis]
   );
@@ -84,6 +88,19 @@ export function useSwipeDismiss({
       let delta = pos - startRef.current;
       // Clamp to the dismiss direction so dragging the wrong way just resists.
       delta = dismissDirection === 1 ? Math.max(0, delta) : Math.min(0, delta);
+
+      // Arm the gesture only after clear intent to drag — protects taps/clicks.
+      if (!armedRef.current) {
+        if (Math.abs(delta) <= armPx) return;
+        armedRef.current = true;
+        setDragging(true);
+        try {
+          (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+        } catch {
+          /* pointer capture not supported — ignore */
+        }
+      }
+
       // Rubber-band damping past the threshold so it never feels infinite.
       if (Math.abs(delta) > threshold) {
         const sign = Math.sign(delta);
@@ -99,6 +116,7 @@ export function useSwipeDismiss({
   const finish = useCallback(
     (e: React.PointerEvent) => {
       if (startRef.current === null) return;
+      const wasDragging = armedRef.current;
       const last = lastRef.current;
       let velocity = 0;
       if (last) {
@@ -113,7 +131,7 @@ export function useSwipeDismiss({
         movingTowardDismiss &&
         (Math.abs(delta) >= threshold || Math.abs(velocity) >= velocityThreshold);
       reset();
-      if (shouldDismiss) onDismiss();
+      if (wasDragging && shouldDismiss) onDismiss();
     },
     [axis, dismissDirection, threshold, velocityThreshold, onDismiss, reset]
   );

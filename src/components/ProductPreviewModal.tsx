@@ -103,7 +103,7 @@ export default function ProductPreviewModal({ product, isOpen, onClose }: Produc
                 {product.displayType}
               </span>
               {energyIcon && (
-                <img src={energyIcon} alt="" className="w-4 h-4" />
+                <img src={energyIcon} alt="" className="w-5 h-5 rounded-full object-cover ring-1 ring-black/10" />
               )}
               {product.type && (
                 <span className="text-[10px] text-slate-400 font-medium">{product.type}</span>

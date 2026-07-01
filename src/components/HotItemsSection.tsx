@@ -33,12 +33,15 @@ function HotCard({ product, index }: { product: Product; index: number }) {
         <div className="p-2 pb-0" style={{ transform: "translateZ(20px)" }}>
           <CardImage src={product.imageUrl} name={product.name} displayType={product.displayType} type={product.type} />
         </div>
-        <div className="absolute top-3 left-3 bg-brand text-white text-[9px] px-1.5 py-0.5 rounded font-bold" style={{ transform: "translateZ(30px)" }}>
-          🔥 HOT
+        <div className="absolute top-3 left-3 bg-brand text-white text-[9px] px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5" style={{ transform: "translateZ(30px)" }}>
+          <svg viewBox="0 0 24 24" fill="currentColor" className="w-2.5 h-2.5" aria-hidden>
+            <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153-.4-2.292-1-3a2.5 2.5 0 0 1 2.5 2.5z" />
+          </svg>
+          HOT
         </div>
         {energyIcon && (
           <div className="absolute top-3 right-3" style={{ transform: "translateZ(30px)" }}>
-            <img src={energyIcon} alt="" className="w-4 h-4" />
+            <img src={energyIcon} alt="" className="w-4 h-4 rounded-full object-cover" />
           </div>
         )}
       </div>
@@ -47,7 +50,7 @@ function HotCard({ product, index }: { product: Product; index: number }) {
           {product.name}
         </p>
         <div className="flex items-center gap-1 mt-0.5">
-          {energyIcon && <img src={energyIcon} alt="" className="w-3 h-3" />}
+          {energyIcon && <img src={energyIcon} alt="" className="w-3.5 h-3.5 rounded-full object-cover ring-1 ring-black/10" />}
           <span className="text-[10px] text-slate-400 dark:text-slate-500">
             {product.type} • {product.series?.split(" ")[0]}
           </span>
@@ -69,7 +72,7 @@ function HotCard({ product, index }: { product: Product; index: number }) {
         </div>
         {product.stock > 0 && product.stock <= 3 && (
           <p className="text-[9px] text-accent font-semibold mt-1">
-            ⚠ Only {product.stock} left!
+            Only {product.stock} left
           </p>
         )}
       </div>
@@ -95,8 +98,11 @@ export default function HotItemsSection() {
     <section className="max-w-7xl mx-auto px-4 py-1.5 sm:py-2">
       <div className="flex items-center justify-between mb-2">
         <div>
-          <h2 className="font-display text-xl font-black text-brand flex items-center gap-2">
-            🔥 Hot Items
+          <h2 className="font-display text-xl font-semibold text-[var(--text-primary)] flex items-center gap-2">
+            <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-[#F97316]" aria-hidden>
+              <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153-.4-2.292-1-3a2.5 2.5 0 0 1 2.5 2.5z" />
+            </svg>
+            Hot Items
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Sản phẩm bán chạy nhất 3 tháng qua!
