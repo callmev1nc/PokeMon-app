@@ -113,9 +113,15 @@ export default function HotItemsSection() {
         </a>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      {/* Horizontal "shelf": a single row that scrolls sideways so every hot item
+          stays one swipe away without growing the page vertically (the old wrapping
+          grid pushed the shop grid far below the fold). Snap + hidden scrollbar.
+          Full list still available at /hot-items via "View All". */}
+      <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory items-start px-1 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {hotItems.map((product, index) => (
-          <HotCard key={product.id} product={product} index={index} />
+          <div key={product.id} className="snap-start shrink-0 w-[158px] sm:w-[200px] lg:w-[228px]">
+            <HotCard product={product} index={index} />
+          </div>
         ))}
       </div>
     </section>

@@ -76,7 +76,7 @@ export default function HeroBanner({
       </div>
 
       <motion.div
-        className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 py-16 sm:py-20 lg:py-24 text-center"
+        className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 pt-14 pb-8 sm:pt-16 sm:pb-10 lg:pt-20 lg:pb-12 text-center"
         style={{ y: reduced ? 0 : copyY }}
       >
         <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[var(--border-accent)] bg-white/[0.03] text-[11px] font-mono uppercase tracking-[0.18em] text-[var(--color-gold-bright)] animate-fade-in stagger-1">
@@ -183,7 +183,7 @@ export default function HeroBanner({
       </motion.div>
 
       {/* Fade into page background */}
-      <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-b from-transparent to-[var(--background)] pointer-events-none" aria-hidden />
+      <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-b from-transparent to-[var(--background)] pointer-events-none" aria-hidden />
     </section>
   );
 }
